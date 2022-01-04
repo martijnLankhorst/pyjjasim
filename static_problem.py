@@ -957,7 +957,7 @@ class StaticConfiguration:
         """
         See CircuitPlot for documentation.
         """
-        from circuit_visualize import CircuitPlot
+        from pyJJAsim.circuit_visualize import CircuitPlot
 
         return CircuitPlot(self, show_vortices=show_vortices, vortex_diameter=vortex_diameter,
                          vortex_color=vortex_color, anti_vortex_color=anti_vortex_color,

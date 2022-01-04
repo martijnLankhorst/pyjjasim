@@ -3,21 +3,28 @@ import scipy.sparse
 
 
 class VarRowArray:
-    # Array structure representing 2D array with variable row lengths.
-    # The rows are called the "inner" dimension, the columns the "outer".
-    # One supplies the length of each row with counts.
-    #
-    # example:
-    # counts        [2 3 1 2]   represents [[., .], [., ., .], [.], [., .]] array
-    # columns       [0 1 0 1 2 0 0 1]
-    # rows          [0 0 1 1 1 2 3 3]
-    # row_length    [2 2 3 3 3 1 2 2]
-    # __len__()     8
-    # get_item([1, 0, 2, 1, 3], [1, 1, 0, 2, 1]) -> [3, 1, 5, 4, 7]
-    # roll(axis=1)  [1 0 4 2 3 5 7 6]
-    # roll(axis=0)  [6 7 0 1 2 3 4 5]
+    """
+    Array structure representing 2D array with variable row lengths.
+    The rows are called the "inner" dimension, the columns the "outer".
+    One supplies the length of each row with counts.
+
+    example:
+    counts        [2 3 1 2]   represents [[., .], [., ., .], [.], [., .]] array
+    columns       [0 1 0 1 2 0 0 1]
+    rows          [0 0 1 1 1 2 3 3]
+    row_length    [2 2 3 3 3 1 2 2]
+    __len__()     8
+    get_item([1, 0, 2, 1, 3], [1, 1, 0, 2, 1]) -> [3, 1, 5, 4, 7]
+    roll(axis=1)  [1 0 4 2 3 5 7 6]
+    roll(axis=0)  [6 7 0 1 2 3 4 5]
+
+    """
 
     def __init__(self, counts):
+        """
+
+        :param counts:
+        """
         self.counts = np.array(counts, dtype=int)
         self.cum_counts = np.cumsum(self.counts) - self.counts
         self.total = np.sum(self.counts)
@@ -26,6 +33,11 @@ class VarRowArray:
         return self.total
 
     def row_count(self):
+        """
+        compute row count
+
+        :return:
+        """
         return len(self.counts)
 
     def columns(self, rows=None):
