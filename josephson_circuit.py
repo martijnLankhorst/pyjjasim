@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from compute import Matrix
-from embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
+from pyJJAsim.compute import Matrix
+from pyJJAsim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
 
 import numpy as np
 import scipy
@@ -9,7 +9,7 @@ import scipy.sparse
 import scipy.sparse.linalg
 import scipy.spatial
 
-__all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray"]
+__all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID"]
 
 # TODO:
 # work out if area and frustration definition

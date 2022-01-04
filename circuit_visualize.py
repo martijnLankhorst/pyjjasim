@@ -9,8 +9,8 @@ import matplotlib.animation as animation
 import matplotlib.cm as cm
 matplotlib.use("TkAgg")
 
-from static_problem import StaticConfiguration
-from time_evolution import TimeEvolutionResult
+from pyJJAsim.static_problem import StaticConfiguration
+from pyJJAsim.time_evolution import TimeEvolutionResult
 
 __all__ = ["Plot", "CircuitPlot", "CircuitMovie"]
 

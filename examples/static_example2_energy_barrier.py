@@ -1,7 +1,4 @@
-import numpy as np
-
-from josephson_circuit import *
-from static_problem import *
+from pyJJAsim import *
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -21,44 +18,46 @@ This results in an approximation that can be used as an initial guess.
 
 """
 
-N = 11
+if __name__ == "__main__":
 
-# Square array no screening
-array1 = SquareArray(N, N - 1)
+    N = 11
 
-# frustration factor
-f = 0.01
+    # Square array no screening
+    array1 = SquareArray(N, N - 1)
 
-# define physical problems
-prob = StaticProblem(array1, frustration=f)
+    # frustration factor
+    f = 0.01
 
-# compute initial guess for vortex centered at junction (coordinates x=(N-2)/2, y=(N-1)/2)
-init_config_junc_vortex = prob.approximate_placed_vortices(1, (N - 1) / 2, (N-2) / 2)
-init_config_face_vortex = prob.approximate_placed_vortices(1, (N) / 2, (N-2) / 2)
+    # define physical problems
+    prob = StaticProblem(array1, frustration=f)
 
-# plot solutions
-init_config_junc_vortex.plot(title="arctan approximation of vortex placed at junction")
-init_config_face_vortex.plot(title="arctan approximation of vortex placed at face")
+    # compute initial guess for vortex centered at junction (coordinates x=(N-2)/2, y=(N-1)/2)
+    init_config_junc_vortex = prob.approximate_placed_vortices(1, (N - 1) / 2, (N-2) / 2)
+    init_config_face_vortex = prob.approximate_placed_vortices(1, (N) / 2, (N-2) / 2)
+
+    # plot solutions
+    init_config_junc_vortex.plot(title="arctan approximation of vortex placed at junction")
+    init_config_face_vortex.plot(title="arctan approximation of vortex placed at face")
 
 
-# find solutions and check if they are stable and satisfy the equations.
-config_junc_vortex, status_jv, info_jv = prob.compute(initial_guess=init_config_junc_vortex)
-config_face_vortex, status_fv, info_fv = prob.compute(initial_guess=init_config_face_vortex)
+    # find solutions and check if they are stable and satisfy the equations.
+    config_junc_vortex, status_jv, info_jv = prob.compute(initial_guess=init_config_junc_vortex)
+    config_face_vortex, status_fv, info_fv = prob.compute(initial_guess=init_config_face_vortex)
 
-print("Junction vortex solution: ")
-config_junc_vortex.report()
-print("face vortex solution: ")
-config_face_vortex.report()
+    print("Junction vortex solution: ")
+    config_junc_vortex.report()
+    print("face vortex solution: ")
+    config_face_vortex.report()
 
-# plot solutions
-E_junc_no_scr = np.sum(config_junc_vortex.get_Etot())
-E_face_no_scr = np.sum(config_face_vortex.get_Etot())
-config_junc_vortex.plot(title="exact solution of vortex at junction, E=" + str(E_junc_no_scr))
-config_face_vortex.plot(title="exact solution of vortex at face, E=" + str(E_face_no_scr))
+    # plot solutions
+    E_junc_no_scr = np.sum(config_junc_vortex.get_Etot())
+    E_face_no_scr = np.sum(config_face_vortex.get_Etot())
+    config_junc_vortex.plot(title="exact solution of vortex at junction, E=" + str(E_junc_no_scr))
+    config_face_vortex.plot(title="exact solution of vortex at face, E=" + str(E_face_no_scr))
 
-print("energy barrier: ", str(E_junc_no_scr - E_face_no_scr))
+    print("energy barrier: ", str(E_junc_no_scr - E_face_no_scr))
 
-# Note that for the junction-vortex the location is not displayed properly.
+    # Note that for the junction-vortex the location is not displayed properly.
 
-plt.show()
+    plt.show()
 

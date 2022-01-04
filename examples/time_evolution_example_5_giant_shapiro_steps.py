@@ -1,7 +1,5 @@
-import numpy as np
 
-from josephson_circuit import *
-from time_evolution import *
+from pyJJAsim import *
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,35 +15,37 @@ Of course after the array voltage is normalized, the steps are not so
 giant, and the step heights will be Ifreq.
 """
 
-# define array
-N = 20
-sq_array = SquareArray(N, N)
+if __name__ == "__main__":
 
-# define problem
-T = 0.01
-dt = 0.05
-Nt = 10000
-ts = [Nt//3, Nt - 1]
+    # define array
+    N = 20
+    sq_array = SquareArray(N, N)
 
-IAmp = 1
-Ifreq = 0.25
-IDC = np.linspace(0, 2, 101)
-Is = lambda i: sq_array.horizontal_junctions()[:, None] * (IDC + np.sin(Ifreq * i * dt))
+    # define problem
+    T = 0.01
+    dt = 0.05
+    Nt = 10000
+    ts = [Nt//3, Nt - 1]
 
-prob = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
-                            current_sources=Is, temperature=T, store_time_steps=ts)
+    IAmp = 1
+    Ifreq = 0.25
+    IDC = np.linspace(0, 2, 101)
+    Is = lambda i: sq_array.horizontal_junctions()[:, None] * (IDC + np.sin(Ifreq * i * dt))
 
-# do time simulation
-out = prob.compute()
+    prob = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
+                                current_sources=Is, temperature=T, store_time_steps=ts)
 
-# compute array voltage
-th = out.get_theta()[sq_array.horizontal_junctions(), :, :]
-V = np.mean((th[:, :, 1] - th[:, :, 0]) / (dt * (ts[1] - ts[0])), axis=0)
+    # do time simulation
+    out = prob.compute()
 
-# plot array voltage
-plt.plot(IDC, V, label='f=0')
-plt.xlabel("DC current")
-plt.ylabel("mean array voltage")
-plt.title("giant shapiro steps in square array")
-plt.legend()
-plt.show()
+    # compute array voltage
+    th = out.get_theta()[sq_array.horizontal_junctions(), :, :]
+    V = np.mean((th[:, :, 1] - th[:, :, 0]) / (dt * (ts[1] - ts[0])), axis=0)
+
+    # plot array voltage
+    plt.plot(IDC, V, label='f=0')
+    plt.xlabel("DC current")
+    plt.ylabel("mean array voltage")
+    plt.title("giant shapiro steps in square array")
+    plt.legend()
+    plt.show()

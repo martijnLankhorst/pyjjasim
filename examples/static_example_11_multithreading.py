@@ -1,9 +1,6 @@
-import numpy as np
-
 from multiprocessing import Pool
 
-from josephson_circuit import *
-from static_problem import *
+from pyJJAsim import *
 
 import matplotlib
 import matplotlib.pyplot as plt

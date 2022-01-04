@@ -1,8 +1,5 @@
-import numpy as np
-import scipy.linalg
 
-from pyJJAsim.josephson_circuit import *
-from pyJJAsim.static_problem import *
+from pyJJAsim import *
 
 import matplotlib
 import matplotlib.pyplot as plt

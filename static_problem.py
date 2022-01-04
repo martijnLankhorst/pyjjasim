@@ -8,11 +8,11 @@ import scipy.sparse.linalg
 import scipy.optimize
 from scipy.sparse.linalg import ArpackNoConvergence
 
-from compute import Matrix
-from josephson_circuit import Circuit
+from pyJJAsim.compute import Matrix
+from pyJJAsim.josephson_circuit import Circuit
 
 __all__ = ["CurrentPhaseRelation", "DefaultCPR",
-           "StaticProblem", "StaticConfiguration"]
+           "StaticProblem", "StaticConfiguration", "node_to_junction_current"]
 
 DEF_TOL = 1E-11
 

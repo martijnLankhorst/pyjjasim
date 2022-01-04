@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use("TkAgg")
 
-from variable_row_array import VarRowArray
+from pyJJAsim.variable_row_array import VarRowArray
 
 class NotSingleComponentError(Exception):
     pass
