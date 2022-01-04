@@ -12,8 +12,8 @@ PyJJASim is a circuit simulator including Josephson Junctions as components, int
 
 # Documentation
 .\doc\_build\html\pyjjasim.html
-PyJJASim_User_Manual.pdf
-PyJJASim_Whitepaper.pdf
+https://github.com/martijnLankhorst/pyJJAsim/PyJJASim_User_Manual.pdf
+https://github.com/martijnLankhorst/pyJJAsim/PyJJASim_Whitepaper.pdf
 
 # Example Usage
 
