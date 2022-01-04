@@ -11,9 +11,9 @@ pip install pyjjasim
 PyJJASim is a circuit simulator including Josephson Junctions as components, intended to be used on large Josephson Junction Arrays (JJAs). 
 
 # Documentation
-.\doc\_build\html\pyjjasim.html
-https://github.com/martijnLankhorst/pyJJAsim/PyJJASim_User_Manual.pdf
-[a relative link](PyJJASim_Whitepaper.pdf)
+[api documentation](doc\_build\html\pyjjasim.html)
+[whitepaper](PyJJASim_Whitepaper.pdf)
+[user manual](PyJJASim_Whitepaper.pdf)
 
 # Example Usage
 
