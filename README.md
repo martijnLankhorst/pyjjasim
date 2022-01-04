@@ -36,7 +36,7 @@ hierarchical structure is supported.
 # Documentation
 [api documentation](https://htmlpreview.github.io/?https://github.com/martijnLankhorst/pyJJAsim/blob/master/doc/_build/html/pyjjasim.html)\
 [whitepaper](PyJJASim_Whitepaper.pdf)\
-[user manual](PyJJASim_Whitepaper.pdf)
+[user manual](PyJJASim_User_Manual.pdf)
 
 # Example Usage
 
