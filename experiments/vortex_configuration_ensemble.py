@@ -5,7 +5,7 @@ import numpy as np
 
 from find_extreme_vortex_configuration import find_extreme_vortex_configuration
 from josephson_circuit import Circuit, SquareArray
-from static_problem import StaticProblem, DefaultCurrentPhaseRelation
+from static_problem import StaticProblem, DefaultCPR
 
 
 class VortexConfigurationEnsemble:
