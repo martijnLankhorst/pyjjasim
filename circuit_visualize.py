@@ -15,8 +15,40 @@ from pyJJAsim.time_evolution import TimeEvolutionResult
 __all__ = ["Plot", "CircuitPlot", "CircuitMovie"]
 
 
-class Plot():
+class Plot:
 
+    """Plots a circuit configuration.
+
+    Allows one to show node quantities, junction quantities, face quantities and vortices.
+        - Node quantities are shown as colors on the nodes
+        - junction quantities are displayed by arrows whose length is proportional to the quantity value
+        - face quantities are shown as colors on the faces
+        - vortices are displayed by symbols (concentric rings, vorticity equals nr of rings, color shows sign).\
+
+    Base class used by both CircuitPlot and CircuitMovie.\
+
+    Node quantity options:
+        - "phi": gauge depent phases
+        - "U": node voltage or potential
+
+    Junction quantity options:
+        - "theta": gauge_invariant_phase_difference
+        - "V": voltage
+        - "I": current
+        - "I_sup": supercurrent
+        - "I_s": current sources
+        - "EJ": josephson energy
+        - "EM": magnetic_energy
+        - "EC": capacitive energy
+        - "Etot": total_energy
+
+    Face quantity options:
+        - "Phi: magnetic_flux
+        - "n": vortex configuration
+        - "J": face_current
+
+
+    """
     def __init__(self, config: StaticConfiguration | TimeEvolutionResult, time_point=0, show_vortices=True,
                  vortex_diameter=0.25, vortex_color=(0, 0, 0),
                  anti_vortex_color=(0.8, 0.1, 0.2), vortex_alpha=1, show_grid=True, grid_width=1,
@@ -31,6 +63,9 @@ class Plot():
                  face_quantity_logarithmic_colors=False,
                  figsize=None, title=""):
 
+        """
+        Constructor for Plot and handling plot options.
+        """
         self.config = config
         self.time_point = time_point
 
@@ -87,11 +122,11 @@ class Plot():
         self.fig = None
         self.ax = None
 
-    node_quantities = {
+    _node_quantities = {
         "phi": 0, "phase": 0, "phases": 0, "U": 1, "potential": 1,
     }
 
-    junction_quantities = {
+    _junction_quantities = {
         "th": 0, "theta": 0, "phase_difference": 0,  "gauge_invariant_phase_difference": 0,
         "V": 1, "voltage": 1,
         "I": 3, "current": 3,
@@ -101,7 +136,7 @@ class Plot():
         "capacitance_energy": 8, "Etot": 9, "E_tot": 9, "ETot": 9, "total_energy": 9, "energy": 9,
     }
 
-    face_quantities = {
+    _face_quantities = {
         "Phi": 0, "flux": 0, "magnetic_flux": 0,
         "n": 2, "vortices": 2, "vortex_configuration": 2, "face_current": 3, "J": 3,
     }
@@ -135,9 +170,12 @@ class Plot():
         return isinstance(self.config, StaticConfiguration)
 
     def _get_node_quantity(self):
+        """
+        Get node quantity (either "phi": gauge dependent phases or  "U": potential)
+        """
         if isinstance(self.node_quantity, np.ndarray):
             return self.node_quantity.flatten()
-        quantity = self.node_quantities[self.node_quantity]
+        quantity = self._node_quantities[self.node_quantity]
         if quantity == 0:   # phi
             out = self.config.get_phi() if self._is_static() else self.config.get_phi(self.time_point)
             out = out.copy()
@@ -149,7 +187,7 @@ class Plot():
     def _get_junction_quantity(self):
         if isinstance(self.arrow_quantity, np.ndarray):
             return self.arrow_quantity.flatten()
-        quantity = self.junction_quantities[self.arrow_quantity]
+        quantity = self._junction_quantities[self.arrow_quantity]
         if quantity == 0:   # theta
             out = self.config.get_theta() if self._is_static() else self.config.get_theta(self.time_point)
             out = out.copy()
@@ -175,7 +213,7 @@ class Plot():
     def _get_face_quantity(self):
         if isinstance(self.face_quantity, np.ndarray):
             return self.face_quantity.flatten()
-        quantity = self.face_quantities[self.face_quantity]
+        quantity = self._face_quantities[self.face_quantity]
         if quantity == 0:   # Phi
             return self.config.get_flux() if self._is_static() else self.config.get_flux(self.time_point)
         if quantity == 2:   # n
@@ -258,6 +296,8 @@ class Plot():
                         vort_handles += p
         return vort_handles
 
+    def test_method(self):
+        pass
 
 class CircuitPlot(Plot):
 

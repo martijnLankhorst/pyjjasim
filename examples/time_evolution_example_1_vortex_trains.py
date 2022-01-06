@@ -10,6 +10,7 @@ matplotlib.use("TkAgg")
 TIME EVOLUTION EXAMPLE 1: Vortex trains
 
 """
+p = Plot
 
 if __name__ == "__main__":
 

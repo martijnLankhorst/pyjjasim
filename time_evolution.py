@@ -9,9 +9,7 @@ from pyJJAsim.josephson_circuit import Circuit
 from pyJJAsim.static_problem import DefaultCPR
 from pyJJAsim.static_problem import StaticConfiguration, StaticProblem
 
-__all__ = ["TimeEvolutionProblem", "TimeEvolutionResult"]
-
-DEF_TEMPERATURE_PROFILE = lambda search_T: lambda t: np.interp(t, [0, 0.25, 0.75, 1], [1, 1.1 * search_T, 0.9 * search_T, 0])
+__all__ = ["TimeEvolutionProblem", "TimeEvolutionResult", "AnnealingProblem"]
 
 
 class TimeEvolutionProblem:
@@ -241,15 +239,15 @@ class TimeEvolutionProblem:
 
     def _cp(self, theta) -> np.ndarray:   # (Nj, W)
         # theta -> (Nj, W)
-        Ic = self.get_circuit()._Ic().diag(force_as_vector=True, vector_length=self.get_circuit()._Nj())[:, None]
+        Ic = self.get_circuit()._Ic()[:, None]
         return self.current_phase_relation.eval(Ic, theta)
 
     def _dcp(self, theta) -> np.ndarray:  # (Nj, W)
-        Ic = self.get_circuit()._Ic().diag(force_as_vector=True, vector_length=self.get_circuit()._Nj())[:, None]
+        Ic = self.get_circuit()._Ic()[:, None]
         return self.current_phase_relation.d_eval(Ic, theta)
 
     def _icp(self, theta) -> np.ndarray:  # (Nj, W)
-        Ic = self.get_circuit()._Ic().diag(force_as_vector=True, vector_length=self.get_circuit()._Nj())[:, None]
+        Ic = self.get_circuit()._Ic()[:, None]
         return self.current_phase_relation.i_eval(Ic, theta)
 
     def _broadcast(self, x, shape):
@@ -287,12 +285,12 @@ def time_evolution_algo_0(problem: TimeEvolutionProblem) -> TimeEvolutionResult:
 
     A = circuit.get_cycle_matrix()
     AT = A.T
-    Rv = 1 / (dt * circuit._R().diag(force_as_vector=True, vector_length=Nj)[:, None])
-    Cv = circuit._C().diag(force_as_vector=True, vector_length=Nj)[:, None] / (dt ** 2)
+    Rv = 1 / (dt * circuit._R()[:, None])
+    Cv = circuit._C()[:, None] / (dt ** 2)
     Cprev, C0, Cnext = Cv, -2.0 * Cv - Rv, Cv + Rv
 
     if circuit._has_inductance():
-        L = problem.circuit._L().matrix(Nj)
+        L = problem.circuit._L()
         L_sw_fact = scipy.sparse.linalg.factorized(A @ L @ AT)
     Asq_fact = scipy.sparse.linalg.factorized(A @ scipy.sparse.diags(1.0 / Cnext[:, 0], 0) @ AT)
 
@@ -334,12 +332,12 @@ def time_evolution_algo_1(problem: TimeEvolutionProblem) -> TimeEvolutionResult:
     store_th, store_I, store_V = problem.store_theta, problem.store_current, problem.store_voltage
 
     A = circuit.get_cycle_matrix()
-    M = circuit._Mr().A
-    Rv = 1 / (dt * circuit._R().diag(force_as_vector=True, vector_length=Nj)[:, None])
-    Cv = circuit._C().diag(force_as_vector=True, vector_length=Nj)[:, None] / (dt ** 2)
+    M = circuit._Mr()
+    Rv = 1 / (dt * circuit._R()[:, None])
+    Cv = circuit._C()[:, None] / (dt ** 2)
     Cprev, C0, Cnext = Cv, -2.0 * Cv - Rv, Cv + Rv
 
-    L = problem.circuit._L().matrix(Nj)
+    L = problem.circuit._L()
     L_mask = circuit._get_mixed_inductance_mask()
     A1 = A[~L_mask, :]
     A2 = A[L_mask, :]
@@ -480,7 +478,7 @@ class TimeEvolutionResult:
         return StaticConfiguration(problem, self.theta[:, prob_nr, time_step])
 
     def get_phi(self, select_time_points=None) -> np.ndarray:
-        M = self.get_circuit()._Mr().A
+        M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
         func = lambda tp: np.concatenate((scipy.sparse.linalg.spsolve(Mrsq, M @ self._th(tp)), Z), axis=0)
@@ -513,27 +511,26 @@ class TimeEvolutionResult:
     def get_flux(self, select_time_points=None) -> np.ndarray:
         Nj, Nf = self.get_circuit()._Nj(), self.get_circuit()._Nf()
         A = self.get_circuit().get_cycle_matrix()
-        func = lambda tp: A @ (self.get_circuit()._L().matrix(Nj) @ self._I(tp))
+        func = lambda tp: A @ (self.get_circuit()._L() @ self._I(tp))
         return self._select(select_time_points, Nf, func)
 
     def get_EM(self, select_time_points=None) -> np.ndarray:
         Nj = self.get_circuit()._Nj()
-        func = lambda tp: 0.5 * self.get_circuit()._L().matrix(Nj) @ (self._I(tp) ** 2)
+        func = lambda tp: 0.5 * self.get_circuit()._L() @ (self._I(tp) ** 2)
         return self._select(select_time_points, Nj, func)
 
     def get_V(self, select_time_points=None):
         return self._select(select_time_points, self.get_circuit()._Nj(), self._V)
 
     def get_U(self, select_time_points=None):
-        M = self.get_circuit()._Mr().A
+        M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
         func = lambda tp: np.concatenate((scipy.sparse.linalg.spsolve(Mrsq, M @ self._V(tp)), Z), axis=0)
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_EC(self, select_time_points=None):
-        Nj = self.get_circuit()._Nj()
-        C = self.get_circuit()._C().diag(force_as_vector=True, vector_length=Nj)
+        C, Nj = self.get_circuit()._C(), self.get_circuit()._Nj()
         func = lambda tp: 0.5 * C[:, None] * self._V(tp) ** 2
         return self._select(select_time_points, Nj, func)
 
@@ -631,50 +628,22 @@ class TimeEvolutionResult:
             out[:, :, i] = func(tp)
         return out
 
+
 class AnnealingProblem:
 
-    def __init__(self, circuit: Circuit, time_step=0.5, time_step_count=10 ** 4,
-                 frustration=0.0, current_sources=0, search_T=0.0,
-                 problem_count=1, select_lowest_energy=False):
-        self.circuit = circuit
-        self.time_step = time_step
-        self.time_step_count = time_step_count
-        self.current_sources = current_sources
-        self.frustration = frustration
-        self.search_T = search_T
-        self.problem_count = problem_count
-        self.select_lowest_energy = select_lowest_energy
+    """
+    Anneals a circuit by gradually lowering the temperature, with the goal for finding a stationairy
+    state with reasonably low energy. The temperature profile is computed automatically based on the
+    measured vortex mobility during the run.
 
-    def compute(self):
-        """
-        Find low energy state by using a time evolution simulation with a slowly decreasing temperature
-        (called annealing). The duration and temperature profile can be controlled.
-        """
-
-        store_time_steps = np.zeros(self.time_step_count, dtype=bool)
-        store_time_steps[-1] = True
-        T = DEF_TEMPERATURE_PROFILE(self.search_T)(np.linspace(0, 1, self.time_step_count))
-        f = self.frustration * np.ones((1, self.problem_count), dtype=np.double)
-        prob = TimeEvolutionProblem(self.circuit, time_step_count=self.time_step_count, time_step=self.time_step,
-                                    frustration=f, current_sources=self.current_sources, temperature=T[None, None, :],
-                                    store_current=False, store_voltage=False,
-                                    store_time_steps=store_time_steps)
-        out = prob.compute()
-        vortex_configurations = out.get_n()[..., 0]
-        data = [prob.get_static_problem(vortex_configurations[:, p], problem_nr=0, time_step=0).compute()
-                for p in range(self.problem_count)]
-        configurations = [d[0] for d in data]
-        energies = [np.mean(d[0].get_Etot()) for d in data]
-        print(energies)
-        status = [d[1] for d in data]
-        if self.select_lowest_energy:
-            lowest_index = np.argmin(energies)
-            return vortex_configurations[:, lowest_index], energies[lowest_index], status[lowest_index], configurations[lowest_index]
-        return vortex_configurations, energies, status, configurations
-
-
-class AnnealingProblem2:
-
+     - Does interval_count iterations of interval_steps timeseteps.
+     - The first iteration is done at T=start_T
+     - During each iteration it measures the average vortex mobility. If the target mobility is exceeded,
+       the temperature is divided by T_factor, otherwise it is multiplied by it.
+     - The target vortex mobility v_t at iter i  is v_t(i) = v * ((N - i)/N) ** 1.5, so goes from v to 0.
+     - At the end it does some steps at T=0 to ensure it is settled in a stationairy state.
+     - vortex mobility is defined as abs(n(i+1) - n(i))) / dt averaged over space and time.
+    """
     def __init__(self, circuit: Circuit, time_step=0.5, interval_steps=10,
                  interval_count=1000, vortex_mobility=0.001,
                  frustration=0.0, current_sources=0, problem_count=1,
@@ -703,11 +672,15 @@ class AnnealingProblem2:
 
     def compute(self):
         """
-        Find low energy state by using a time evolution simulation with a slowly decreasing temperature
-        (called annealing). The duration and temperature profile can be controlled.
+        Execute the annealing procedure. Returns:
+        vortex_configurations   (Nf, problem_count)
+        energies                (problem_count,)
+        status
+        configurations          (problem_count,) list of StaticConfiguration objects
+        temperature_profiles    (interval_count, problem_count)
         """
 
-        f = self.frustration * np.ones((1, self.problem_count), dtype=np.double)
+        f = np.atleast_1d(self.frustration)[:, None, None]
         th = np.zeros((self.circuit.junction_count(), self.problem_count))
         prob = TimeEvolutionProblem(self.circuit, time_step_count=self.interval_steps, time_step=self.time_step,
                                     frustration=f, current_sources=self.current_sources, temperature=self.T,
@@ -733,7 +706,7 @@ class AnnealingProblem2:
         data = [prob.get_static_problem(vortex_configurations[:, p], problem_nr=0, time_step=0).compute()
                 for p in range(self.problem_count)]
         configurations = [d[0] for d in data]
-        energies = [np.mean(d[0].get_Etot()) for d in data]
+        energies = np.array([np.mean(d[0].get_Etot()) for d in data])
         status = np.array([d[1] for d in data])
         return vortex_configurations, energies, status, configurations, T
 

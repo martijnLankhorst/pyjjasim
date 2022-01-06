@@ -8,7 +8,6 @@ import scipy.sparse.linalg
 import scipy.optimize
 from scipy.sparse.linalg import ArpackNoConvergence
 
-from pyJJAsim.compute import Matrix
 from pyJJAsim.josephson_circuit import Circuit
 
 __all__ = ["CurrentPhaseRelation", "DefaultCPR",
@@ -656,12 +655,12 @@ class StaticProblem:
         info                    ParameterOptimizeInfo objects containing information about the iterations.
 
         """
-        M, Nj = self.get_circuit()._Mr().matrix(), self.get_circuit()._Nj()
+        M, Nj = self.get_circuit()._Mr(), self.get_circuit()._Nj()
         if np.all(self._Is() == 0):
             raise ValueError("Problem must contain nonzero current sources.")
 
         Is_per_node = np.abs(M @ self._Is())
-        max_super_I_per_node = np.abs(M) @ self.get_circuit()._Ic().diag(True, Nj)
+        max_super_I_per_node = np.abs(M) @ self.get_circuit()._Ic()
         current_factor_initial_stepsize = 1.0 / np.max(Is_per_node / max_super_I_per_node)
         Is_func = lambda x: x * self._Is()
         f_func = lambda x: self._f()
@@ -764,14 +763,14 @@ class StaticProblem:
     def _nt(self):
         return self.vortex_configuration
 
-    def _cp(self, Ic: Matrix, theta):
-        return self.current_phase_relation.eval(Ic.diag(), theta)
+    def _cp(self, Ic, theta):
+        return self.current_phase_relation.eval(Ic, theta)
 
-    def _dcp(self, Ic: Matrix, theta):
-        return self.current_phase_relation.d_eval(Ic.diag(), theta)
+    def _dcp(self, Ic, theta):
+        return self.current_phase_relation.d_eval(Ic, theta)
 
-    def _icp(self, Ic: Matrix, theta):
-        return self.current_phase_relation.i_eval(Ic.diag(), theta)
+    def _icp(self, Ic, theta):
+        return self.current_phase_relation.i_eval(Ic, theta)
 
     def _Is_norm(self):
         if self.current_sources_norm is None:
@@ -787,20 +786,20 @@ class StaticProblem:
     def _AIpLIcA_factorization(self):
         if self.AIpLIcA_factorization is None:
             Nj, A = self.get_circuit()._Nj(), self.get_circuit().get_cycle_matrix()
-            L, Ic = self.get_circuit()._L().matrix(Nj), self.get_circuit()._Ic().matrix(Nj)
+            L, Ic = self.get_circuit()._L(), self.get_circuit()._Ic()
             self.AIpLIcA_factorization = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
         return self.AIpLIcA_factorization
 
     def _IpLIc_factorization(self):
         if self.IpLIc_factorization is None:
             Nj = self.get_circuit()._Nj()
-            L, Ic = self.get_circuit()._L().matrix(Nj), self.get_circuit()._Ic().matrix(Nj)
+            L, Ic = self.get_circuit()._L(), self.get_circuit()._Ic()
             self.IpLIc_factorization = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
         return self.IpLIc_factorization
 
     def _Msq_factorization(self):
         if self.Msq_factorization is None:
-            M = self.get_circuit()._Mr().A
+            M = self.get_circuit()._Mr()
             self.Msq_factorization = scipy.sparse.linalg.factorized(M @ M.T)
         return self.Msq_factorization
 
@@ -852,7 +851,7 @@ class StaticConfiguration:
 
     def get_phi(self) -> np.ndarray:
         # by default the last node (node with highest index number) is grounded.
-        M, Msq_solver = self.get_circuit()._Mr().matrix(), self.get_problem()._Msq_factorization()
+        M, Msq_solver = self.get_circuit()._Mr(), self.get_problem()._Msq_factorization()
         return np.append(Msq_solver(M @ self._th()), [0])
 
     def get_theta(self) -> np.ndarray:
@@ -875,7 +874,7 @@ class StaticConfiguration:
 
     def get_EM(self) -> np.ndarray:
         Nj = self.get_circuit()._Nj()
-        return 0.5 * self.get_circuit()._L().matrix(Nj) @ (self.get_I() ** 2)
+        return 0.5 * self.get_circuit()._L() @ (self.get_I() ** 2)
 
     def get_EJ(self) -> np.ndarray:
         return self.problem._icp(self.get_circuit()._Ic(), self._th())
@@ -936,7 +935,7 @@ class StaticConfiguration:
     def get_error_winding_rules(self) -> np.ndarray:
         circuit, problem = self.get_circuit(), self.get_problem()
         f, Asq_factorized = problem._f(),  problem._Asq_factorization()
-        L = circuit._L().matrix(self.get_circuit()._Nj())
+        L = circuit._L()
         return get_winding_error(circuit, self._th() + L @ self.get_I(), get_g(circuit, f, 0, Asq_solver=Asq_factorized))
 
     def get_error(self):
@@ -1000,14 +999,14 @@ def get_kirchhoff_error(circuit: Circuit, I, Is, precomputed_Is_norm=None):
     if precomputed_Is_norm is None:
         precomputed_Is_norm = scipy.linalg.norm(Is)
     b = circuit.get_cut_matrix() @ (I - Is)
-    M_norm = circuit.get_M_norm()
+    M_norm = circuit._get_M_norm()
     normalizer = M_norm * (precomputed_Is_norm + scipy.linalg.norm(I))
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(b) / normalizer
 
 def get_winding_error(circuit: Circuit, th_p, g):
     # Residual of winding rule: A @ (thp - g) = 0. Normalized; so between 0 and 1. (where thp = th + L @ I)
     A = circuit.get_cycle_matrix()
-    A_norm = circuit.get_A_norm()
+    A_norm = circuit._get_A_norm()
     normalizer = A_norm * (scipy.linalg.norm(th_p) + scipy.linalg.norm(g))
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(A @ (th_p - g)) / normalizer
 
@@ -1027,7 +1026,7 @@ def change_phase_zone(circuit: Circuit, theta, z_old, z_new):
     return theta + circuit._A_solve(np.broadcast_to(z_new - z_old, (circuit._Nf(),)).copy()) * 2.0 * np.pi
 
 def node_to_junction_current(circuit: Circuit, node_current):
-    Mr = circuit._Mr().A
+    Mr = circuit._Mr()
     return -Mr.T @ scipy.sparse.linalg.spsolve(Mr @ Mr.T, node_current[:-1])
 
 """
@@ -1174,7 +1173,7 @@ def london_approximation(circuit: Circuit, f, n, AIpLIcA_solver=None):
     A, Nf = circuit.get_cycle_matrix(),  circuit._Nf()
     if AIpLIcA_solver is None:
         Nj = circuit._Nj()
-        L, Ic = circuit._L().matrix(Nj), circuit._Ic().matrix(Nj)
+        L, Ic = circuit._L(), circuit._Ic()
         AIpLIcA_solver = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
     return 2 * np.pi * A.T @ AIpLIcA_solver(np.broadcast_to(n - f, (Nf,)))
 
@@ -1190,7 +1189,7 @@ def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n, Asq_s
     MT = circuit.get_cut_matrix().T
     if IpLIc_solver is None:
         Nj = circuit._Nj()
-        L, Ic = circuit._L().matrix(Nj), circuit._Ic().matrix(Nj)
+        L, Ic = circuit._L(), circuit._Ic()
         IpLIc_solver = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
     x, y = circuit.get_node_coordinates()
     MTphi = MT @ np.sum(np.arctan2(y - y_n[:, None], x - x_n[:, None]) * n[:, None], axis=0)
@@ -1256,7 +1255,7 @@ def static_compute(circuit: Circuit, theta0=0, Is=0, f=0, n=0, z=0,
 
     # get circuit quantities and matrices
     Nj, Nf, M, A = circuit._Nj(), circuit._Nf(), circuit.get_cut_matrix()[:-1, :], circuit.get_cycle_matrix()
-    L = circuit._L().matrix(Nj)
+    L = circuit._L()
     Ic = np.broadcast_to(circuit.get_critical_current_factors(), (Nj,))
 
     Is = np.ones((Nj,), dtype=np.double) * Is if np.array(Is).size == 1 else Is
@@ -1319,8 +1318,8 @@ def is_stable(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER):
     the Jacobian is negative definite. Does not explicitly check if configuration is a stationairy point.
     """
     Nj, Nnr = circuit._Nj(), circuit._Nnr()
-    A, M, L = circuit.get_cycle_matrix(),  circuit._Mr().A, circuit._L().matrix(Nj)
-    Ic = circuit._Ic().diag(force_as_vector=True, vector_length=Nj)
+    A, M, L = circuit.get_cycle_matrix(),  circuit._Mr(), circuit._L()
+    Ic = circuit._Ic()
     q = cp.d_eval(Ic, theta)
     AL = (A @ L @ A.T).tocoo()
     ALL = scipy.sparse.coo_matrix((AL.data, (AL.row + Nnr, AL.col + Nnr)), shape=(Nj, Nj)).tocsc()
