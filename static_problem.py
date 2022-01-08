@@ -13,6 +13,12 @@ from pyJJAsim.josephson_circuit import Circuit
 __all__ = ["CurrentPhaseRelation", "DefaultCPR",
            "StaticProblem", "StaticConfiguration", "node_to_junction_current"]
 
+
+"""
+Static Problem Module
+"""
+
+
 DEF_TOL = 1E-11
 
 DEF_NEWTON_MAXITER = 30

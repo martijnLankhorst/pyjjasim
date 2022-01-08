@@ -186,10 +186,10 @@ class TestArray(unittest.TestCase):
 
     def test_get_faces(self):
         # incomplete
-        self.assertEqual(len(self.sq_array_h.get_faces()), self.sq_array_h.face_count())
-        self.assertEqual(len(self.tr_array_h.get_faces()), self.tr_array_h.face_count())
-        self.assertEqual(len(self.hc_array_v.get_faces()), self.hc_array_v.face_count())
-        self.assertEqual(len(self.custom1.get_faces()), self.custom1.face_count())
+        self.assertEqual(len(self.sq_array_h._get_faces()), self.sq_array_h.face_count())
+        self.assertEqual(len(self.tr_array_h._get_faces()), self.tr_array_h.face_count())
+        self.assertEqual(len(self.hc_array_v._get_faces()), self.hc_array_v.face_count())
+        self.assertEqual(len(self.custom1._get_faces()), self.custom1.face_count())
 
     def test_face_areas(self):
         pass

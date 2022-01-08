@@ -3,7 +3,7 @@ import numpy as np
 
 from pyJJAsim import SquareArray
 
-# a = SquareArray(3, 3)
+a = SquareArray(3, 3)
 # N = a.junction_count()
 # L1 = scipy.sparse.rand(N, N, 0.5)
 # L1 = L1 + L1.T + 5 * scipy.sparse.eye(N, N)
@@ -19,7 +19,8 @@ from pyJJAsim import SquareArray
 #                               inductance_factors=L3)
 # print(np.round(b.inductance_factors.todense(), 3))
 
-N = 5
-A = scipy.sparse.rand(N, N, 1)
-A = A.tocsc()
-print(A[[True, False, False, True, True], :][:, [False, False, False, True, True]])
+# N = 5
+# A = scipy.sparse.rand(N, N, 1)
+# A = A.tocsc()
+# print(A[[True, False, False, True, True], :][:, [False, False, False, True, True]])
+print(a.graph.get_areas())
