@@ -69,6 +69,8 @@ class VarRowArray:
         return np.repeat(self.counts, self.counts)
 
     def get_item(self, rows=None, columns=None):
+        if rows is not None:
+            rows = np.arange(self.row_count())[rows]
         if rows is not None and columns is not None:
             return np.array(columns, dtype=int) + self.cum_counts[rows]
         if columns is None:

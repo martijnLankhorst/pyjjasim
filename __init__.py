@@ -1,12 +1,12 @@
 """pyJJASim: Josephson Circuit Simulation in Python """
 
 
-from pyJJAsim.variable_row_array import *
-from pyJJAsim.embedded_graph import *
-from pyJJAsim.josephson_circuit import *
-from pyJJAsim.static_problem import *
-from pyJJAsim.time_evolution import *
-from pyJJAsim.circuit_visualize import *
+from pyjjasim.variable_row_array import *
+from pyjjasim.embedded_graph import *
+from pyjjasim.josephson_circuit import *
+from pyjjasim.static_problem import *
+from pyjjasim.time_evolution import *
+from pyjjasim.circuit_visualize import *
 
 
 

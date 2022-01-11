@@ -9,8 +9,8 @@ import matplotlib.animation as animation
 import matplotlib.cm as cm
 matplotlib.use("TkAgg")
 
-from pyJJAsim.static_problem import StaticConfiguration
-from pyJJAsim.time_evolution import TimeEvolutionResult
+from pyjjasim.static_problem import StaticConfiguration
+from pyjjasim.time_evolution import TimeEvolutionResult
 
 __all__ = ["Plot", "CircuitPlot", "CircuitMovie"]
 
@@ -261,9 +261,9 @@ class Plot:
                    minlength=self.arrow_minlength, alpha=self.arrow_alpha, zorder=3)
 
     def _plot_faces(self, face_quantity):
-        nodes = self.config.get_circuit().get_faces()
+        face_nodes = self.config.get_circuit().get_faces()
         x, y = self.config.get_circuit().get_node_coordinates()
-        verts = [np.stack((x[n], y[n]), axis=-1) for n in nodes]
+        verts = [np.stack((x[n], y[n]), axis=-1) for n in face_nodes]
         cnorm = Normalize(*self.face_quantity_clim) if not self.face_quantity_logarithmic_colors else LogNorm(*self.face_quantity_clim)
         coll = PolyCollection(verts, array=face_quantity, edgecolors='none', cmap=self.face_quantity_cmap,
                               norm=cnorm, alpha=self.face_quantity_alpha, zorder=-1)

@@ -8,7 +8,7 @@ import scipy.sparse.linalg
 import scipy.optimize
 from scipy.sparse.linalg import ArpackNoConvergence
 
-from pyJJAsim.josephson_circuit import Circuit
+from pyjjasim.josephson_circuit import Circuit
 
 __all__ = ["CurrentPhaseRelation", "DefaultCPR",
            "StaticProblem", "StaticConfiguration", "node_to_junction_current"]
@@ -792,14 +792,14 @@ class StaticProblem:
     def _AIpLIcA_factorization(self):
         if self.AIpLIcA_factorization is None:
             Nj, A = self.get_circuit()._Nj(), self.get_circuit().get_cycle_matrix()
-            L, Ic = self.get_circuit()._L(), self.get_circuit()._Ic()
+            L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
             self.AIpLIcA_factorization = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
         return self.AIpLIcA_factorization
 
     def _IpLIc_factorization(self):
         if self.IpLIc_factorization is None:
             Nj = self.get_circuit()._Nj()
-            L, Ic = self.get_circuit()._L(), self.get_circuit()._Ic()
+            L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
             self.IpLIc_factorization = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
         return self.IpLIc_factorization
 
@@ -875,11 +875,11 @@ class StaticConfiguration:
         return Asq_solver(A @ self.get_I())
 
     def get_flux(self) -> np.ndarray:
-        A, Nj = self.get_circuit().get_cycle_matrix(), self.get_circuit()._Nj()
-        return self.problem.frustration + A @ self.get_circuit()._L().matrix(Nj) @ self.get_I() / (2 * np.pi)
+        A = self.get_circuit().get_cycle_matrix()
+        L = self.get_circuit()._L()
+        return self.problem.frustration + A @ L @ self.get_I() / (2 * np.pi)
 
     def get_EM(self) -> np.ndarray:
-        Nj = self.get_circuit()._Nj()
         return 0.5 * self.get_circuit()._L() @ (self.get_I() ** 2)
 
     def get_EJ(self) -> np.ndarray:
@@ -962,7 +962,7 @@ class StaticConfiguration:
         """
         See CircuitPlot for documentation.
         """
-        from pyJJAsim.circuit_visualize import CircuitPlot
+        from pyjjasim.circuit_visualize import CircuitPlot
 
         return CircuitPlot(self, show_vortices=show_vortices, vortex_diameter=vortex_diameter,
                          vortex_color=vortex_color, anti_vortex_color=anti_vortex_color,

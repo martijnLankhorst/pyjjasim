@@ -1,5 +1,5 @@
 
-from pyJJAsim import *
+from pyjjasim import *
 
 import matplotlib
 import matplotlib.pyplot as plt

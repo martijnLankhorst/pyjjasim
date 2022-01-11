@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pyJJAsim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
+from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
 
 import numpy as np
 import scipy
@@ -85,12 +85,13 @@ class Circuit:
                  capacitance_factors=0.0, inductance_factors=0.0):
 
         self.graph = graph
-        self.graph._get_faces()
-        n, _ = self.graph.get_face_nodes()
+        self.graph._assign_faces()
+        self.graph._assert_planar_embedding()
+        self.graph._assert_single_component()
+        n, _ = self.graph.get_l_cycles(to_list=False)
         self.graph.permute_faces(np.argsort(n[self.graph.faces_v_array.cum_counts]))
         self.graph._assert_planar_embedding()
         self.graph._assert_single_component()
-        self.junction_unsort_perm = np.argsort(self.graph.edge_sorter)  # needed because EmbeddedGraph sorts edges.
 
         self.resistance_factors = None
         self.capacitance_factors = None
@@ -103,8 +104,8 @@ class Circuit:
 
         self.locator = None
 
-        self.cut_matrix = self.graph.cut_space()[:, self.junction_unsort_perm]
-        self.cycle_matrix = self.graph.cycle_space(include_boundary_faces=False)[:, self.junction_unsort_perm]
+        self.cut_matrix = self.graph.cut_space_matrix()
+        self.cycle_matrix = self.graph.face_cycle_matrix()
         self.cut_reduced_square = None
         self.cut_matrix_reduced = None
         self.cut_square = None
@@ -128,7 +129,7 @@ class Circuit:
         node1, node2: (Nj,) arrays
             Endpoint node ids of all junctions
         """
-        return self.graph.node1[self.junction_unsort_perm], self.graph.node2[self.junction_unsort_perm]
+        return self.graph.get_edges()
 
     def get_juncion_coordinates(self):
         """Get coordinates of nodes at endpoints of all junctions.
@@ -395,29 +396,22 @@ class Circuit:
         """
         return self._Nf()
 
-    def get_faces(self, to_list=True):
+    def get_faces(self):
         """
         Returns a list of all faces
 
         A face is defined as an array containing ids of nodes encountered when traversing the boundary
         of a face counter-clockwise.
 
-        Attributes
-        ----------
-        to_list=True:
-            determines output type
-
         Returns
         -------
-        faces: List (if to_list=True)
+        faces: List
             List of faces
-        faces: array (if to_list=False)
-            all faces concatenated in a single array
         """
         # Returns a list of faces.
         # if to_list==True returns in format:  [[n11, n12, n13], [n21], [n31, n32]]
         # if to_list==False returns in format: [n11, n12, n13, n21, n31, n32], [3, 1, 2]
-        return self.graph.get_face_nodes(include_boundary_faces=False, to_list=to_list)
+        return self.graph.get_face_cycles(to_list=True)[0]
 
     def get_face_areas(self):
         """
@@ -425,7 +419,7 @@ class Circuit:
         """
         # Returns unsigned area of each face in array.
         # out: areas            (face_count,) positive float array
-        return self.graph.get_areas(include_boundary_faces=False)
+        return self.graph.get_face_areas()
 
     def get_face_centroids(self):
         """
@@ -433,7 +427,7 @@ class Circuit:
         """
         # Returns centroid face_x, face_y of each face in array.
         # out: face_x, face_y   (face_count,) float arrRuehliay
-        return self.graph.get_centroids(include_boundary_faces=False)
+        return self.graph.get_face_centroids()
 
     def locate_faces(self, x, y):
         """
@@ -578,7 +572,7 @@ class Circuit:
         return self.graph.edge_count()
 
     def _Nf(self):
-        return self.graph.face_count(include_boundary_faces=False)
+        return self.graph.face_count()
 
     def _Ic(self) -> np.ndarray:     # alias for get_critical_current_factors
         return self.critical_current_factors
@@ -662,7 +656,7 @@ class Circuit:
             - Used for projecting theta onto cycle space; theta' = theta - g so that A @ theta'= 0.
               Then A @ g = 2 * pi * (z - areas * f)
         """
-        return self.graph._cycle_space_solve_for_integral_x(b)[..., self.junction_unsort_perm]
+        return self.graph._cycle_space_solve_for_integral_x(b)
 
 
     def _has_capacitance(self):
@@ -678,7 +672,7 @@ class Circuit:
         return np.any(mask) and not np.all(mask)
 
     def _get_mixed_inductance_mask(self):
-        L = self._L().matrix(self._Nj())
+        L = self._L()
         A = self.get_cycle_matrix()
         ALA = A @ L @ A.T
         return np.isclose(np.array(np.sum(np.abs(ALA), axis=1))[:, 0], 0)
@@ -688,25 +682,28 @@ class Circuit:
         self.cut_matrix_reduced_transposed = None
         self.cut_matrix_transposed = None
         if self.cut_matrix_reduced is None or self.cut_matrix is None:
-            cut_matrix = -self.graph.cut_space()
+            cut_matrix = -self.graph.cut_space_matrix()
             self.cut_matrix = cut_matrix.asformat("csc")
             self.cut_matrix_reduced = cut_matrix[:-1, :].asformat("csc")
             return self.cut_matrix, self.cut_matrix_reduced
 
     def _junction_centers(self):
         x, y = self.get_node_coordinates()
-        return 0.5 * (x[self.graph.node1] + x[self.graph.node2]),  0.5 * (y[self.graph.node1] + y[self.graph.node2])
+        n1, n2 = self.get_junction_nodes()
+        return 0.5 * (x[n1] + x[n2]),  0.5 * (y[n1] + y[n2])
 
     def _junction_lengths(self):
         x, y = self.get_node_coordinates()
-        return np.sqrt((x[self.graph.node2] - x[self.graph.node1]) ** 2 + (y[self.graph.node2] - y[self.graph.node1]) ** 2)
+        n1, n2 = self.get_junction_nodes()
+        return np.sqrt((x[n2] - x[n1]) ** 2 + (y[n2] - y[n1]) ** 2)
 
     def _junction_inner(self, ids1, ids2):
         x, y = self.get_node_coordinates()
-        x_n1_j1, y_n1_j1 = x[self.graph.node1[ids1]], y[self.graph.node1[ids1]]
-        x_n2_j1, y_n2_j1 = x[self.graph.node2[ids1]], y[self.graph.node2[ids1]]
-        x_n1_j2, y_n1_j2 = x[self.graph.node1[ids2]], y[self.graph.node1[ids2]]
-        x_n2_j2, y_n2_j2 = x[self.graph.node2[ids2]], y[self.graph.node2[ids2]]
+        n1, n2 = self.get_junction_nodes()
+        x_n1_j1, y_n1_j1 = x[n1[ids1]], y[n1[ids1]]
+        x_n2_j1, y_n2_j1 = x[n2[ids1]], y[n2[ids1]]
+        x_n1_j2, y_n1_j2 = x[n1[ids2]], y[n1[ids2]]
+        x_n2_j2, y_n2_j2 = x[n2[ids2]], y[n2[ids2]]
         return (x_n2_j1 - x_n1_j1) * (x_n2_j2 - x_n1_j2) + (y_n2_j1 - y_n1_j1) * (y_n2_j2 - y_n1_j2)
 
     def _junction_distance(self, ids1, ids2):

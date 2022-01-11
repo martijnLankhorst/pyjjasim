@@ -5,9 +5,9 @@ import scipy
 import scipy.sparse.linalg
 import scipy.optimize
 
-from pyJJAsim.josephson_circuit import Circuit
-from pyJJAsim.static_problem import DefaultCPR
-from pyJJAsim.static_problem import StaticConfiguration, StaticProblem
+from pyjjasim.josephson_circuit import Circuit
+from pyjjasim.static_problem import DefaultCPR
+from pyjjasim.static_problem import StaticConfiguration, StaticProblem
 
 __all__ = ["TimeEvolutionProblem", "TimeEvolutionResult", "AnnealingProblem"]
 
@@ -591,7 +591,7 @@ class TimeEvolutionResult:
                 face_quantity_logarithmic_colors=False, figsize=None,
                 animate_interval=5, title=""):
 
-        from pyJJAsim.circuit_visualize import CircuitMovie
+        from pyjjasim.circuit_visualize import CircuitMovie
 
         return CircuitMovie(self, problem_nr=problem_nr, time_points=time_points, show_vortices=show_vortices,
                           vortex_diameter=vortex_diameter, vortex_color=vortex_color,

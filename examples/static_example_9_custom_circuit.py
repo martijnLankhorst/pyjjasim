@@ -2,7 +2,7 @@
 import matplotlib
 matplotlib.use("TkAgg")
 
-from pyJJAsim import *
+from pyjjasim import *
 
 
 """

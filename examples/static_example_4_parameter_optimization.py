@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyJJAsim import *
+from pyjjasim import *
 
 import matplotlib
 matplotlib.use("TkAgg")

@@ -41,7 +41,8 @@ hierarchical structure is supported.
 # Example Usage
 
 ````python
-from pyJJAsim import *
+from pyjjasim import *
+
 array = SquareArray(3, 3)
 problem = StaticProblem(array, frustration=0.1)
 config, status, info = problem.compute()

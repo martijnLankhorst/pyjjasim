@@ -1,4 +1,4 @@
-from pyJJAsim import *
+from pyjjasim import *
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -24,6 +24,11 @@ if __name__ == "__main__":
     prob_sq = StaticProblem(square_array, frustration=f, current_sources=square_array.horizontal_junctions())
     prob_hc = StaticProblem(honeycomb_array, frustration=f, current_sources=honeycomb_array.horizontal_junctions())
     prob_tr = StaticProblem(triangular_array, frustration=f, current_sources=triangular_array.horizontal_junctions())
+
+    square_array.plot()
+    honeycomb_array.plot()
+    triangular_array.plot()
+    plt.show()
 
     # compute maximal current
     _, _, config_sq, _ = prob_sq.compute_maximal_current()
