@@ -42,6 +42,7 @@ if __name__ == "__main__":
     tic = time.perf_counter()
     out = problem.compute()
     print(time.perf_counter() - tic)
-    out.animate(arrow_quantity="Isup", face_quantity="flux", show_face_quantity=True, face_quantity_clim=[-1, 2],
-                figsize=[10, 10])
+    # out.animate(arrow_quantity="Isup", face_quantity="flux", show_face_quantity=True, face_quantity_clim=[-1, 2],
+    #             figsize=[10, 10])
+    out.animate()
     plt.show()
