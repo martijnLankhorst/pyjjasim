@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import numpy as np
 import scipy
 import scipy.sparse.linalg
@@ -181,7 +179,7 @@ class TimeEvolutionProblem:
     def get_time_at_stored(self):
         return self.get_time()[self.store_time_steps]
 
-    def compute(self) -> TimeEvolutionResult:
+    def compute(self):
         """
         Compute time evolution on an Josephson Circuit.
 
@@ -279,7 +277,7 @@ class TimeEvolutionProblem:
                 raise ValueError("Invalid store_time_steps; must be None, mask, slice or index array")
         return time_points
 
-def time_evolution_algo_0(problem: TimeEvolutionProblem) -> TimeEvolutionResult:
+def time_evolution_algo_0(problem: TimeEvolutionProblem):
     out = TimeEvolutionResult(problem)
 
     circuit = problem.get_circuit()
@@ -325,7 +323,7 @@ def time_evolution_algo_0(problem: TimeEvolutionProblem) -> TimeEvolutionResult:
             out._update([theta_next if problem.store_theta else None, V, I])
     return out
 
-def time_evolution_algo_1(problem: TimeEvolutionProblem) -> TimeEvolutionResult:
+def time_evolution_algo_1(problem: TimeEvolutionProblem):
     """
 
     """
@@ -435,6 +433,7 @@ class TimeEvolutionResult:
         self.store_point = 0
         s = self.problem.store_time_steps.astype(int)
         self.time_point_indices = np.cumsum(s) - s
+        self.animation = None
 
     def _update(self, data):
         th, V, I = data[0], data[1], data[2]
@@ -488,7 +487,10 @@ class TimeEvolutionResult:
         M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
-        func = lambda tp: np.concatenate((scipy.sparse.linalg.spsolve(Mrsq, M @ self._th(tp)), Z), axis=0)
+        def stretch(x):
+            return x if x.ndim == 2 else x[:, None]
+        solver = scipy.sparse.linalg.factorized(Mrsq)
+        func = lambda tp: np.concatenate((stretch(solver(M @ self._th(tp))), Z), axis=0)
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_theta(self, select_time_points=None) -> np.ndarray:
@@ -512,7 +514,8 @@ class TimeEvolutionResult:
 
     def get_J(self, select_time_points=None) -> np.ndarray:
         A = self.get_circuit().get_cycle_matrix()
-        func = lambda tp: scipy.sparse.linalg.spsolve(A @ A.T,  A @ self._I(tp))
+        solver = scipy.sparse.linalg.factorized(A @ A.T)
+        func = lambda tp: solver(A @ self._I(tp))
         return self._select(select_time_points, self.get_circuit()._Nf(), func)
 
     def get_flux(self, select_time_points=None) -> np.ndarray:
@@ -533,7 +536,8 @@ class TimeEvolutionResult:
         M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
-        func = lambda tp: np.concatenate((scipy.sparse.linalg.spsolve(Mrsq, M @ self._V(tp)), Z), axis=0)
+        solver = scipy.sparse.linalg.factorized(Mrsq)
+        func = lambda tp: np.concatenate((solver(M @ self._V(tp)), Z), axis=0)
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_EC(self, select_time_points=None):
@@ -545,82 +549,91 @@ class TimeEvolutionResult:
         return self.get_EJ(select_time_points) + self.get_EM(select_time_points) + \
                self.get_EC(select_time_points)
 
-    def plot(self, time_point=0, show_vortices=True, vortex_diameter=0.25, vortex_color=(0, 0, 0),
-             anti_vortex_color=(0.8, 0.1, 0.2), vortex_alpha=1, show_grid=True, grid_width=1,
-             grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5, show_colorbar=True, show_arrows=True,
-             arrow_quantity="I", arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-             arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.2, 0.4, 0.7),
-             arrow_alpha=1, show_nodes=True, node_diameter=0.2,
-             node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1, show_node_quantity=False,
-             node_quantity="phase", node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
-             node_quantity_logarithmic_colors=False, show_face_quantity=False, face_quantity="n",
-             face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
-             face_quantity_logarithmic_colors=False, figsize=None, title="", **kwargs):
-
-        from circuit_visualize import CircuitPlot
-
-        return CircuitPlot(self, time_point=time_point, show_vortices=show_vortices, vortex_diameter=vortex_diameter,
-                         vortex_color=vortex_color, anti_vortex_color=anti_vortex_color,
-                         vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
-                         grid_color=grid_color, grid_alpha=grid_alpha, show_colorbar=show_colorbar,
-                         show_arrows=show_arrows,
-                         arrow_quantity=arrow_quantity, arrow_width=arrow_width, arrow_scale=arrow_scale,
-                         arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-                         arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-                         arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-                         arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
-                         node_face_color=node_face_color, node_edge_color=node_edge_color,
-                         node_alpha=node_alpha, show_node_quantity=show_node_quantity,
-                         node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-                         node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-                         node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-                         show_face_quantity=show_face_quantity, face_quantity=face_quantity,
-                         face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-                         face_quantity_alpha=face_quantity_alpha,
-                         face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-                         figsize=figsize, title=title, **kwargs).make()
+    def plot(self, problem_nr=0, time_point=0,
+                node_quantity=None, junction_quantity="I", face_quantity=None,
+                vortex_quantity="n", show_grid=True, show_nodes=True, show_colorbar=True,
+                show_legend=True, show_axes=True, title="", figsize=None,
+                nodes_as_voronoi=False,
+                grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5, grid_width=1,
+                node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1,
+                node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
+                node_quantity_logarithmic_colors=False,
+                arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
+                arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.15, 0.3, 0.8),
+                arrow_alpha=1, node_diameter=0.25,
+                face_quantity_cmap=None,
+                face_quantity_clim=None, face_quantity_alpha=1,
+                face_quantity_logarithmic_colors=False,
+                vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
+                vortex_alpha=1):
+        return self.animate(problem_nr=problem_nr, time_points=np.array([time_point]),
+            vortex_diameter=vortex_diameter, vortex_color=vortex_color,
+            anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
+            vortex_quantity=vortex_quantity,
+            show_grid=show_grid, grid_width=grid_width,
+            grid_color=grid_color, grid_alpha=grid_alpha,
+            show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
+            junction_quantity=junction_quantity,
+            arrow_width=arrow_width, arrow_scale=arrow_scale,
+            arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
+            arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
+            arrow_minlength=arrow_minlength, arrow_color=arrow_color,
+            arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
+            node_face_color=node_face_color, node_edge_color=node_edge_color,
+            node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
+            node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
+            node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
+            node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
+            face_quantity=face_quantity,
+            face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
+            face_quantity_alpha=face_quantity_alpha,
+            face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
+            figsize=figsize, title=title, animate_interval=1000)
 
     def animate(self, problem_nr=0, time_points=None,
                 node_quantity=None, junction_quantity="I", face_quantity=None,
                 vortex_quantity="n", show_grid=True, show_nodes=True, show_colorbar=True,
-                animate_interval=5, title="", figsize=None,
-                grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5, grid_width=1,
+                show_legend=True, show_axes=True, animate_interval=5, title="", figsize=None,
+                nodes_as_voronoi=False,
+                grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5, grid_width=1,
                 node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1,
-                node_quantity_cmap=None, node_quantity_clim=(0, 1), node_quantity_alpha=1,
+                node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
                 node_quantity_logarithmic_colors=False,
                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.2, 0.4, 0.7),
-                arrow_alpha=1, node_diameter=0.2,
+                arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.15, 0.3, 0.8),
+                arrow_alpha=1, node_diameter=0.25,
                 face_quantity_cmap=None,
-                face_quantity_clim=(0, 1), face_quantity_alpha=1,
+                face_quantity_clim=None, face_quantity_alpha=1,
                 face_quantity_logarithmic_colors=False,
                 vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                 vortex_alpha=1):
 
         from pyjjasim.circuit_visualize import ConfigMovie
 
-        return ConfigMovie(self, problem_nr=problem_nr, time_points=time_points,
-                           vortex_diameter=vortex_diameter, vortex_color=vortex_color,
-                           anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
-                           vortex_quantity=vortex_quantity,
-                           show_grid=show_grid, grid_width=grid_width,
-                           grid_color=grid_color, grid_alpha=grid_alpha,
-                           show_colorbar=show_colorbar, junction_quantity=junction_quantity,
-                           arrow_width=arrow_width, arrow_scale=arrow_scale,
-                           arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-                           arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-                           arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-                           arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
-                           node_face_color=node_face_color, node_edge_color=node_edge_color,
-                           node_alpha=node_alpha,
-                           node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-                           node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-                           node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-                           face_quantity=face_quantity,
-                           face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-                           face_quantity_alpha=face_quantity_alpha,
-                           face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-                           figsize=figsize, animate_interval=animate_interval, title=title).make()
+        self.animation =ConfigMovie(self, problem_nr=problem_nr, time_points=time_points,
+            vortex_diameter=vortex_diameter, vortex_color=vortex_color,
+            anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
+            vortex_quantity=vortex_quantity,
+            show_grid=show_grid, grid_width=grid_width,
+            grid_color=grid_color, grid_alpha=grid_alpha,
+            show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
+            junction_quantity=junction_quantity,
+            arrow_width=arrow_width, arrow_scale=arrow_scale,
+            arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
+            arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
+            arrow_minlength=arrow_minlength, arrow_color=arrow_color,
+            arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
+            node_face_color=node_face_color, node_edge_color=node_edge_color,
+            node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
+            node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
+            node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
+            node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
+            face_quantity=face_quantity,
+            face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
+            face_quantity_alpha=face_quantity_alpha,
+            face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
+            figsize=figsize, animate_interval=animate_interval, title=title).make()
+        return self.animation
 
     def __str__(self):
         return "time evolution configuration: (" + ("th" + self.theta.shape.__str__() + ", ") * (

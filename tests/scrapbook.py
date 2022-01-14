@@ -1,9 +1,29 @@
+import time
+
 import scipy.sparse
+from scipy.spatial import KDTree
 import numpy as np
 import matplotlib.pyplot as plt
-from pyjjasim import SquareArray
+import matplotlib
+matplotlib.use("TkAgg")
+from pyjjasim import *
 
-a = SquareArray(4, 4)
+N = 30
+
+
+a = EmbeddedSquareGraph(N, N)
+# print(time.perf_counter() - tic)
+# tic = time.perf_counter()
+# b, map = a.extended_dual_graph()
+# print(time.perf_counter() - tic)
+# print(map)
+tic = time.perf_counter()
+fig, ax = a.plot(figsize=[20, 10], show_face_ids=True, cycles="l_cycles")
+print(time.perf_counter() - tic)
+# b.plot(ax=ax, show_face_ids=True)
+
+plt.show()
+
 # N = a.junction_count()
 # L1 = scipy.sparse.rand(N, N, 0.5)
 # L1 = L1 + L1.T + 5 * scipy.sparse.eye(N, N)
@@ -67,3 +87,23 @@ a = SquareArray(4, 4)
 # print([method_name for method_name in dir(o)
 #                   if callable(getattr(o, method_name))])
 # plt.show()
+
+# def nearest_anchor(x):
+#     b = np.log(x) / np.log(10)
+#     decade = np.floor(b)
+#     B = b - decade
+#     s = np.array([0, np.log(2) / np.log(10), np.log(5) / np.log(10), 1])
+#     sub = np.argmin(np.abs(B - s))
+#     if sub == 0:
+#         return 10 ** decade
+#     if sub == 1:
+#         return 2 * 10 ** decade
+#     if sub == 2:
+#         return 5 * 10 ** decade
+#     if sub == 3:
+#         return 10 ** (decade + 1)
+#
+# print(nearest_anchor(14.8))
+#
+# a = np.zeros(3)
+# print(np.atleast_2d(a).shape)

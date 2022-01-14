@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import time
 
@@ -416,7 +415,7 @@ class StaticProblem:
         M = self.get_circuit().get_cut_matrix()
         return 0.5 * np.sum(np.abs((M @ self._Is())), axis=0)
 
-    def approximate(self, algorithm=1) -> StaticConfiguration:
+    def approximate(self, algorithm=1):
         """
         Computes approximate solutions.  Has two algorithms; the arctan approximation or
         the London approximation.
@@ -439,7 +438,7 @@ class StaticProblem:
             raise ValueError("invalid algorithm")
         return StaticConfiguration(self, theta)
 
-    def approximate_placed_vortices(self, n, x_n, y_n) -> StaticConfiguration:
+    def approximate_placed_vortices(self, n, x_n, y_n):
         """
         Compute arctan approximation with manual placement of vortices.
 
@@ -456,9 +455,9 @@ class StaticProblem:
         return StaticConfiguration(self, theta)
 
 
-    def compute(self, initial_guess: StaticConfiguration | np.ndarray = None,
+    def compute(self, initial_guess = None,
                 tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER, stop_as_residual_increases=True,
-                stop_if_not_target_n=False) -> tuple[StaticConfiguration, int, NewtonIterInfo]:
+                stop_if_not_target_n=False):
 
         """
         Compute solutions using Newton iteration.
@@ -497,7 +496,7 @@ class StaticProblem:
         return config, status, iter_info
 
     def compute_maximal_parameter(self, Is_func, f_func,
-                                  initial_guess: StaticConfiguration | np.ndarray = None,
+                                  initial_guess = None,
                                   lambda_tol=DEF_MAX_PAR_TOL, estimated_upper_bound=1.0,
                                   newton_tol=DEF_TOL, newton_maxiter=DEF_NEWTON_MAXITER,
                                   newton_stop_as_residual_increases=True,
@@ -567,7 +566,7 @@ class StaticProblem:
             config = StaticConfiguration(out_problem, theta)
         return lower_bound, upper_bound, config, info
 
-    def compute_frustration_bounds(self, initial_guess: StaticConfiguration = None,
+    def compute_frustration_bounds(self, initial_guess = None,
                                    start_frustration=None, lambda_tol=DEF_MAX_PAR_TOL,
                                    newton_tol=DEF_TOL,
                                    newton_maxiter=DEF_NEWTON_MAXITER,
@@ -637,7 +636,7 @@ class StaticProblem:
         largest_f = f_func_largest(largest_factor) if largest_factor is not None else None
         return (smallest_f, largest_f), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
 
-    def compute_maximal_current(self, initial_guess: StaticConfiguration = None,
+    def compute_maximal_current(self, initial_guess = None,
                                 lambda_tol=DEF_MAX_PAR_TOL, newton_tol=DEF_TOL,
                                 newton_maxiter=DEF_NEWTON_MAXITER,
                                 newton_stop_as_residual_increases=True,
@@ -682,7 +681,7 @@ class StaticProblem:
 
 
     def compute_stable_region(self, angles=np.linspace(0, 2*np.pi, 61), start_frustration=None,
-                              start_initial_guess: StaticConfiguration | np.ndarray = None,
+                              start_initial_guess = None,
                               lambda_tol=DEF_MAX_PAR_TOL, newton_tol=DEF_TOL,
                               newton_maxiter=DEF_NEWTON_MAXITER,
                               newton_stop_as_residual_increases=True,
@@ -949,14 +948,14 @@ class StaticConfiguration:
 
     def plot(self, node_quantity=None, junction_quantity="I", face_quantity=None,
              vortex_quantity="n", show_grid=True, show_nodes=True, show_colorbar=True,
-             figsize=None, title="",
-             grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5, grid_width=1,
+             show_legend=True, show_axes=True, figsize=None, title="", nodes_as_voronoi=False,
+             grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5, grid_width=1,
              node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1,
              node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
              node_quantity_logarithmic_colors=False,
              arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
              arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-             arrow_color=(0.2, 0.4, 0.7), arrow_alpha=1, node_diameter=0.2,
+             arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, node_diameter=0.25,
              face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
              face_quantity_logarithmic_colors=False,
              vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
@@ -966,26 +965,30 @@ class StaticConfiguration:
         """
         from pyjjasim.circuit_visualize import ConfigPlot
 
-        return ConfigPlot(self, vortex_quantity=vortex_quantity, vortex_diameter=vortex_diameter,
-                          vortex_color=vortex_color, anti_vortex_color=anti_vortex_color,
-                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
-                          grid_color=grid_color, grid_alpha=grid_alpha, show_colorbar=show_colorbar,
-                          junction_quantity=junction_quantity, arrow_width=arrow_width, arrow_scale=arrow_scale,
-                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-                          arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-                          arrow_alpha=arrow_alpha,
-                          show_nodes=show_nodes, node_diameter=node_diameter,
-                          node_face_color=node_face_color, node_edge_color=node_edge_color,
-                          node_alpha=node_alpha,
-                          node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-                          node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-                          node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-                          face_quantity=face_quantity,
-                          face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-                          face_quantity_alpha=face_quantity_alpha,
-                          face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-                          figsize=figsize, title=title).make()
+        self.plot_handle = ConfigPlot(self, vortex_quantity=vortex_quantity,
+            vortex_diameter=vortex_diameter,
+            vortex_color=vortex_color, anti_vortex_color=anti_vortex_color,
+            vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
+            grid_color=grid_color, grid_alpha=grid_alpha,
+            show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
+            junction_quantity=junction_quantity, arrow_width=arrow_width, arrow_scale=arrow_scale,
+            arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
+            arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
+            arrow_minlength=arrow_minlength, arrow_color=arrow_color,
+            arrow_alpha=arrow_alpha, nodes_as_voronoi=nodes_as_voronoi,
+            show_nodes=show_nodes, node_diameter=node_diameter,
+            node_face_color=node_face_color, node_edge_color=node_edge_color,
+            node_alpha=node_alpha,
+            node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
+            node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
+            node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
+            face_quantity=face_quantity,
+            face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
+            face_quantity_alpha=face_quantity_alpha,
+            face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
+            figsize=figsize, title=title).make()
+
+        return self.plot_handle
 
     def report(self):
         print("Kirchhoff rules error:    ", self.get_error_kirchhoff_rules())

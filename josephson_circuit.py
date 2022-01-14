@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
 
 import numpy as np
@@ -162,7 +160,7 @@ class Circuit:
     # noinspection PyArgumentList
     def add_nodes_and_junctions(self, x, y, node1, node2,
                                 critical_current_factors=1.0, resistance_factors=1.0,
-                                capacitance_factors=1.0, inductance_factors=1.0) -> Circuit:
+                                capacitance_factors=1.0, inductance_factors=1.0):
         """ Add nodes to array and junctions to array.
 
             Attributes
@@ -446,8 +444,9 @@ class Circuit:
             ids of located faces
         """
         if self.locator is None:
-            self.locator = scipy.spatial.KDTree(np.stack(self.get_face_centroids(), axis=-1))
-        _, faces = self.locator.query(np.stack(np.broadcast_arrays(x, y), axis=-1), k=1)
+            faces, self.locator = self.graph.locate_faces(x, y)
+        else:
+            _, faces = self.locator.query(np.stack(np.broadcast_arrays(x, y), axis=-1), k=1)
         return faces
 
     def approximate_inductance(self, factor, junc_L=1, junc_M=0, max_dist=3):
@@ -547,17 +546,18 @@ class Circuit:
         return self.cycle_matrix
 
     def plot(self, show_node_ids=True, show_junction_ids=False, show_faces=True,
-             show_face_ids=True, face_shrink_factor=0.9, figsize=None):
+             show_face_ids=True, markersize=5, linewidth=1, face_shrink_factor=0.9,
+             figsize=None):
         """Visualize array.
 
         Can show nodes, junctions and faces; and their respective indices.
 
         For documentation see :py:attr:`embedded_graph.EmbeddedGraph.plot`
         """
-        cr = self.graph.plot(show_faces=show_faces, figsize=figsize,
+        cr = self.graph.plot(show_cycles=show_faces, figsize=figsize, cycles="face_cycles",
                              show_node_ids=show_node_ids, show_edge_ids=show_junction_ids,
-                             show_face_ids=show_face_ids, face_shrink_factor=face_shrink_factor,
-                             show_boundary_face=False)
+                             show_face_ids=show_face_ids, markersize=markersize,
+                             linewidth=linewidth, face_shrink_factor=face_shrink_factor)
         return cr
 
     # abbreviations and aliases

@@ -1,9 +1,8 @@
 
 from pyjjasim import *
 
-import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use("TkAgg")
+
 
 """
 Static Example 1: Single vortex
@@ -35,8 +34,8 @@ if __name__ == "__main__":
     print(f"arctan approx error: {approx_arctan.get_error_kirchhoff_rules()} and {approx_arctan.get_error_winding_rules()}")
     print(f"london approx error: {approx_london.get_error_kirchhoff_rules()} and {approx_london.get_error_winding_rules()}")
 
-    approx_arctan.plot(show_node_quantity=True, node_quantity_clim=[-np.pi, np.pi], title="arctan approximation")
-    approx_london.plot(show_node_quantity=True, node_quantity_clim=[-np.pi, np.pi], title="london approximation")
+    approx_arctan.plot(node_quantity="phi", title="arctan approximation")
+    approx_london.plot(node_quantity="phi", title="london approximation")
 
     config1, status1, info1 = problem.compute(initial_guess=approx_arctan)
     config2, status2, info2 = problem.compute(initial_guess=approx_london)
@@ -47,8 +46,8 @@ if __name__ == "__main__":
 
     print(info1)
     print(info2)
-    config1.plot(show_node_quantity=True, node_quantity_clim=[-np.pi, np.pi], title="exact solution with actan initial guess")
-    config2.plot(show_node_quantity=True, node_quantity_clim=[-np.pi, np.pi], title="exact solution with london initial guess")
+    config1.plot(node_quantity="phi", title="exact solution with actan initial guess")
+    config2.plot(node_quantity="phi", title="exact solution with london initial guess")
 
     def principle_value(x):
         return x - 2 * np.pi * np.round(x / (2 * np.pi))

@@ -1,9 +1,7 @@
 import numpy as np
 import scipy.sparse
-import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use("TkAgg")
-
+from matplotlib.collections import LineCollection
 from pyjjasim.variable_row_array import VarRowArray
 
 
@@ -484,23 +482,29 @@ class EmbeddedGraph:
         return np.delete(centroid_x, self.boundary_face_indices), \
                np.delete(centroid_y, self.boundary_face_indices)
 
-
     def get_num_components(self):
-        # TODO: redo; not sure if this algorithm is valid.
-        self._assign_areas()
-        mask = np.ones(self.node_count(), dtype=bool)
-        mask[self.node1] = False
-        mask[self.node2] = False
-        return len(self.boundary_face_indices) + np.sum(mask)
+        return scipy.sparse.csgraph.connected_components(
+            self.adjacency_matrix(), directed=False, return_labels=False)
+
+    def get_components(self):
+        _, components = scipy.sparse.csgraph.connected_components(
+            self.adjacency_matrix(), directed=False, return_labels=True)
+        return components
+
+    def split_components(self):
+        components = self.get_components()
+        num_components = np.max(components) + 1
+        return [self.remove_nodes(np.flatnonzero(components != c)) for c in range(num_components)]
 
     def get_boundary_faces(self):
         self._assign_boundary_faces()
         return self.boundary_face_indices
 
-    def l_cycle_matrix(self):
+    def l_cycle_matrix(self, _permute=True):
         # TODO
         self._assign_faces()
-        return self._cycle_matrix(self.face_edges, self.face_lengths, self.edge_permute)
+        return self._cycle_matrix(self.face_edges, self.face_lengths,
+                                  self.edge_permute if _permute else np.arange(self.edge_count()))
 
     def _cycle_matrix(self, face_edges, face_lengths, permute):
         E, F = self.edge_count(), len(face_lengths)
@@ -598,41 +602,92 @@ class EmbeddedGraph:
         self.face_permutation = self.face_permutation[permutation]
         self._recompute_faces()
 
-    def plot(self, show_faces=True, figsize=[5, 5], show_node_ids=False, show_edge_ids=False,
-             show_face_ids=False, face_shrink_factor=0.9, show_boundary_face=False):
-        self.fig, self.ax = plt.subplots(figsize=figsize)
+    def face_dual_graph(self):
+        A = self.face_cycle_matrix()
+        adj = (A @ A.T).tocoo()
+        mask = adj.row < adj.col
+        return EmbeddedGraph(*self.get_face_centroids(), adj.row[mask], adj.col[mask])
+
+    def locate_faces(self, x, y):
+        """
+        Get faces whose centroids are closest to queried coordinate.
+        Graph must be planar embedding.
+
+        Attributes
+        ----------
+        x, y: arrays:
+            Coordinates at which one wants to locate faces
+
+        Returns
+        -------
+        face_ids: int array with same size as x in range(Nf)
+            ids of located faces
+        """
+        if not self.is_planar_embedding():
+            raise ValueError("Only works for planar embedding")
+        locator = scipy.spatial.KDTree(np.stack(self.get_face_centroids(), axis=-1))
+        _, face_ids = locator.query(np.stack(np.broadcast_arrays(x, y), axis=-1), k=1)
+        return face_ids, locator
+
+    def plot(self, fig=None, ax=None, show_cycles=True, cycles="face_cycles", figsize=[5, 5],
+             show_node_ids=False, show_edge_ids=False, show_face_ids=False,
+             face_shrink_factor=0.9, markersize=5, linewidth=1):
+
+        def _face_line(x, y, n, xcn, ycn, f_shrink):
+            xp = f_shrink * x[np.append(n, n[0])] + (1 - f_shrink) * xcn
+            yp = f_shrink * y[np.append(n, n[0])] + (1 - f_shrink) * ycn
+            return np.stack((xp, yp), axis=1)
+
+        if fig is None and ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+        if ax is None:
+            ax = fig.add_axes()
+        if fig is None:
+            fig = ax.get_figure()
+        self.fig, self.ax = fig, ax
+
         x, y = self.coo()
         n1, n2 = self.get_edges()
-        self.ax.plot([x[n1], x[n2]], [y[n1], y[n2]], color=[0.5,0.5,0.5])
-        self.ax.plot([x], [y], color=[0,0,0], marker="o", markerfacecolor=[0,0,0])
+        lines = [((x[n1[i]], y[n1[i]]), (x[n2[i]], y[n2[i]])) for i in range(len(n1))]
+        lc = LineCollection(lines, colors=[0.5,0.5,0.5], linewidths=linewidth)
+        self.ax.add_collection(lc)
+        self.ax.plot(x, y, color=[0,0,0], marker="o", markerfacecolor=[0,0,0], linestyle="None", markersize=markersize)
+
         if show_node_ids:
             for i, (xn, yn) in enumerate(zip(x, y)):
-                self.ax.annotate(i.__str__(), (xn, yn))
+                self.ax.text(xn, yn, i.__str__())
         if show_edge_ids:
             x1, y1,  x2, y2 = x[n1], y[n1], x[n2], y[n2]
             for i, (xn, yn) in enumerate(zip(0.5 * (x1 + x2), 0.5 * (y1 + y2))):
                 self.ax.annotate(i.__str__(), (xn, yn), color=[0.3, 0.5, 0.9], ha='center', va='center')
-        if show_faces:
-            xc, yc = self.get_l_cycle_centroids()
-            pn, _ = self.get_l_cycles(to_list=True)
-            areas = self.get_l_cycle_areas()
-            bi = self.get_boundary_faces()
-            nr=0
-            for i, (xcn, ycn, n, area) in enumerate(zip(xc, yc, pn, areas)):
-                if np.in1d(i, bi):
-                    if show_boundary_face:
-                        xp, yp = x[n], y[n]
-                        self.ax.plot(np.append(xp, xp[0]), np.append(yp, yp[0]), color=[0.2, 0.5, 1])
-                        if show_face_ids:
-                            self.ax.annotate(nr.__str__(), (xcn, ycn), color=[0.2, 0.5, 1], ha='center', va='center')
-                            nr+=1
-                else:
-                    xp = face_shrink_factor * x[n] + (1 - face_shrink_factor) * xcn
-                    yp = face_shrink_factor * y[n] + (1 - face_shrink_factor) * ycn
-                    self.ax.plot(np.append(xp, xp[0]), np.append(yp, yp[0]), color=[1, 0.5, 0.2])
+        if show_cycles:
+            lines = []
+            if cycles == "face_cycles":
+                xc, yc = self.get_face_centroids()
+                pn, _ = self.get_face_cycles(to_list=True)
+                for i, (xcn, ycn, n) in enumerate(zip(xc, yc, pn)):
+                    lines += [_face_line(x, y, n, xcn, ycn, face_shrink_factor)]
                     if show_face_ids:
-                        self.ax.annotate(nr.__str__(), (xcn, ycn), color=[1, 0.5, 0.2], ha='center', va='center')
-                        nr += 1
+                        self.ax.annotate(i.__str__(), (xcn, ycn), color=[1, 0.5, 0.2], ha='center', va='center')
+            if cycles == "l_cycles":
+                xc, yc = self.get_l_cycle_centroids()
+                pn, _ = self.get_l_cycles(to_list=True)
+                b_mask = ~self._non_boundary_mask()
+                lines = []
+                for i, (xcn, ycn, n) in enumerate(zip(xc, yc, pn)):
+                    if b_mask[i]:
+                        xp, yp = x[n], y[n]
+                        self.ax.plot(np.append(xp, xp[0]), np.append(yp, yp[0]),
+                                     color=[0.2, 0.5, 1], linewidth=linewidth)
+                        if show_face_ids:
+                            self.ax.annotate(i.__str__(), (xcn, ycn), color=[0.2, 0.5, 1], ha='center', va='center')
+                    else:
+                        lines += [_face_line(x, y, n, xcn, ycn, face_shrink_factor)]
+                        if show_face_ids:
+                            self.ax.annotate(i.__str__(), (xcn, ycn), color=[1, 0.5, 0.2], ha='center', va='center')
+
+            lc1 = LineCollection(lines, colors=[1, 0.5, 0.2], linewidths=linewidth)
+            self.ax.add_collection(lc1)
         return self.fig, self.ax
 
     def _assert_edges_correct_shape(self):

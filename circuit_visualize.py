@@ -1,8 +1,11 @@
-from __future__ import annotations
+import time
 
+import matplotlib
 import numpy as np
+from scipy.spatial import Voronoi
+
 import matplotlib.pyplot as plt
-from matplotlib.collections import PolyCollection
+from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib.colors import Normalize, LogNorm
 import matplotlib.animation as animation
 import matplotlib.cm as cm
@@ -13,6 +16,9 @@ from pyjjasim.static_problem import StaticConfiguration
 from pyjjasim.time_evolution import TimeEvolutionResult
 
 __all__ = ["CircuitPlot", "CircuitMovie", "ConfigMovie", "ConfigMovie"]
+
+# TODO:
+
 
 class CircuitPlot:
 
@@ -35,13 +41,15 @@ class CircuitPlot:
                  arrow_data=None, face_data=None, vortex_data=None,
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, vortex_label="",
-                 show_grid=True, grid_width=1, grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5,
-                 show_colorbar=True,
+                 show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
+                 show_colorbar=True, show_legend=True, show_axes=True,
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.2, 0.4, 0.7), arrow_alpha=1, arrow_label="",
-                 show_nodes=True, node_diameter=0.2, node_face_color=(1,1,1),
-                 node_edge_color=(0, 0, 0), node_alpha=1, node_quantity_cmap=None,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
+                 show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
+                 node_edge_color=(0, 0, 0),
+                 nodes_as_voronoi=False,
+                 node_alpha=1, node_quantity_cmap=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
                  node_quantity_logarithmic_colors=False, node_label="",
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
@@ -50,13 +58,120 @@ class CircuitPlot:
 
         """
         Constructor for Plot and handling plot options.
+
+        Parameters
+        ----------
+        circuit: Circuit
+
+        node_data=None: (Nn,) array or None
+            Data associated with nodes in circuit. Can be visualized as colors.
+            If None, node data is not visualized.
+        arrow_data=None: (Nj,) array or None
+            Data associated with junctions in circuit. Can be visualized as arrows.
+            where the length corresponds with the magnitude of the data.
+            If None, arrow data is not visualized.
+        face_data=None: (Nf,) array or None
+            Data associated with faces in circuit. Can be visualized as colors.
+            If None, face data is not visualized.
+        vortex_data=None: (Nf,) int array or None
+            Integer data associated with faces in circuit. Can be visualized as
+            circular symbols. The value of the data equals the number of concentric
+            rings of the symbol. The color shows if it is + or -.
+            If None, vortex data is not visualized.
+        vortex_diameter=0.25: float
+            diameter of vortex symbols
+        vortex_color=(0, 0, 0): color
+            color of vortex symbols.
+        anti_vortex_color=(0.8, 0.1, 0.2): color
+            color of anti-vortex symbols, whose data is negative.
+        vortex_alpha=1: float
+            transparancy of vortex symbols.
+        vortex_label="": str
+            label given to vortex data in legend.
+        show_grid=True: bool
+            display a grid at the edges of the graph.
+        grid_width=1: float
+            width of lines of grid.
+        grid_color=(0.4, 0.5, 0.6): color
+            color of grid.
+        grid_alpha=0.5: float
+            transparency of grid.
+        show_colorbar=True: bool
+            show colorbar mapping face and/or node data to colors.
+        show_legend=True: bool
+            show legend which includes colormaps, explanation of vortex sybols and
+            an arrow scale.
+        arrow_width=0.005: float
+            width of arrows
+        arrow_scale=1: float
+            scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
+        arrow_headwidth=3: float
+            width of head of arrows
+        arrow_headlength=5: float
+            length of head of arrows
+        arrow_headaxislength=4.5: float
+            axislength of head of arrows
+        arrow_minshaft=1: float
+            arrow propertu
+        arrow_minlength=1: float
+            arrow property
+        arrow_color=(0.15, 0.3, 0.8): color
+            color of arrows.
+        arrow_alpha=1: float
+            transparency of arrows
+        arrow_label="": str
+            label given to arrow data in legend
+        show_nodes=True: bool
+            if True, nodes are displayed as circles
+        node_diameter=0.25: float
+            diameter of nodes.
+        node_face_color=(1,1,1): color
+            color of faces of nodes. Only used if there is no node data.
+        node_edge_color=(0, 0, 0): color
+            color of edge of nodes.  Only used if there is no node data.
+        nodes_as_voronoi=False: bool
+            if True, node data is visualized as colors of faces of a
+            voronoi diagram based on node coordinates rather than color
+            of circles at node coordinates.
+        node_alpha=1: float
+            transparency of nodes
+        node_quantity_cmap=None: colormap or None
+            colormap for node_data
+        node_quantity_clim=None: (float, float) or None
+            color limits for node_data
+        node_quantity_alpha=1: float
+            ...
+        node_quantity_logarithmic_colors=False: bool
+            if True, node_data color-scale is logarithmic
+        node_label="": str
+            label given to the node colormap
+        face_quantity_cmap=None: colormap or None
+
+        face_quantity_clim=None: (float, float) or None
+        face_quantity_alpha=1: float
+        face_quantity_logarithmic_colors=False: bool
+        face_label="": str
+        figsize=None: (float, float) or None
+        title="": str
+
+            coordinates of nodes of embedded graph
+        node1, node2: (E,) int array in range(N)
+            endpoint nodes of edges in embedded graph. Nodes are referred to by their index in
+            the coordinate arrays.
+        require_single_component=False:
+            If True, an error is raised if the graph is not single-component
+        require_planar_embedding=False:
+            If True, an error is raised if the graph is not a planar embedding
+
+
         """
         self.circuit = circuit
 
         self.node_data = node_data
         self.arrow_data = arrow_data
         self.face_data = face_data
-        self.vortex_data = np.array(vortex_data, dtype=int)
+
+        self.vortex_data = np.array(vortex_data, dtype=int) if vortex_data is not None else vortex_data
 
         self.show_vortices = self.vortex_data is not None
         self.vortex_diameter = vortex_diameter
@@ -71,6 +186,8 @@ class CircuitPlot:
         self.grid_color = grid_color
         self.grid_alpha = grid_alpha
         self.show_colorbar = show_colorbar
+        self.show_legend = show_legend
+        self.show_axes = show_axes
 
         self.show_arrows = self.arrow_data is not None
         self.arrow_width = arrow_width
@@ -83,7 +200,7 @@ class CircuitPlot:
         self.arrow_color = arrow_color
         self.arrow_alpha = arrow_alpha
         self.arrow_label = arrow_label
-        print("arrow_scale", self.arrow_scale)
+
         self.show_nodes = show_nodes
         self.node_diameter = node_diameter
         self.node_face_color = node_face_color
@@ -91,23 +208,34 @@ class CircuitPlot:
         self.node_alpha = node_alpha
         self.show_node_quantity = (self.node_data is not None) and show_nodes
         self.node_quantity_cmap = node_quantity_cmap
+        if self.node_quantity_cmap is None:
+            self.node_quantity_cmap = "twilight"
         self.node_quantity_clim = node_quantity_clim
         self.node_quantity_alpha = node_quantity_alpha
         self.node_quantity_logarithmic_colors = node_quantity_logarithmic_colors
         self.node_label = node_label
+        self.nodes_as_voronoi = nodes_as_voronoi
 
         self.show_face_quantity = self.face_data is not None
         self.face_quantity_cmap = face_quantity_cmap
+        if self.face_quantity_cmap is None:
+            self.face_quantity_cmap = "pink"
         self.face_quantity_clim = face_quantity_clim
         self.face_quantity_alpha = face_quantity_alpha
         self.face_quantity_logarithmic_colors = face_quantity_logarithmic_colors
         self.face_label = face_label
 
-        self.figsize = figsize if figsize is not None else [6.4, 4.8]
-        self.colorbar = None
+        self.figsize = figsize if figsize is not None else [6.4, 5]
+        self.colorbar1 = None
+        self.cb1_label = None
+        self.colorbar2 = None
+        self.cb2_label = None
         self.title = title
         self.fig = None
         self.ax = None
+        self.ax_legend = None
+        self.ax_cb1 = None
+        self.ax_cb2 = None
 
         self.grid_handle = None
         self.node_handle = None
@@ -115,28 +243,66 @@ class CircuitPlot:
         self.arrow_handle = None
         self.vortex_handles = []
 
+    def _prepare_legend(self, left, bottom, width, height):
+        self.ax_legend = self.fig.add_axes([left, bottom, width, height])
+        self.legend_stack = []
+        self.legend_stack += [0.75] if self.show_arrows else [0.93]
+        self.legend_stack += [0.75] if self.show_arrows else [0.93]
+        s = self.show_vortices and len(self._vortex_range) > 0
+        self.legend_stack += [self._vortex_legend_get_ymin(self.legend_stack[-1])[0]] if s else [self.legend_stack[-1]]
+        s = max(0, self.legend_stack[-1] - 0.5)
+        if self.show_node_quantity and self.show_face_quantity:
+            self.ax_cb1 = self.ax_legend.inset_axes([0.01, 0.02 + s, 0.18, min(self.legend_stack[-1] - 0.1, 0.4)])
+        else:   # at most one colorbar
+            self.ax_cb1 = self.ax_legend.inset_axes([0.3, 0.02 + s, 0.18, min(self.legend_stack[-1] - 0.1, 0.4)])
+        self.ax_cb2 = self.ax_legend.inset_axes([0.64, 0.02 + s, 0.18, min(self.legend_stack[-1] - 0.1, 0.4)])
+
     def make(self):
-        self.fig, self.ax = plt.subplots(figsize=self.figsize)
-        plt.title(self.title)
+        self.fig = plt.figure(figsize=self.figsize)
+        left, width, l_width = 0.1, 0.68, 0.17
+        bottom, height = 0.1, 0.85
+        spacing = 0.005
+
+        if self.show_legend:
+            self.ax = self.fig.add_axes([left, bottom, width, height])
+        else:
+            self.ax = self.fig.add_axes([left, bottom, width + l_width - 0.02, height])
+
+        if self.show_legend:
+            self._prepare_legend(left + width + spacing, bottom, l_width, height)
+
+        self.ax.set_title(self.title)
         self._set_axes()
+        if not self.show_axes:
+            self.ax.set_axis_off()
 
         # plot data
         if self.show_grid:
             self._plot_grid()
         if self.show_face_quantity:
             self._plot_faces()
-        if self.show_node_quantity:
+        if self.show_nodes:
             self._plot_nodes()
         if self.show_arrows:
             self._plot_arrows()
         if self.show_vortices:
             self._plot_vortices()
+        if self.show_legend:
+            if self.colorbar1 is None:
+                self.ax_cb1.set_axis_off()
+            if self.colorbar2 is None:
+                self.ax_cb2.set_axis_off()
+            self._make_legend()
+
+        xmin, xmax, ymin, ymax = self._get_lims()
+        self.ax.set_xlim(xmin, xmax)
+        self.ax.set_ylim(ymin, ymax)
 
         # return handles
         return self._return_figure_handles()
 
     def _return_figure_handles(self):
-        handles = [self.fig, self.ax, self.colorbar]
+        handles = [self.fig, self.ax, self.colorbar1, self.colorbar2]
         return [h for h in handles if h is not None]
 
     def _assign_arrow_scale(self, arrow_scale):
@@ -178,36 +344,88 @@ class CircuitPlot:
         self.ax.set_position([x0, y0, width, height])
 
     def _marker_scale_factor(self):
-        xlim = self.ax.get_xlim()
-        x0, y0, width, height = self.ax.get_position().bounds
-        return (width * self.figsize[0]) / (xlim[1] - xlim[0]) *72
+        return self._scale_factor(self.ax, True) * 72
+
+    def _scale_factor(self, ax, on_x):
+        x0, y0, width, height = ax.get_position().bounds
+        if on_x:
+            xlim = ax.get_xlim()
+            return (width * self.figsize[0]) / (xlim[1] - xlim[0])
+        else:
+            ylim = ax.get_ylim()
+            return (height * self.figsize[1]) / (ylim[1] - ylim[0])
 
     def _plot_grid(self):
         x1, y1, x2, y2 = self.circuit.get_juncion_coordinates()
-        self.ax.plot(np.stack((x1, x2)), np.stack((y1, y2)), color=self.grid_color,
-                     alpha=self.grid_alpha, linewidth=self.grid_width, zorder=0)
+        lines = [((x1[i], y1[i]), (x2[i], y2[i])) for i in range(len(x1))]
+        lc = LineCollection(lines, colors=self.grid_color,  alpha=self.grid_alpha,linewidths=self.grid_width, zorder=0)
+        self.ax.add_collection(lc)
+
+    @staticmethod
+    def _voronoi(ax, x, y, data, cnorm, cmap, alpha):
+        points = np.stack((x.flatten(), y.flatten()), axis=0).T
+        xm, xp = ax.get_xlim()
+        ym, yp = ax.get_ylim()
+        points = np.append(points, [[xm - 1, ym - 1], [xm - 1, yp + 1], [xp + 1, yp + 1], [xp + 1, ym - 1]], axis=0)
+        vor = Voronoi(points)
+        verts = [vor.vertices[region, :] for region in vor.regions]
+        verts = [verts[i] for i in vor.point_region[:len(x)]]
+        coll = PolyCollection(verts, array=data, edgecolors='none', cmap=cmap,
+                              norm=cnorm, alpha=alpha, zorder=-1)
+        return ax.add_collection(coll)
+
+    def _cnorm(self, clim, data, logarithmic):
+        if clim is None:
+            clim = (np.min(data), np.max(data))
+        return clim, Normalize(*clim) if not logarithmic else LogNorm(*clim)
+
+    def _assign_colorbar(self, cmap, clim, label, cb_nr):
+        if cb_nr == 0:
+            self.colorbar1 = matplotlib.colorbar.Colorbar(ax=self.ax_cb1, mappable=cmap)
+            self.cb1_label = label
+            if np.allclose(clim, [-np.pi, np.pi]):
+                self._set_ax_pi_ticks(self.colorbar1)
+            else:
+                self.ax_cb1.set_ylim(clim)
+        else:
+            self.colorbar2 = matplotlib.colorbar.Colorbar(ax=self.ax_cb2, mappable=cmap)
+            self.cb2_label = label
+            if np.allclose(clim, [-np.pi, np.pi]):
+                self._set_ax_pi_ticks(self.colorbar2)
+            else:
+                self.ax_cb2.set_ylim(clim)
 
     def _plot_nodes(self):
         x, y = self.circuit.get_node_coordinates()
+
         marker_size = self.node_diameter * self._marker_scale_factor()
         if not self.show_node_quantity:
-            node_handle = self.ax.plot([x], [y], markeredgecolor=self.node_edge_color,
+            node_handle = self.ax.plot(x, y, markeredgecolor=self.node_edge_color,
                                        markerfacecolor=self.node_face_color,
+                                       linestyle="None",
                                        markersize=marker_size, marker="o",
                                        alpha=self.node_alpha, zorder=2)
             self.node_handle = node_handle[0]
         else:
-            clim = self.node_quantity_clim
-            if clim is None:
-                clim = (np.min(self.node_data), np.max(self.node_data))
-            cnorm = Normalize(*clim) if not self.node_quantity_logarithmic_colors  else LogNorm(*clim)
-            self.node_handle = self.ax.scatter(x.flatten(), y.flatten(), s=marker_size**2,
-                                               c=self.node_data, cmap=self.node_quantity_cmap,
-                                               edgecolors=self.node_edge_color,
-                                               alpha=self.node_quantity_alpha, norm=cnorm)
-            if self.show_colorbar:
-                self.colorbar = plt.colorbar(cm.ScalarMappable(norm=cnorm, cmap=self.node_quantity_cmap),
-                                             ax=self.ax, label=self.node_label)
+            clim, cnorm = self._cnorm(self.node_quantity_clim, self.node_data, self.node_quantity_logarithmic_colors)
+            if self.nodes_as_voronoi:
+                self.node_handle = self._voronoi(self.ax, x, y, self.node_data, cnorm,
+                                                 self.node_quantity_cmap, self.node_quantity_alpha)
+            else:
+                self.node_handle = self.ax.scatter(x.flatten(), y.flatten(), s=marker_size**2,
+                                                   c=self.node_data, cmap=self.node_quantity_cmap,
+                                                   edgecolors=None,
+                                                   alpha=self.node_quantity_alpha, norm=cnorm)
+            if self.show_colorbar and self.show_legend:
+                cmap = cm.ScalarMappable(norm=cnorm, cmap=self.node_quantity_cmap)
+                if self.colorbar1 is None:
+                    self._assign_colorbar(cmap, clim, self.node_label, cb_nr=0)
+                else:
+                    self._assign_colorbar(cmap, clim, self.node_label, cb_nr=1)
+
+    def _set_ax_pi_ticks(self, cb):
+        cb.set_ticks([-np.pi, -0.5 * np.pi, 0, 0.5*np.pi, np.pi])
+        cb.set_ticklabels(["$-\pi$", "$-\pi/2$", "$0$", "$\pi/2$", "$\pi$"])
 
     def _plot_arrows(self):
         I = self.arrow_data * self.arrow_scale
@@ -228,15 +446,15 @@ class CircuitPlot:
         verts = [np.stack((x[n], y[n]), axis=-1) for n in face_nodes]
         clim = self.face_quantity_clim
         if clim is None:
-            clim = (np.min(self.node_data), np.max(self.node_data))
+            clim = (np.min(self.face_data), np.max(self.face_data))
         cnorm = Normalize(*clim) if not self.face_quantity_logarithmic_colors else LogNorm(*clim)
         coll = PolyCollection(verts, array=self.face_data, edgecolors='none',
                               cmap=self.face_quantity_cmap,
                               norm=cnorm, alpha=self.face_quantity_alpha, zorder=-1)
         self.face_handle = self.ax.add_collection(coll)
-        if self.show_colorbar and not self.show_node_quantity:
-            self.colorbar = plt.colorbar(cm.ScalarMappable(norm=cnorm, cmap=self.face_quantity_cmap),
-                                         ax=self.ax, label=self.face_label)
+        if self.show_colorbar and self.show_legend:
+            cmap = cm.ScalarMappable(norm=cnorm, cmap=self.face_quantity_cmap)
+            self._assign_colorbar(cmap, clim, self.face_label, cb_nr=0)
 
     def _plot_vortices(self):
         n = self.vortex_data
@@ -245,22 +463,11 @@ class CircuitPlot:
         ns = self._vortex_range
         vort_handles = []
         for ni in ns:
-            color = self.vortex_color if ni > 0 else self.anti_vortex_color
-            na = np.abs(ni)
             n_mask = n == ni
             xni, yni = xc[n_mask], yc[n_mask]
-            for k in reversed(range(na)):
-                frac = (2 * k + 1) / (2 * na - 1)
-                p = self.ax.plot(xni, yni, markerfacecolor=color,
-                                 markeredgecolor=color, marker="o", linestyle="",
-                                 markersize=frac * marker_size, alpha=self.vortex_alpha, zorder=4)
-                vort_handles += p
-                if k > 0:
-                    frac = (2 * k) / (2 * na - 1)
-                    p = self.ax.plot(xni, yni, markerfacecolor=[1, 1, 1],
-                                     markeredgecolor=[1, 1, 1], marker="o", linestyle="",
-                                     markersize=frac * marker_size, alpha=self.vortex_alpha, zorder=4)
-                    vort_handles += p
+            p = self._draw_vortex(self.ax, xni, yni, ni, self.vortex_color,
+                                  self.anti_vortex_color, marker_size, self.vortex_alpha)
+            vort_handles += p
         self.vortex_handles = vort_handles
 
     def _update_nodes(self, new_node_data):
@@ -296,6 +503,120 @@ class CircuitPlot:
                     handle.set_ydata(yc[n == ni])
                 index += 2 * na - 1
 
+    def _make_legend(self):
+        self.ax_legend.set_xlim([0, 1])
+        self.ax_legend.set_ylim([0, 1])
+        self.ax_legend.set_axis_off()
+
+        # arrow legend
+        self.ax_legend.text(0.5, 0.975, "legend", ha="center", va="center", fontsize=13)
+        if self.show_arrows:
+            self._arrow_legend(0.75, 0.93)
+
+        # vortex legend
+        if self.show_vortices and len(self._vortex_range) > 0:
+            self._vortex_legend(self.legend_stack[0])
+
+        # node/face legend
+        if self.cb1_label is not None:
+            if self.cb2_label is not None:
+                self.ax_legend.text(0.11, self.legend_stack[-1] - 0.05, self.cb1_label, ha="center", va="center")
+            else:
+                self.ax_legend.text(0.4, self.legend_stack[-1] - 0.05, self.cb1_label, ha="center", va="center")
+        if self.cb2_label is not None:
+            self.ax_legend.text(0.75, self.legend_stack[-1] - 0.05, self.cb2_label, ha="center", va="center")
+
+    @staticmethod
+    def _nearest_anchor(x):
+        b = np.log(x)/np.log(10)
+        decade = np.floor(b)
+        B = b - decade
+        s = np.array([0, np.log(2)/np.log(10), np.log(5)/np.log(10), 1])
+        sub = np.argmin(np.abs(B - s))
+        if sub == 0:
+            return 10 ** decade
+        if sub == 1:
+            return 2 * 10 ** decade
+        if sub == 2:
+            return 5 * 10 ** decade
+        if sub == 3:
+            return 10 ** (decade + 1)
+
+    def _legend_arrow_scale(self):
+        _, _, width, _ = self.ax.get_position().bounds
+        _, _, width_L, _ = self.ax_legend.get_position().bounds
+        xlim = self.ax.get_xlim()
+        xlim_L = self.ax_legend.get_xlim()
+        v = np.median(self.circuit._junction_lengths())
+        dx = xlim[1] - xlim[0]
+        dx_L = xlim_L[1] - xlim_L[0]
+        return v * (width / dx) / (width_L / dx_L), v / self.arrow_scale
+
+    def _arrow_legend(self, y_min, y_max):
+        L, label = self._legend_arrow_scale()
+        label *= (0.51 / L)
+        L = 0.51
+        new_label = self._nearest_anchor(label)
+        L *= new_label / label
+        ax =self.ax_legend
+        y = 0.6 * y_min + 0.4 * y_max
+        xc = 0.58
+        hL = L/2
+        ax.text(0.12, y, self.arrow_label, ha="center", va="center")
+        ax.quiver([xc-hL], [y], [L], [0], edgecolor=self.arrow_color, facecolor=self.arrow_color,
+                  scale_units="xy", angles="xy", scale=1, width=0.02)
+        dy = 0.01
+        Y = 0.4 * y_min + 0.6 * y_max
+        ax.plot([xc-hL, xc-hL, xc-hL, xc+hL, xc+hL, xc+hL], [Y-dy, Y+dy, Y, Y, Y+dy, Y-dy], color=[0, 0, 0])
+        yy = 0.2 * y_min + 0.8 * y_max
+        ax.text(xc, yy, f"{new_label}", ha="center", va="center")
+
+    def _vortex_legend_get_ymin(self, y_max):
+        n_range= self._vortex_range
+        y_min = -np.inf
+        scale_factor_x = self._scale_factor(self.ax_legend, True)
+        scale_factor_y = self._scale_factor(self.ax_legend, False)
+        d = 0.3
+        while y_min < 0.25:
+            d *= 0.8
+            Dy = 1.1 * d * (len(n_range) + 1) / (scale_factor_y / scale_factor_x)
+            y_min = y_max - Dy
+        return y_min, d
+
+    def _vortex_legend(self, y_max):
+        ax = self.ax_legend
+        n_range= self._vortex_range
+        v_color, av_color = self.vortex_color, self.anti_vortex_color
+        label = self.vortex_label
+        scale_factor_x = self._scale_factor(ax, True)
+        y_min, d = self._vortex_legend_get_ymin(y_max)
+        Y = np.linspace(y_max, y_min, 2 * len(n_range) + 2)
+        y = Y[2:-1:2]
+        ax.text(0.12, Y[1], label, ha="center", va="bottom")
+        ax.text(0.6, Y[1], "symbol", ha="center", va="bottom")
+        for i, n in enumerate(n_range):
+            CircuitPlot._draw_vortex(ax, 0.6, y[i], n, v_color, av_color, scale_factor_x * d * 72, 1)
+            ax.text(0.12, y[i], f"{n}", va="center", ha="center")
+        plt.plot([0.02, 0.99, 0.99, 0.02, 0.02], [y_min, y_min, y_max+0.016, y_max+0.016, y_min], color=[0, 0, 0])
+        return y_min
+
+    @staticmethod
+    def _draw_vortex(ax, x, y, n, v_color, av_color, diameter, alpha):
+        color = v_color if n > 0 else av_color
+        na = np.abs(n)
+        handles = []
+        for k in reversed(range(na)):
+            frac = (2 * k + 1) / (2 * na - 1)
+            p = ax.plot(x, y, markerfacecolor=color, markeredgecolor=color, marker="o",
+                        linestyle="", markersize=frac * diameter, alpha=alpha, zorder=4)
+            handles += p
+            if k > 0:
+                frac = (2 * k) / (2 * na - 1)
+                p = ax.plot(x, y, markerfacecolor=[1, 1, 1], markeredgecolor=[1, 1, 1], marker="o",
+                            linestyle="", markersize=frac * diameter, alpha=alpha, zorder=4)
+                handles += p
+        return handles
+
 
 class CircuitMovie(CircuitPlot):
     """Animation of circuit where the quantities evolve over time.
@@ -318,13 +639,15 @@ class CircuitMovie(CircuitPlot):
                  node_data=None, arrow_data=None, face_data=None, vortex_data=None,
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, vortex_label="", _vortex_range=None,
-                 show_grid=True, grid_width=1, grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5,
-                 show_colorbar=True,
+                 show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
+                 show_colorbar=True, show_legend=True, show_axes=True,
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.2, 0.4, 0.7), arrow_alpha=1, arrow_label="",
-                 show_nodes=True, node_diameter=0.2, node_face_color=(1,1,1),
-                 node_edge_color=(0, 0, 0), node_alpha=1, node_quantity_cmap=None,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
+                 show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
+                 node_edge_color=(0, 0, 0),
+                 nodes_as_voronoi=False,
+                 node_alpha=1, node_quantity_cmap=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
                  node_quantity_logarithmic_colors=False, node_label="",
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
@@ -367,13 +690,13 @@ class CircuitMovie(CircuitPlot):
                          anti_vortex_color=anti_vortex_color,
                          vortex_alpha=vortex_alpha,
                          show_grid=show_grid, grid_width=grid_width, grid_color=grid_color,
-                         grid_alpha=grid_alpha, show_colorbar=show_colorbar,
-                         arrow_width=arrow_width, arrow_scale=arrow_scale,
+                         grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
+                         show_axes=show_axes, arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft, arrow_minlength=arrow_minlength,
                          arrow_color=arrow_color, arrow_alpha=arrow_alpha, show_nodes=show_nodes,
                          node_diameter=node_diameter, node_face_color=node_face_color, node_edge_color=node_edge_color,
-                         node_alpha=node_alpha,
+                         node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
                          node_quantity_cmap=node_quantity_cmap, node_quantity_clim=node_quantity_clim,
                          node_quantity_alpha=node_quantity_alpha, node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
                          face_quantity_cmap=face_quantity_cmap,
@@ -383,17 +706,6 @@ class CircuitMovie(CircuitPlot):
         self.animate_interval = animate_interval
 
     def _init(self):
-        if self.show_grid:
-            self._plot_grid()
-        if self.show_face_quantity:
-            self._plot_faces()
-        if self.show_node_quantity:
-            self._plot_nodes()
-        if self.show_arrows:
-            self._plot_arrows()
-        if self.show_vortices:
-            self._plot_vortices()
-
         handles = [self.face_handle, self.node_handle, self.arrow_handle] + self.vortex_handles
         return [h for h in handles if h is not None]
 
@@ -414,17 +726,11 @@ class CircuitMovie(CircuitPlot):
         return [h for h in handles if h is not None]
 
     def make(self):
-        self.fig, self.ax = plt.subplots(figsize=self.figsize)
-        self._set_axes()
-        plt.title(self.title)
-
+        handles = super().make()
         self.ani = animation.FuncAnimation(self.fig, self._animate, np.arange(self.Nt, dtype=int),
                                            init_func=self._init, interval=self.animate_interval,
                                            blit=True)
-        if self.colorbar is not None:
-            return self.ani, self.fig, self.ax, self.colorbar
-        else:
-            return self.ani, self.fig, self.ax
+        return [self.ani] + handles
 
     def _assign_arrow_scale(self, arrow_scale):
         self.arrow_scale = arrow_scale
@@ -446,13 +752,14 @@ class ConfigPlot(CircuitPlot):
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, _vortex_range=None,
-                 show_grid=True, grid_width=1, grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5,
-                 show_colorbar=True,
+                 show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
+                 show_colorbar=True, show_legend=True, show_axes=True,
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.2, 0.4, 0.7), arrow_alpha=1,
-                 show_nodes=True, node_diameter=0.2, node_face_color=(1,1,1),
-                 node_edge_color=(0, 0, 0), node_alpha=1, node_quantity_cmap=None,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
+                 show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
+                 node_edge_color=(0, 0, 0), nodes_as_voronoi=False, node_alpha=1,
+                 node_quantity_cmap=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
                  node_quantity_logarithmic_colors=False,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
@@ -474,7 +781,7 @@ class ConfigPlot(CircuitPlot):
             if node_quantity_clim is None:
                 node_quantity_clim = (-np.pi, np.pi)
 
-        if arrow_label == "theta":
+        if arrow_label == "th":
             if arrow_scale is None:
                 arrow_scale = 1/np.pi
 
@@ -483,19 +790,18 @@ class ConfigPlot(CircuitPlot):
                          vortex_diameter=vortex_diameter, vortex_color=vortex_color,
                          anti_vortex_color=anti_vortex_color,
                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width, grid_color=grid_color,
-                         grid_alpha=grid_alpha, show_colorbar=show_colorbar,
-                         arrow_width=arrow_width, arrow_scale=arrow_scale,
+                         grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
+                         show_axes=show_axes, arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft, arrow_minlength=arrow_minlength,
                          arrow_color=arrow_color, arrow_alpha=arrow_alpha, show_nodes=show_nodes,
                          node_diameter=node_diameter, node_face_color=node_face_color, node_edge_color=node_edge_color,
-                         node_alpha=node_alpha,
+                         node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
                          node_quantity_cmap=node_quantity_cmap, node_quantity_clim=node_quantity_clim,
                          node_quantity_alpha=node_quantity_alpha, node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
                          face_quantity_cmap=face_quantity_cmap,
                          face_quantity_clim=face_quantity_clim, face_quantity_alpha=face_quantity_alpha,
                          face_quantity_logarithmic_colors=face_quantity_logarithmic_colors, figsize=figsize, title=title)
-
 
 
     _node_quantities = {
@@ -523,6 +829,7 @@ class ConfigPlot(CircuitPlot):
     }
 
     _vortex_quantities = {
+        "": -1,
         "n": 0, "vortices": 0, "vortex_configuration": 0,
     }
 
@@ -553,7 +860,7 @@ class ConfigPlot(CircuitPlot):
             out = self.config.get_theta()
             out = out.copy()
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
-            return out, "theta"
+            return out, "th"
         if quantity == 1:  # I
             return self.config.get_I(), "I"
         if quantity == 2:  # Is
@@ -582,6 +889,8 @@ class ConfigPlot(CircuitPlot):
         if isinstance(self.vortex_quantity, np.ndarray):
             return self.vortex_quantity.flatten().astype(int), "custom"
         quantity = self._vortex_quantities[self.vortex_quantity]
+        if quantity == -1:   # none
+            return None, None
         if quantity == 0:  # n
             return self.config.get_n(), "n"
 
@@ -597,13 +906,14 @@ class ConfigMovie(CircuitMovie):
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, _vortex_range=None,
-                 show_grid=True, grid_width=1, grid_color=(0.3, 0.5, 0.9), grid_alpha=0.5,
-                 show_colorbar=True,
+                 show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
+                 show_colorbar=True, show_legend=True, show_axes=True,
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.2, 0.4, 0.7), arrow_alpha=1,
-                 show_nodes=True, node_diameter=0.2, node_face_color=(1,1,1),
-                 node_edge_color=(0, 0, 0), node_alpha=1, node_quantity_cmap=None,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
+                 show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
+                 node_edge_color=(0, 0, 0),  nodes_as_voronoi=False,
+                 node_alpha=1, node_quantity_cmap=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
                  node_quantity_logarithmic_colors=False,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
@@ -644,7 +954,7 @@ class ConfigMovie(CircuitMovie):
             if node_quantity_clim is None:
                 node_quantity_clim = (-np.pi, np.pi)
 
-        if self.arrow_quantity == "theta":
+        if self.arrow_quantity == "th":
             if arrow_scale is None:
                 arrow_scale = 1/np.pi
 
@@ -656,14 +966,15 @@ class ConfigMovie(CircuitMovie):
                          anti_vortex_color=anti_vortex_color,
                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
                          grid_color=grid_color,
-                         grid_alpha=grid_alpha, show_colorbar=show_colorbar,
+                         grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
+                         show_axes=show_axes,
                          arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
                          arrow_minlength=arrow_minlength,
                          arrow_color=arrow_color, arrow_alpha=arrow_alpha, show_nodes=show_nodes,
                          node_diameter=node_diameter, node_face_color=node_face_color,
-                         node_edge_color=node_edge_color,
+                         node_edge_color=node_edge_color, nodes_as_voronoi=nodes_as_voronoi,
                          node_alpha=node_alpha,
                          node_quantity_cmap=node_quantity_cmap, node_quantity_clim=node_quantity_clim,
                          node_quantity_alpha=node_quantity_alpha,
@@ -723,13 +1034,13 @@ class ConfigMovie(CircuitMovie):
             out = self.config.get_theta(self.time_points)
             out = out.copy()
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
-            return out, "theta"
+            return out, "th"
         if quantity == 1:  # I
             return self.config.get_I(self.time_points), "I"
         if quantity == 2:  # V
             return self.config.get_V(self.time_points), "V"
         if quantity == 3:  # supercurrent
-            return self.config.get_Isup(self.time_points), "I_super"
+            return self.config.get_Isup(self.time_points), "Isup"
         if quantity == 4:  # Is
             return self.config.problem._Is(self.time_points), "Is"
         if quantity == 5:  # EJ
