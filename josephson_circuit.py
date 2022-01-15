@@ -13,13 +13,15 @@ __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID
 # give error if criterion all-or-nothing inductance is not met.
 # give warning if timestep too small in low-inductance-case
 
-# requirements
-# - check/debug all physical quantities
-# - dynamic compute broadcasting slicing
-# - documentation
-# - unit testing
-# - publish
+# give error for mixed-inductance problems
 
+# suggestions:
+# - parameter optimization allow disabling stability requirement
+# - parameter optimization frustration vector?
+# - stable_region return factors?
+# - only show combined error?
+# - handle time evolution proper errors if required quatities are not computed.
+# - time evolution config_at_minus1 list of configs
 
 # nice to haves
 # - lattices
@@ -56,26 +58,26 @@ class Circuit:
 
     Attributes
     ----------
-    graph: EmbeddedGraph
-        EmbeddedGraph instance with Nn nodes, Nj edges and Nf faces
-    critical_current_factors=1.0: (Nj,) array or scalar
-        critical current factors of junctions. Same value for all junctions if scalar.
-    resistance_factors=1.0: (Nj,) array or scalar
-        resistance factors of junctions. Same value for all junctions if scalar.
-    capacitance_factors=0.0: (Nj,) array or scalar
-        capacitance factors of junctions. Same value for all junctions if scalar.
-    inductance_factors=0.0: (Nj,) array or scalar
-        self-inductance factors of junctions. Same value for all junctions if scalar.
-    or inductance_factors=0.0: (Nj, Nj) matrix (dense or sparse)
+    graph : :py:attr:`embedded_graph.EmbeddedGraph`
+        EmbeddedGraph instance with Nn nodes, Nj edges and Nf faces.
+    critical_current_factors=1.0 : (Nj,) array or scalar
+        Critical current factors of junctions. Same value for all junctions if scalar.
+    resistance_factors=1.0 : (Nj,) array or scalar
+        Resistance factors of junctions. Same value for all junctions if scalar.
+    capacitance_factors=0.0 : (Nj,) array or scalar
+        Capacitance factors of junctions. Same value for all junctions if scalar.
+    inductance_factors=0.0 : (Nj,) array or scalar
+        Self-inductance factors of junctions. Same value for all junctions if scalar.
+    or inductance_factors=0.0 : (Nj, Nj) matrix (dense or sparse)
         L_ij coupling between junction i and j. L_ii self inductance. Must be symmetric
         positive definite.
 
     Notes
     -----
     * All physical quantities are normalized in pyjjasim, see the user manual for details.
-      For example the critical current of each junction in Ampere is :math:`\mathtt{critical\_current\_factors} * I_0`,
-      where :math:`I_0` is the normalizing scalar for all current values.
-
+      For example the critical current of each junction in Ampere is
+      :math:`\mathtt{critical\_current\_factors} * I_0`, where :math:`I_0` is the
+      normalizing scalar for all current values.
     * Sources are specified at problems, not explicitly as part of the circuit.
     """
 
@@ -116,16 +118,16 @@ class Circuit:
         self._has_inductance_v = False
 
     def get_junction_nodes(self):
-        """Get ids of nodes at endpoints of all junctions.
+        """Get indices of nodes at endpoints of all junctions.
 
         Notes
         -----
-        for all junctions node1 < node2, even if it was defined in reverse order.
+        For all junctions node1 < node2, even if it was defined in reverse order.
 
         Returns
         -------
-        node1, node2: (Nj,) arrays
-            Endpoint node ids of all junctions
+        node1, node2 : (Nj,) arrays
+            Endpoint node indices of all junctions.
         """
         return self.graph.get_edges()
 
@@ -134,12 +136,12 @@ class Circuit:
 
         Notes
         -----
-        for all junctions node1 < node2, even if it was defined in reverse order.
+        For all junctions node1 < node2, even if it was defined in reverse order.
 
         Returns
         -------
-        x1, y1, x2, y2: (Nj,) arrays
-            coordinates of node1 and node2 respectively
+        x1, y1, x2, y2 : (Nj,) arrays
+            Coordinates of node1 and node2 respectively.
         """
         x, y = self.get_node_coordinates()
         n1, n2 = self.get_junction_nodes()
@@ -165,31 +167,31 @@ class Circuit:
 
             Attributes
             ----------
-            x, y: (Nn_new,) arrays
-                coordinates of added nodes
-            node1, node2: (Nj_new,) int arrays
-                nodes at endpoints of added junctions
-            critical_current_factors: scalar or (Nj_new,) array
-                critical current factors of added junctions. Same value for
+            x, y : (Nn_new,) arrays
+                Coordinates of added nodes.
+            node1, node2 : (Nj_new,) int arrays
+                Nodes at endpoints of added junctions.
+            critical_current_factors : scalar or (Nj_new,) array
+                Critical current factors of added junctions. Same value for
                 all new junctions if scalar.
-            resistance_factors: scalar or (Nj_new,) array
-                resistance factors of added junctions. Same value for
+            resistance_factors : scalar or (Nj_new,) array
+                Resistance factors of added junctions. Same value for
                 all new junctions if scalar.
-            capacitance_factors: scalar or (Nj_new,) array
-                capacitance factors of added junctions. Same value for
+            capacitance_factors : scalar or (Nj_new,) array
+                Capacitance factors of added junctions. Same value for
                 all new junctions if scalar.
-            inductance_factors: scalar or (Nj_new,) array
-                self-inductance factors of added junctions. Same value for
+            inductance_factors : scalar or (Nj_new,) array
+                Self-inductance factors of added junctions. Same value for
                 all new junctions if scalar.
-            or inductance_factors: (Nj_new, Nj_new) array
+            or inductance_factors : (Nj_new, Nj_new) array
                 Mutual inductance factors between new junctions.
-            or inductance_factors: (Nj_new, Nj) array
+            or inductance_factors : (Nj_new, Nj) array
                 Mutual inductance factors between new junctions and all junctions.
 
             Returns
             -------
-            new_circuit: Circuit
-                new Circuit object with nodes and junctions added.
+            new_circuit : :py:attr:`Circuit`
+                New Circuit object with nodes and junctions added.
         """
         x = np.array(x, dtype=np.double).flatten()
         new_x = np.append(self.graph.x, x)
@@ -224,19 +226,19 @@ class Circuit:
     # noinspection PyArgumentList
     def remove_nodes(self, nodes_to_remove):
         """
-        Remove nodes from circuit
+        Remove nodes from circuit.
 
         Attributes
         ----------
-        nodes_to_remove: int array in range(Nn)
-            node ids of nodes to remove from circuit
-        or nodes_to_remove: (Nn,) mask
-            mask selecting nodes to remove from circuit
+        nodes_to_remove : int array in range(Nn)
+            Indices of nodes to remove from circuit.
+        or nodes_to_remove : (Nn,) mask
+            Mask selecting nodes to remove from circuit.
 
         Returns
         -------
-        new_circuit: Circuit
-            new Circuit object with removed nodes
+        new_circuit : :py:attr:`Circuit`
+            New Circuit object with removed nodes.
 
         Notes
         -----
@@ -272,19 +274,19 @@ class Circuit:
     # noinspection PyArgumentList
     def remove_junctions(self, junctions_to_remove):
         """
-        Remove junctions from circuit
+        Remove junctions from circuit.
 
         Attributes
         ----------
-        junctions_to_remove: int array in range(Nj)
-            node ids of junctions to remove from circuit
-        or junctions_to_remove: (Nj,) mask
-            mask selecting junctions to remove from circuit
+        junctions_to_remove : int array in range(Nj)
+            Indices of junctions to remove from circuit.
+        or junctions_to_remove : (Nj,) mask
+            Mask selecting junctions to remove from circuit.
 
         Returns
         -------
-        new_circuit: Circuit
-            new Circuit object with removed junctions
+        new_circuit : :py:attr:`Circuit`
+            New Circuit object with removed junctions.
         """
         junctions_to_remove = np.array(junctions_to_remove).flatten()
         if not len(junctions_to_remove) == self.junction_count():
@@ -313,49 +315,49 @@ class Circuit:
 
         Returns
         -------
-        x, y: (Nn,) arrays
-            coordinates of nodes in circuit
+        x, y : (Nn,) arrays
+            Coordinates of nodes in circuit.
         """
         return self.graph.x, self.graph.y
 
     def node_count(self):
         """
-        Returns number of nodes in the circuit (abbreviated Nn)
+        Returns number of nodes in the circuit (abbreviated Nn).
         """
         return self._Nn()
 
     def get_critical_current_factors(self):
         """
-        Returns critical current factors of each junction in the circuit
+        Returns critical current factors of each junction in the circuit.
         """
         return self.critical_current_factors
 
     def set_critical_current_factors(self, Ic):
         """
-        Modify critical current factors of all junctions in the circuit
+        Modify critical current factors of all junctions in the circuit.
 
         Attributes
         ----------
-        Ic: (Nj,) array or scalar
-            new critical current factors. Same for all junctions if scalar.
+        Ic : (Nj,) array or scalar
+            New critical current factors. Same for all junctions if scalar.
         """
         self.critical_current_factors = self._prepare_junction_quantity(Ic, self._Nj(), x_name="Ic")
         return self
 
     def get_resistance_factors(self):
         """
-        Returns resistance factors assigned to each junction in the circuit
+        Returns resistance factors assigned to each junction in the circuit.
         """
         return self.resistance_factors
 
     def set_resistance_factors(self, R):
         """
-        Modify resistance factors of all junctions in the circuit
+        Modify resistance factors of all junctions in the circuit.
 
         Attributes
         ----------
-        R: (Nj,) array or scalar
-            new resistance factors. Same for all junctions if scalar.
+        R : (Nj,) array or scalar
+            New resistance factors. Same for all junctions if scalar.
         """
         self.resistance_factors = self._prepare_junction_quantity(R, self._Nj(), x_name="R")
         if np.any(self.resistance_factors <= 0.0):
@@ -364,18 +366,18 @@ class Circuit:
 
     def get_capacitance_factors(self):
         """
-        Returns capacitance factors assigned to each junction in the circuit
+        Returns capacitance factors assigned to each junction in the circuit.
         """
         return self.capacitance_factors
 
     def set_capacitance_factors(self, C):
         """
-        Modify capacitance factors of all junctions in the circuit
+        Modify capacitance factors of all junctions in the circuit.
 
         Attributes
         ----------
-        C: (Nj,) array or scalar
-            new capacitance factors. Same for all junctions if scalar.
+        C : (Nj,) array or scalar
+            New capacitance factors. Same for all junctions if scalar.
         """
         self.capacitance_factors = self._prepare_junction_quantity(C, self._Nj(), x_name="C")
         if np.any(self.capacitance_factors < 0.0):
@@ -384,27 +386,27 @@ class Circuit:
 
     def junction_count(self):
         """
-        Returns number of junctions in the circuit (abbreviated Nj)
+        Returns number of junctions in the circuit (abbreviated Nj).
         """
         return self._Nj()
 
     def face_count(self):
         """
-        Returns number of faces in the circuit (abbreviated Nf)
+        Returns number of faces in the circuit (abbreviated Nf).
         """
         return self._Nf()
 
     def get_faces(self):
         """
-        Returns a list of all faces
+        Returns a list of all faces.
 
-        A face is defined as an array containing ids of nodes encountered when traversing the boundary
-        of a face counter-clockwise.
+        A face is defined as an array containing indices of nodes encountered when
+        traversing the boundary of a face counter-clockwise.
 
         Returns
         -------
-        faces: List
-            List of faces
+        faces : List
+            List of faces.
         """
         # Returns a list of faces.
         # if to_list==True returns in format:  [[n11, n12, n13], [n21], [n31, n32]]
@@ -434,14 +436,14 @@ class Circuit:
 
         Attributes
         ----------
-        x, y: arrays:
-            Coordinates at which one wants to locate faces
+        x, y : arrays:
+            Coordinates at which one wants to locate faces.
 
 
         Returns
         -------
-        face_ids: int array with same size as x in range(Nf)
-            ids of located faces
+        face_ids : int array with same size as x in range(Nf)
+            Indices of located faces.
         """
         if self.locator is None:
             faces, self.locator = self.graph.locate_faces(x, y)
@@ -454,20 +456,20 @@ class Circuit:
         Approximate inductance in circuit.
 
         Computes a matrix L as an approximation for the inductance factors and
-        does self.set_inductance_factors(L)
+        does self.set_inductance_factors(L).
 
         L is computed using a crude approximation of Neumann's formula for two wire segments.
 
         Attributes
         ----------
-        factor: scalar float
-            mu0 * a0 in units of L0
-        junc_L: scalar float
-            self-inductance prefactor
-        junc_M: scalar float
-            mutual-inductance prefactor
-        max_dist: scalar float
-            cut-off distance between junctions included in L
+        factor : scalar float
+            mu0 * a0 in units of L0.
+        junc_L : scalar float
+            Self-inductance prefactor.
+        junc_M : scalar float
+            Mutual-inductance prefactor.
+        max_dist : scalar float
+            Cut-off distance between junctions included in L.
 
         Notes
         -----
@@ -507,8 +509,8 @@ class Circuit:
 
         Returns
         -------
-        inductance_factors: (Nj, Nj) array
-            diagonal entries are self-inductance factors, off-diagonal entries are mutual
+        inductance_factors : (Nj, Nj) array
+            Diagonal entries are self-inductance factors, off-diagonal entries are mutual.
         """
         # return matrix whose entry (r, c) is the magnetic coupling between wire r and wire c.
         # out: (junction_count, junction_count) sparse symmetric float matrix
@@ -525,20 +527,20 @@ class Circuit:
         return self
 
     def get_cut_matrix(self):
-        """Returns cut matrix
+        """Returns cut matrix.
 
         The cut matrix is a sparse matrix (shape (Nn, Nj), abbreviated M), which represents
-        Kirchhoffs current law M @ I = 0
+        Kirchhoffs current law M @ I = 0.
 
         It is +1 if node is node_2 of junction and -1 otherwise.
         """
         return self.cut_matrix
 
     def get_cycle_matrix(self):
-        """Returns cycle matrix
+        """Returns cycle matrix.
 
         The cycle matrix is a sparse matrix (shape (Nf, Nj) abbreviated A), which represents
-        Kirchhoffs voltage law A @ V = 0
+        Kirchhoffs voltage law A @ V = 0.
 
         It is +1 if traversing a face counter-clockwise passes through a junction in its direction, and -1
         otherwise.

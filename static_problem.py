@@ -9,8 +9,9 @@ from scipy.sparse.linalg import ArpackNoConvergence
 
 from pyjjasim.josephson_circuit import Circuit
 
-__all__ = ["CurrentPhaseRelation", "DefaultCPR",
-           "StaticProblem", "StaticConfiguration", "node_to_junction_current"]
+__all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem", "StaticConfiguration",
+           "node_to_junction_current", "DEF_TOL", "DEF_NEWTON_MAXITER", "DEF_STAB_MAXITER",
+           "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT", "NewtonIterInfo", "ParameterOptimizeInfo"]
 
 
 """
@@ -18,7 +19,7 @@ Static Problem Module
 """
 
 
-DEF_TOL = 1E-11
+DEF_TOL = 1E-10
 
 DEF_NEWTON_MAXITER = 30
 DEF_STAB_MAXITER = 100
@@ -32,21 +33,19 @@ class CurrentPhaseRelation:
 
     Current-Phase relation Icp(Ic, theta). The default value is Icp = Ic * sin(theta).
 
-    Input:
-    ------
-    func            lambda Ic, theta: ...   current-phase relation
-    d_func          lambda Ic, theta: ...   derivative of current-phase relation to theta
-    i_func          lambda Ic, theta: ...   integral of current-phase relation over theta (starting at 0)
+    Parameters
+    ----------
+    func : func(Ic, theta)
+        Current-phase relation.
+    d_func : func(Ic, theta)
+        Derivative of current-phase relation to theta.
+    i_func : func(Ic, theta)
+        Integral of current-phase relation over theta (starting at 0).
 
-    Methods:
-    --------
-    eval(Ic: np.ndarray, theta: np.ndarray) -> np.ndarray
-    d_eval(Ic: np.ndarray, theta: np.ndarray) -> np.ndarray
-    i_eval(Ic: np.ndarray, theta: np.ndarray) -> np.ndarray
-
-    Remarks:
-    --------
-     - func, d_func and i_func must be numpy ufunc, so their output must be broadcast of input Ic and theta.
+    Notes
+    -----
+     - func, d_func and i_func must be numpy ufunc, so their output must be broadcast
+       of input Ic and theta.
     """
     def __init__(self, func, d_func, i_func):
         self.func = func
@@ -54,19 +53,27 @@ class CurrentPhaseRelation:
         self.i_func = i_func
 
     def eval(self, Ic, theta):
+        """
+        Evaluate current phase relation; returns func(Ic, theta).
+        """
         return self.func(Ic, theta)
 
     def d_eval(self, Ic, theta):
+        """
+        Evaluate derivative of current phase relation; returns d_func(Ic, theta).
+        """
         return self.d_func(Ic, theta)
 
     def i_eval(self, Ic, theta):
+        """
+        Evaluate integral of current phase relation; returns i_func(Ic, theta).
+        """
         return self.i_func(Ic, theta)
 
 class DefaultCPR(CurrentPhaseRelation):
 
     """
     Default current-phase relation Icp = Ic * sin(theta).
-
     """
     def __init__(self):
         super().__init__(lambda Ic, th: Ic * np.sin(th),
@@ -79,23 +86,6 @@ class NewtonIterInfo:
     """
     Information about the newton iteration used to find static configurations.
     Use print(newton_iter_info) to display the information.
-
-    Methods:
-    -------
-    get_max_iter()                          Returns number of iterations after which iteration is aborted.
-    get_tol()                               Returns tolerance.
-    get_status()                            Returns 0: converged. residual < tolerance
-                                                    1: diverged before reaching maxiter.
-                                                    2: reached max_iter without converging or diverging.
-    has_converged()                         Returns if iteration has converged.
-    get_is_target_vortex_configuration()    Returns (nr_of_iters,) bool array if vortex configuration at iter
-                                            agrees with vortex configuration specified in problem.
-    found_target_solution()                 Returns True if has_converged() and final iter obeys target vortex config.
-    get_number_of_iterations()              Returns number of newton iterations done.
-    get_residual()                          (nr_of_iters,) array containing residual at each iteration.
-    get_runtime()                           Returns runtime in seconds.
-    plot_residuals()                        Plots residual vs iteration number.
-
     """
     def __init__(self, tol, maxiter):
         self.start_time = time.perf_counter()
@@ -108,33 +98,67 @@ class NewtonIterInfo:
         self.runtime = 0.0
 
     def get_max_iter(self):
+        """
+        Returns number of iterations after which iteration is aborted.
+        """
         return self.maxiter
 
     def get_tol(self):
+        """
+        Returns tolerance.
+        """
         return self.tol
 
     def get_status(self):
+        """
+        Returns status of newton iteration result; returns value:
+         * 0: converged. residual < tolerance
+         * 1: diverged before reaching maxiter.
+         * 2: reached max_iter without converging or diverging.
+        """
         return int(not self.found_target_solution()) + 2 * int(self.iteration >= self.maxiter)
 
     def has_converged(self):
+        """
+        Returns if iteration has converged.
+        """
         return self.has_converged
 
     def get_is_target_vortex_configuration(self):
+        """
+        Returns (nr_of_iters,) bool array if vortex configuration at iter
+        agrees with vortex configuration specified in problem.
+        """
         return self.is_target_n[:(self.get_number_of_iterations()+1)]
 
     def found_target_solution(self):
+        """
+        Returns True if has_converged() and final iter obeys target vortex config.
+        """
         return self.has_converged and self.is_target_n[self._get_iteration()]
 
     def get_number_of_iterations(self):
+        """
+        Returns number of newton iterations done.
+        """
         return self._get_iteration()
 
     def get_residual(self):
+        """
+        Returns (nr_of_iters,) array containing residual at each iteration.
+        """
         return self.error[:(self.get_number_of_iterations()+1)]
 
     def get_runtime(self):
+        """
+        Returns runtime in seconds.
+        """
         return self.runtime
 
     def plot_residuals(self):
+        """
+        Plots residual vs iteration number.
+        """
         import matplotlib.pyplot as plt
         n = self.get_is_target_vortex_configuration().astype(bool)
         y = self.get_residual()
@@ -177,26 +201,8 @@ class ParameterOptimizeInfo:
 
     """
     Information about the parameter optimization process.
-    Use print(parameter_optimize_info) to display the information.
-
-    Methods:
-    -------
-    get_has_stable_target_solution_at_zero()    Returns if a stable target solution is found at lambda=0
-    get_lambda()                                Returns (nr_of_steps,) array with lambda at each step
-    get_lambda_error()                          Returns (nr_of_steps,) array with error in lambda
-    get_lambda_lower_bound()                    Returns lower bound for lambda
-    get_lambda_upper_bound()                    Returns upper bound for lambda
-    get_found_stable_target_solution()          Returns (nr_of_steps,) array if a stable target solution is found at step
-    get_newton_converged()                      Returns (nr_of_steps,) array if newton iteration converged at step
-    get_newton_target_n()                       Returns (nr_of_steps,) array if target n at step
-    get_newton_steps()                          Returns (nr_of_steps,) array with nr of newton iterations at step
-    get_newton_iter_all_info()                  Returns (nr_of_steps,) list containing newton_iter_infos
-    get_is_stable()                             Returns (nr_of_steps,) array if a stable at step
-    get_stability_steps()                       Returns (nr_of_steps,) array with stability algorithm iterations at step
-    get_stable_iter_all_info()                  Returns (nr_of_steps,) list containing stable_iter_infos
-    get_runtime()                               Returns runtime in seconds.
-    plot_residuals()                            Plots residual vs iteration number.
-
+    Use print(parameter_optimize_info) to display a summary of
+    the information.
     """
     def __init__(self, Is_func, f_func, lambda_tol, M):
         self.Is_func = Is_func
@@ -212,43 +218,79 @@ class ParameterOptimizeInfo:
         self._time = time.perf_counter()
 
     def get_has_stable_target_solution_at_zero(self):
+        """
+        Returns if a stable target solution is found at lambda=0.
+        """
         return self.has_stable_target_solution_at_zero
 
     def get_lambda(self):
+        """
+        Returns (nr_of_steps,) array with lambda at each step.
+        """
         return self.lambda_history[:self._step]
 
     def get_lambda_error(self):
+        """
+        Returns (nr_of_steps,) array with error in lambda.
+        """
         return self._get_lambda_stepsize() / self.get_lambda()
 
     def get_lambda_lower_bound(self):
+        """
+        Returns lower bound for lambda.
+        """
         if not self.get_has_stable_target_solution_at_zero():
             return np.nan
         s = self.get_lambda()[self.get_found_stable_target_solution()]
         return s[-1] if s.size > 0 else 0
 
     def get_lambda_upper_bound(self):
+        """
+        Returns upper bound for lambda.
+        """
         s = self.get_lambda()[~self.get_found_stable_target_solution()]
         return s[-1] if s.size > 0 else np.inf
 
     def get_found_stable_target_solution(self):
+        """
+        Returns (nr_of_steps,) array if a stable target solution is found at step.
+        """
         return self.solution_history[:self._step]
 
     def get_newton_iter_all_info(self):
+        """
+        Returns (nr_of_steps,) list containing newton_iter_infos.
+        """
         return self.newton_iter_infos
 
     def get_newton_converged(self):
+        """
+        Returns (nr_of_steps,) array if newton iteration converged at step.
+        """
         return np.array([info.converged() for info in self.newton_iter_infos], dtype=int)
 
     def get_newton_target_n(self):
+        """
+        Returns (nr_of_steps,) array if target n at step.
+        """
         return np.array([info.get_is_target_vortex_configuration()[-1] for info in self.newton_iter_infos], dtype=int)
 
     def get_newton_steps(self):
+        """
+        Returns (nr_of_steps,) array with nr of newton iterations at step.
+        """
         return np.array([info.get_number_of_iterations() for info in self.newton_iter_infos], dtype=int)
 
     def get_runtime(self):
+        """
+        Returns runtime in seconds.
+        """
         return self._time
 
     def plot_residuals(self):
+        """
+        Plots residual vs iteration number.
+        """
         import matplotlib.pyplot as plt
         for i, n_info in enumerate(self.get_newton_iter_all_info()):
             n = n_info.get_is_target_vortex_configuration().astype(bool)
@@ -321,49 +363,34 @@ class StaticProblem:
     """
     Define a static josephson junction array problem.
 
-    Input:
-    ------                  symbol  type                      getter
-    circuit                         Circuit                   get_circuit()
-    current_sources         Is      (Nj,) ndarray or scalar   get_current_sources()
-    frustration             f       (Nf,) ndarray or scalar   get_frustration()
-    vortex_configuration    n       (Nf,) ndarray or scalar   get_vortex_configuration()
-    current_phase_relation  cp      CurrentPhaseRelation      get_current_phase_relation()
+    Parameters
+    ----------
+    circuit : Circuit
+         Circuit on which the problem is based.
+    current_sources=0.0 : (Nj,) ndarray or scalar
+         Current sources at each junction in circuit (abbreviated Is). If scalar the same
+         value is used for all junctions.
 
-    Methods:
-    --------
-    get_net_sourced_current         Gets the sum of all (positive) current injected at nodes to create Is.
-    new_problem                     Makes copy of self with specified modifications.
-    approximate                     Computes approximate solution (London approximation or arctan approximation)
-    approximate_placed_vortices     Computes arctan approximation where vortices are placed at specified
-                                    coordinates, rather than in face centers.
-    compute                         Compute exact solution
-    compute_maximal_parameter       Computes largest x where stable solution exists with f=f(x) and Is=Is(x)
-    compute_frustration_bounds      Compute smallest and largest frustration with a stable solution
-    compute_maximal_current         Compute largest x where Is=x * self.Is with a stable solution
-    compute_stable_region           Compute boundary of stable region in f-Is space of vortex configuration n.
+    frustration=0.0 : (Nf,) ndarray or scalar
+         frustration, or normalized external magnetic flux, through each face in circuit
+         (abbreviated f). If scalar the same value is used for all faces.
+    vortex_configuration=0 : (Nf,) ndarray or scalar
+         Target vorticity at each face in circuit (abbreviated n).  If scalar the same value is
+         used for all faces.
+    current_phase_relation=DefaultCPR() : CurrentPhaseRelation
+        Current-phase relation used to do computations on problem.
 
-    get_net_sourced_current() -> scalar
-
-    new_problem(current_sources=None, frustration=None, vortex_configuration=None,
-                current_phase_relation=None) -> StaticProblem
-
-    approximate(algorithm=1) -> StaticConfiguration
-
-    approximate_placed_vortices(n, x_n, y_n) -> StaticConfiguration
-
-    compute(initial_guess: StaticConfiguration, ...) -> StaticConfiguration, int, NewtonIterInfo
-
-    compute_maximal_parameter(Is_func, f_func, initial_guess: StaticConfiguration, ...)
-     -> lower_bound, upper_bound, StaticConfiguration, ParameterOptimizeInfo
-
-    compute_frustration_bounds(initial_guess: StaticConfiguration, start_frustration, ...)
-     -> (smallest_f, largest_f), (StaticConfiguration, StaticConfiguration), (ParameterOptimizeInfo, ParameterOptimizeInfo)
-
-    compute_maximal_current(initial_guess: StaticConfiguration, ...)
-     -> Is_factor, net_I, StaticConfiguration, ParameterOptimizeInfo
-
-    compute_stable_region(num_angles=40, start_frustration, start_initial_guess, ...)
-     -> [f], [net_I], [StaticConfiguration], [ParameterOptimizeInfo]
+     Notes
+     -----
+     - All physical quantities are dimensionless. See the UserManual (on github)
+       for how all quantities are normalized.
+     - It is assumed each junction has a current source, see user manual
+       (on github) for diagram of junction. To omit the sources in particular
+       junctions set the respective values to zero.
+     - To use a node-based souce current (represented as an (Nn,) array Is_node
+       with current in/e-jected at each node), convert it to a junction-based
+       source with Is = node_to_junction_current(circuit, Is_node) and
+       us Is as input for a static problem.
 
     """
 
@@ -381,18 +408,33 @@ class StaticProblem:
         self.Msq_factorization = None
 
     def get_circuit(self) -> Circuit:
+        """
+        Returns the circuit.
+        """
         return self.circuit
 
     def get_current_sources(self):
+        """
+        Returns the current sources (abbreviated Is).
+        """
         return self.current_sources
 
     def get_frustration(self):
+        """
+        Returns the frustration (abbreviated f).
+        """
         return self.frustration
 
     def get_vortex_configuration(self):
+        """
+        Returns the vortex configuration.
+        """
         return self.vortex_configuration
 
     def get_current_phase_relation(self):
+        """
+        Returns the current-phase relation.
+        """
         return self.current_phase_relation
 
     def new_problem(self, current_sources=None, frustration=None,
@@ -406,6 +448,9 @@ class StaticProblem:
                              current_phase_relation=self.current_phase_relation if current_phase_relation is None else current_phase_relation)
 
     def get_phase_zone(self):
+        """
+        Returns the phase zone (In all of pyJJAsim phase_zone=0).
+        """
         return 0
 
     def get_net_sourced_current(self):
@@ -415,16 +460,27 @@ class StaticProblem:
         M = self.get_circuit().get_cut_matrix()
         return 0.5 * np.sum(np.abs((M @ self._Is())), axis=0)
 
+    def get_node_current_sources(self):
+        """
+        Returns (Nn,) array of currents injected at nodes to create Is.
+        """
+        M = self.get_circuit().get_cut_matrix()
+        return M @ self.current_sources
+
     def approximate(self, algorithm=1):
         """
-        Computes approximate solutions.  Has two algorithms; the arctan approximation or
-        the London approximation.
+        Computes approximate solutions.
 
-        alg: name                  description
-         0   arctan approximation  assigns phases that "wind" 2*pi around vortices in z=0 phase zone,
-                                   phi(x,y) = sum_i 2 * pi * n_i * atan2(y-y_n_i,x-x_n_i)
-                                   where vortices are located at centres of their respective faces.
-         1   london approximation  Find theta in cycle space (theta = A.T @ ...) that obeys winding rule.
+        Parameters
+        ----------
+        algorithm=1:
+            Algorithm used in approximation. Can have values:
+             * 0: Does arctan approximation. This assigns phases that "wind" 2*pi around
+               vortices in z=0 phase zone, phi(x,y) = sum_i 2 * pi * n_i *
+               atan2(y-y_n_i,x-x_n_i) where vortices are located at centres of their
+               respective faces.
+             * 1: London approximation. Find theta in cycle space (theta = A.T @ ...)
+               that obeys winding rule.
         """
         if algorithm == 0:
             theta = arctan_approximation(self.circuit, self._f(), self._nt(),
@@ -442,43 +498,47 @@ class StaticProblem:
         """
         Compute arctan approximation with manual placement of vortices.
 
-        Input:
-        ------
-        n       (N,) int array      vorticity at location (x_n, y_n)
-        x_n     (N,) float array    x-coordinates of vortices
-        y_n     (N,) float array    y-coordinates of vortices
+        Parameters
+        ----------
+        n : (N,) int array
+            Vorticity at location (x_n, y_n).
+        x_n, y_n : (N,) float arrays
+            The x,y-coordinates of vortices.
         """
-
         theta = arctan_approximation_placed_vortices(self.circuit,
             self._f(), n, x_n, y_n, Asq_solver=self._Asq_factorization(), IpLIc_solver=self._IpLIc_factorization())
-
         return StaticConfiguration(self, theta)
 
-
-    def compute(self, initial_guess = None,
-                tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER, stop_as_residual_increases=True,
-                stop_if_not_target_n=False):
-
+    def compute(self, initial_guess = None, tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
+                stop_as_residual_increases=True, stop_if_not_target_n=False):
         """
-        Compute solutions using Newton iteration.
+        Compute solution to static_problem using Newton iteration.
 
-        Input:
-        ------
-        initial_guess=None                  None (London approximation is used)
-                                            or (Nj,) np.ndarray representing theta
-                                            or StaticConfiguration
-        tol=DEF_TOL                         scalar      tolerance; is solution if |residual| < tol
-        maxiter=DEF_NEWTON_MAXITER          int         maximum number of newton iterations.
-        stop_if_not_target_n=False          bool        iteration stops  if n(iter) != n (diverged)
-        stop_as_residual_increases=True     bool        iteration stops if error(iter) > error(iter - 3)  (diverged)
+        Parameters
+        ----------
+        initial_guess=None : (Nj,) array, StaticConfiguration or None
+            Guess for initial state. If None; uses London approximation. If input                 None (London approximation is used)
+            is array; it must contain values of theta to represent state.
 
-        Output:
+        tol=DEF_TOL : scalar
+            Tolerance; is solution if |residual| < tol.
+        maxiter=DEF_NEWTON_MAXITER : int
+            Maximum number of newton iterations.
+        stop_if_not_target_n=False : bool
+            Iteration stops  if n(iter) != n (diverged)
+        stop_as_residual_increases=True : bool
+            Iteration stops if error(iter) > error(iter - 3) (diverged).
+
+        Returns
         -------
-        config      StaticConfiguration     object containing solution
-        status      int                     0       converged
-                                            or 1    diverged if error(iter)>0.5 or above reasons
-                                            or 2    max_iter reached without converging or diverging
-        iter_info   NewtonIterInfo          handle containing information about newton iteration
+        config : StaticConfiguration
+            Object containing solution.
+        status : int
+            * 0: converged
+            * 1: diverged if error(iter)>0.5 or above reasons.
+            * 2: max_iter reached without converging or diverging.
+        iter_info :  NewtonIterInfo
+            Handle containing information about newton iteration.
         """
         if initial_guess is None:
             initial_guess = self.approximate(algorithm=1)
@@ -495,7 +555,7 @@ class StaticProblem:
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
-    def compute_maximal_parameter(self, Is_func, f_func,
+    def compute_maximal_parameter(self, Is_func, f_func, cp_func=None,
                                   initial_guess = None,
                                   lambda_tol=DEF_MAX_PAR_TOL, estimated_upper_bound=1.0,
                                   newton_tol=DEF_TOL, newton_maxiter=DEF_NEWTON_MAXITER,
@@ -517,31 +577,50 @@ class StaticProblem:
          - Algorithm stops if lambda_tol is reached or when newton_iteration failed to converge or diverge.
          - Algorithm needs an estimate of the upperbound for lambda to work.
 
-        Input:
-        ------
-        Is_func                                 Is_func(lambda) -> Is
-        f_func                                  f_func(lambda) -> f
-        initial_guess=None                      manual approximation at lambda=0
-                                                or None; then London approximation is used.
-        lambda_tol=DEF_MAX_PAR_TOL              stop iterating if upperbound - lowerbound < lambda_tol * lower_bound
-        estimated_upper_bound=1.0               Estimate for the upperbound for lambda
-
-        (for newton iteration at given lambda, see .compute() for documentation)
-        newton_tol=DEF_TOL
+        Parameters
+        ----------
+        Is_func : func(lambda) -> Is
+            Function with argument the optimization parameter lambda returning a valid
+            current-source input for a StaticProblem
+        f_func : func(lambda) -> f
+            Function with argument the optimization parameter lambda returning a valid
+            frustration input for a StaticProblem
+        cp_func=None : func(lambda) -> CurrentPhaseRelation or None
+            Parametrized current-phase relation. If None,
+            problem.get_current_phase_relation() is used.
+        initial_guess=None : valid initial_guess input for StaticProblem.compute()
+            Initial guess for the algorithm to start at lambda=0.
+        lambda_tol=DEF_MAX_PAR_TOL : float
+            Target precision for parameter lambda. Stops iterating if
+            upperbound - lowerbound < lambda_tol * lower_bound.
+        estimated_upper_bound=1.0 : float
+            Estimate for the upperbound for lambda.
+        newton_tol=DEF_TOL : float
+            Tolerance for newton iteration at a given value of lambda.
         max_total_newton_steps=DEF_MAX_PAR_NEWT_STEPS
-        newton_stop_as_residual_increases=True
-        newton_stop_if_not_target_n=False
+            Maximum number of newton iterations at a given value of lambda.
+            If any newton iteration reaches this, the parameter optimization stops
+            as the bounds on lambda cannot be reliably refined.
+        newton_stop_as_residual_increases=True : bool
+            Stopping criterion for newton iteration given to .compute().
+        newton_stop_if_not_target_n=False : bool
+            Stopping criterion for newton iteration given to .compute().
+        require_stability=True : bool
+            If True, convergence to a state that is dynamically unstable is
+            considered diverged. (see StaticConfiguration.is_stable())
+        stable_maxiter=DEF_STAB_MAXITER : int
+            Maximum number of iterations of determining dynamic stability.
 
-        (for determining stability of solution at given lambda, see StaticConfiguration.is_stable())
-        require_stability=True
-        stable_maxiter=DEF_STAB_MAXITER
-
-        Output:
+        Returns
         -------
-        lambda_lowerbound       float                   Lowerbound of lambda
-        lambda_upperbound       float                   Upperbound of lambda
-        config                  StaticConfiguration     Containing solutions at lambda=lambda_lowerbound
-        iteration_info          ParameterOptimizeInfo   Object containing information about the iteration.
+        lambda_lowerbound : float
+            Lowerbound of lambda.
+        lambda_upperbound : float
+            Upperbound of lambda.
+        config : StaticConfiguration
+            Containing solutions at lambda=lambda_lowerbound
+        iteration_info : ParameterOptimizeInfo
+            Object containing information about the iteration.
         """
         if initial_guess is None:
             initial_guess = self.new_problem(frustration=f_func(0), current_sources=Is_func(0)).approximate(algorithm=1)
@@ -549,14 +628,21 @@ class StaticProblem:
         if isinstance(initial_guess, StaticConfiguration):
             initial_guess = initial_guess._th()
 
+        if cp is None:
+            cp = self.get_current_phase_relation()
+        else:
+            cp = cp_func
+
         out = compute_maximal_parameter(self.get_circuit(), Is_func, f_func, z=0, n=self._nt(),
-                                        cp=self.get_current_phase_relation(), theta_0=initial_guess,
-                                        lambda_tol=lambda_tol, lambda_initial_stepsize=estimated_upper_bound,
+                                        cp=cp, theta_0=initial_guess, lambda_tol=lambda_tol,
+                                        lambda_initial_stepsize=estimated_upper_bound,
                                         stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT,
                                         newton_tol=newton_tol, newton_maxiter=newton_maxiter,
                                         newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n, require_stability=require_stability,
-                                        stable_maxiter=stable_maxiter, Asq_factorized=self._Asq_factorization())
+                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n,
+                                        require_stability=require_stability,
+                                        stable_maxiter=stable_maxiter,
+                                        Asq_factorized=self._Asq_factorization())
         lower_bound, upper_bound, theta, info = out
 
         if lower_bound is None:
@@ -575,33 +661,27 @@ class StaticProblem:
                                    stable_maxiter=DEF_STAB_MAXITER):
 
         """
-        Computes smallest and largest uniform frustration for which a stable solution exists at the
-        specified target vortex configuration and source current.
+        Computes smallest and largest uniform frustration for which a (stable) solution
+        exists at the specified target vortex configuration and source current.
 
-        Input:
-        ------
-        start_frustration=None                  frustration factor somewhere in the middle of range.
-                                                or None; is estimated based on vortex configuration.
-        initial_guess=None                      manual approximation at f=start_frustration
-                                                or None; then London approximation is used.
-        lambda_tol=DEF_MAX_PAR_TOL              see .compute_maximal_parameter()
+        For unlisted parameters see documentation of .compute_maximal_parameter()
 
-        (for newton iteration at given lambda, see .compute() for documentation)
-        newton_tol=DEF_TOL
-        max_total_newton_steps=DEF_MAX_PAR_NEWT_STEPS
-        newton_stop_as_residual_increases=True
-        newton_stop_if_not_target_n=False
+        Parameters
+        ----------
+        start_frustration=None : valid frustration input for StaticProblem  or None.
+            Frustration factor somewhere in the middle of range. If None; this is
+            estimated based on vortex configuration.
+        initial_guess=None : valid initial_guess input for StaticProblem.compute()
+            Initial guess for the algorithm to start at frustration=start_frustration.
 
-        (for determining stability of solution at given lambda, see StaticConfiguration.is_stable())
-        require_stability=True
-        stable_maxiter=DEF_STAB_MAXITER
-
-        Output:
+        Returns
         -------
-        (smallest_f, largest_f)                 resulting f range
-        (smallest_f_config, largest_f_config)   StaticConfigurations at bounds of range.
-        (smallest_f_info, largest_f_info)       ParameterOptimizeInfo objects containing
-                                                information about the iterations.
+        (smallest_f_factor, largest_f_factor) : (float, float)
+            Resulting frustration range.
+        (smallest_f_config, largest_f_config) : (StaticConfiguration, StaticConfiguration)
+            StaticConfigurations at bounds of range.
+        (smallest_f_info, largest_f_info) : (ParameterOptimizeInfo, ParameterOptimizeInfo)
+             ParameterOptimizeInfo objects containing information about the iterations.
         """
         # TODO: take into account areas.
 
@@ -644,20 +724,23 @@ class StaticProblem:
                                 require_stability=True, stable_maxiter=DEF_STAB_MAXITER):
 
         """
-        Computes largest source current for which a stable solution exists at the specified target
-        vortex configuration and frustration, where the source current is assumed to be
-        max_current_factor * self.get_current_sources().
+        Computes largest source current for which a stable solution exists at the
+        specified target vortex configuration and frustration, where the  source
+        current is assumed to be max_current_factor * self.get_current_sources().
 
-        Input:
-        ------
-        see .compute_maximal_parameter() for documentation.
+        For parameters see documentation of .compute_maximal_parameter()
 
-        Output:
+        Returns
         -------
-        max_current_factor
-        net_sources_current     Net sourced current at max_current_factor.
-        out_config              StaticConfiguration of state with maximal current.
-        info                    ParameterOptimizeInfo objects containing information about the iterations.
+        max_current_factor : float
+            Maximal current factor for which a problem with max_current_factor * Is
+            has a (stable) solution.
+        net_sources_current : float
+            Net sourced current at max_current_factor.
+        out_config : StaticConfiguration
+            StaticConfiguration of state with maximal current.
+        info : ParameterOptimizeInfo
+            ParameterOptimizeInfo objects containing information about the iterations.
 
         """
         M, Nj = self.get_circuit()._Mr(), self.get_circuit()._Nj()
@@ -691,21 +774,25 @@ class StaticProblem:
         """
         Finds edge of stable region in (f, Is) space for vortex configuration n.
 
-        Input:
-        ------
-        angles=np.linspace(0, 2*np.pi, 60)   Angles at which an extremum in (f, Is) space is searched for.
-        (see documentation of .compute_maximal_parameter() for other input.)
+        For unlisted parameters see documentation of .compute_maximal_parameter()
 
-        Output:
+        Parameters
+        ----------
+        angles=np.linspace(0, 2*np.pi, 61) : array
+            Angles at which an extremum in (f, Is) space is searched for.
+
+        Returns
         -------
-        frustration  (num_angles,) ndarray          net extermum frustration at each angle
-        net_current  (num_angles,) ndarray          net extremum sourced current at each angle
-        all_configs  list of StaticConfiguration    config at extreme value for each angle
-        all_infos    list of ParameterOptimizeInfo  objects containing information about the iterations at each angle.
+        frustration : (num_angles,) array
+            Net extermum frustration at each angle.
+        net_current : (num_angles,) array
+            Net extremum sourced current at each angle.
+        all_configs : list containing StaticConfiguration
+            Configurations at extreme value for each angle.
+        all_infos : list containing ParameterOptimizeInfo
+            Objects containing information about the iterations at each angle.
 
         """
-        import matplotlib.pyplot as plt
-
         num_angles = len(angles)
 
         frust_bnd_prb = self.new_problem(current_sources=0)
@@ -808,6 +895,7 @@ class StaticProblem:
             self.Msq_factorization = scipy.sparse.linalg.factorized(M @ M.T)
         return self.Msq_factorization
 
+
 class StaticConfiguration:
     """
     Approximation or solution to static problem.
@@ -815,31 +903,20 @@ class StaticConfiguration:
     It is defined by a StaticProblem and theta. Here theta must be a
     numpy array of shape (Nj,).
 
-    Methods:
-    --------
-    get_problem()                    Returns problem
-    get_circuit()                      Returns circuit (stored in problem)
-    get_phi()                        Returns (Nn,) array containing phases at each node
-    get_theta()                      Returns (Nj,) array containing gauge invariant phase difference at each junction
-    get_n()                          Returns (Nf,) int array containing vorticity at each face
-    get_I()                          Returns (Nj,) array containing current through each junction
-    get_J()                          Returns (Nf,) array containing path current around each face
-    get_flux()                       Returns (Nf,) array containing magnetic flux at each face
-    get_EM()                         Returns (Nj,) array containing magnetic energy at each junction
-    get_EJ()                         Returns (Nj,) array containing Josephson energy at each junction
-    get_Etot()                       Returns get_EM() + get_EJ()
-    satisfies_kirchhoff_rules()      Returns if configuration satisfies kirchhoff's rules
-    satisfies_winding_rules()        Returns if configuration satisfies the winding rules
-    satisfies_target_vortices()      Returns if vortex configuration equals that of problem
-    is_stable(maxiter, accept_ratio) Returns if configuration is dynamically stable.
-    is_solution(tol)                 Returns if configuration is a solution meaning it must satisfy both kirchhoff
-                                     and winding rules
-    is_target_solution(tol)          is_solution() and satisfies_target_vortices()
-    is_stable_target_solution()      is_solution() and satisfies_target_vortices() and is_stable()
-    get_error_kirchhoff_rules()      Returns normalized residual of kirchhoff's rules (normalized so cannot exceed 1)
-    get_error_winding_rules()        Returns normalized residual of the winding rules (normalized so cannot exceed 1)
-    get_error()                      Returns get_error_kirchhoff_rules(), get_error_winding_rules()
-    plot(...) -> plot_handles        Creates plot of configuration.
+    Provides methods to compute all physical quantities associated with the state.
+    The quantities are dimensionless, see the user manual (on github) for a list
+    of definitions.
+
+    Furthermore provides a .plot() method to visualize the quantities superimposed
+    on the circuit.
+
+    Parameters
+    ----------
+    problem : StaticProblem
+        Static problem object for which this is an approximation or solution.
+    theta : (Nj,) array
+        Gauge invariant phase differences at each junction, which fully encodes
+        the state.
     """
 
     def __init__(self, problem: StaticProblem, theta: np.ndarray):
@@ -849,101 +926,162 @@ class StaticConfiguration:
             raise ValueError("theta must be of shape (Nj,)")
 
     def get_circuit(self) -> Circuit:
+        """
+        Returns circuit (stored in problem).
+        """
         return self.problem.get_circuit()
 
     def get_problem(self) -> StaticProblem:
+        """
+        Returns the static problem this configuration is associated with.
+        """
         return self.problem
 
     def get_phi(self) -> np.ndarray:
+        """
+        Returns (Nn,) array containing phases at each node
+        """
         # by default the last node (node with highest index number) is grounded.
         M, Msq_solver = self.get_circuit()._Mr(), self.get_problem()._Msq_factorization()
         return np.append(Msq_solver(M @ self._th()), [0])
 
     def get_theta(self) -> np.ndarray:
+        """
+        Returns (Nj,) array containing gauge invariant phase difference at each junction.
+        """
         return self.theta
 
     def get_n(self) -> np.ndarray:
+        """
+        Returns (Nf,) int array containing vorticity at each face.
+        """
         A, tpr = self.get_circuit().get_cycle_matrix(), 1.0 / (2.0 * np.pi)
         return - (A @ np.round(self._th() / (2.0 * np.pi))).astype(int)
 
     def get_I(self) -> np.ndarray:
+        """
+        Returns (Nj,) array containing current through each junction.
+        """
         return self.problem._cp(self.get_circuit()._Ic(), self._th())
 
     def get_J(self) -> np.ndarray:
+        """
+        Returns (Nf,) array containing path current around each face.
+        """
         A, Asq_solver = self.get_circuit().get_cycle_matrix(), self.get_problem()._Asq_factorization()
         return Asq_solver(A @ self.get_I())
 
     def get_flux(self) -> np.ndarray:
+        """
+        Returns (Nf,) array containing magnetic flux at each face.
+        """
         A = self.get_circuit().get_cycle_matrix()
         L = self.get_circuit()._L()
         return self.problem.frustration + A @ L @ self.get_I() / (2 * np.pi)
 
     def get_EM(self) -> np.ndarray:
+        """
+        Returns (Nj,) array containing magnetic energy at each junction.
+        """
         return 0.5 * self.get_circuit()._L() @ (self.get_I() ** 2)
 
     def get_EJ(self) -> np.ndarray:
+        """
+        Returns (Nj,) array containing Josephson energy at each junction.
+        """
         return self.problem._icp(self.get_circuit()._Ic(), self._th())
 
     def get_Etot(self) -> np.ndarray:
+        """
+        Returns get_EM() + get_EJ().
+        """
         return self.get_EJ() + self.get_EM()
 
     def satisfies_kirchhoff_rules(self, tol=DEF_TOL):
+        """
+        Returns if configuration satisfies Kirchhoff's current law.
+
+        """
         return self.get_error_kirchhoff_rules() < tol
 
     def satisfies_winding_rules(self, tol=DEF_TOL):
+        """
+        Returns if configuration satisfies the winding rules.
+
+        """
         return self.get_error_winding_rules() < tol
 
     def satisfies_target_vortices(self):
+        """
+        Returns if vortex configuration equals that of problem.
+        """
         return np.all(self.get_n() == self.problem.get_vortex_configuration())
 
     def is_stable(self, maxiter=DEF_STAB_MAXITER) -> bool:
         """
-        Determines if a configuration is dynamically stable by determining if the Jacobian matrix
-        of the time-evolution at the stationairy point is negative definite.
+        Determines if a configuration is dynamically stable.
 
-        This is done using the scipy implementation of the lobpcg method.
-         - This iterative method converges to the largest eigenvalue (from below).
-         - It is prematurely cut-off if the eigenvalue l at iteration i:
-           * l(i) > 0 (hopeless)
-           * l(i) + accept_ratio * tolerance(i) < 0 ("judgement call" lambda will never exceed 0)
+        The criterion for stability is that the Jacobian matrix of the time-evolution at the
+        stationairy point is negative definite.
 
-        The last can be rephrased as that it stops when the ratio -l(i)/tolerance(i) exceeds accept_tol
-        and is "accepted".
+        Parameters
+        ----------
+        maxiter=DEF_STAB_MAXITER : int
+                maximum number of iterations to determine if solutions are stable
 
-        Inputs:
+        Returns
         -------
-        maxiter=DEF_STAB_MAXITER        maximum number of iterations to determine if solutions are stable
-        accept_ratio=DEF_STAB_RATIO     residual-to-max-eigenvalue ratio above which is decided max-eigv
-                                        must be negative.
-        Outputs:
-        --------
-        is_stable               True if configuration is dynamically stable
-        stable_iter_info        StableIterInfo object containing numerical info about the lobpcg iteration
+        is_stable : bool
+            True if configuration is dynamically stable.
+        stable_iter_info : StableIterInfo
+              StableIterInfo object containing numerical info about procedure for
+              finding the highest eigenvalue for the Jaccobian.
         """
         cp = self.get_problem().get_current_phase_relation()
         out_is_stable = is_stable(self.get_circuit(), self._th(), cp, maxiter=maxiter)
         return out_is_stable
 
     def is_solution(self, tol=DEF_TOL):
+        """
+        Returns if configuration is a solution meaning it must satisfy both Kirchhoff
+        current law and winding rules.
+        """
         return self.satisfies_kirchhoff_rules(tol) & self.satisfies_winding_rules(tol)
 
     def is_target_solution(self, tol=DEF_TOL):
+        """
+        Returns if configuration is a solution and its vortex_configuration equals
+        the one specified in problem.
+        """
         return self.is_solution(tol=tol) & self.satisfies_target_vortices()
 
     def is_stable_target_solution(self, tol=DEF_TOL, stable_maxiter=DEF_STAB_MAXITER):
+        """
+        Returns if configuration is a solution, is stable and its vortex_configuration equals
+        the one specified in problem.
+        """
         return self.is_target_solution(tol=tol) & self.is_stable(maxiter=stable_maxiter)
 
     def get_error_kirchhoff_rules(self) -> np.ndarray:
+        """
+        Returns normalized residual of kirchhoff's rules (normalized so cannot exceed 1).
+        """
         return get_kirchhoff_error(self.get_circuit(), self.get_I(), self.get_problem()._Is(),
                                    precomputed_Is_norm=self.problem._Is_norm())
 
     def get_error_winding_rules(self) -> np.ndarray:
+        """
+        Returns normalized residual of the winding rules (normalized so cannot exceed 1).
+        """
         circuit, problem = self.get_circuit(), self.get_problem()
         f, Asq_factorized = problem._f(),  problem._Asq_factorization()
         L = circuit._L()
         return get_winding_error(circuit, self._th() + L @ self.get_I(), get_g(circuit, f, 0, Asq_solver=Asq_factorized))
 
     def get_error(self):
+        """
+        Returns get_error_kirchhoff_rules(), get_error_winding_rules().
+        """
         return self.get_error_kirchhoff_rules(), self.get_error_winding_rules()
 
     def plot(self, node_quantity=None, junction_quantity="I", face_quantity=None,
@@ -961,7 +1099,9 @@ class StaticConfiguration:
              vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
              vortex_alpha=1):
         """
-        See CircuitPlot for documentation.
+        Visualize static configuration on circuit.
+
+        See :py:attr:`circuit_visualize.CircuitPlot` for documentation.
         """
         from pyjjasim.circuit_visualize import ConfigPlot
 
@@ -1005,7 +1145,9 @@ UTILITY ALGORITHMS
 """
 
 def get_kirchhoff_error(circuit: Circuit, I, Is, precomputed_Is_norm=None):
-    # Residual of kirchhoffs current law: M @ (I - Is) = 0. Normalized; so between 0 and 1.
+    """
+    Residual of kirchhoffs current law: M @ (I - Is) = 0. Normalized; so between 0 and 1.
+    """
     if precomputed_Is_norm is None:
         precomputed_Is_norm = scipy.linalg.norm(Is)
     b = circuit.get_cut_matrix() @ (I - Is)
@@ -1014,28 +1156,74 @@ def get_kirchhoff_error(circuit: Circuit, I, Is, precomputed_Is_norm=None):
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(b) / normalizer
 
 def get_winding_error(circuit: Circuit, th_p, g):
-    # Residual of winding rule: A @ (thp - g) = 0. Normalized; so between 0 and 1. (where thp = th + L @ I)
+    """
+    Residual of winding rule: A @ (thp - g) = 0. Normalized; so between 0 and 1.
+    (where thp = th + L @ I)
+    """
     A = circuit.get_cycle_matrix()
     A_norm = circuit._get_A_norm()
     normalizer = A_norm * (scipy.linalg.norm(th_p) + scipy.linalg.norm(g))
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(A @ (th_p - g)) / normalizer
 
 def principle_value(theta):
+    """
+    Principle value of angle quantity defined as its value in range [-pi, pi)
+    """
     return theta - 2 * np.pi * np.round(theta / (2 * np.pi))
 
 def get_g(circuit: Circuit, f=0, z=0, Asq_solver=None):
-    # g vector obeying A @ g = 2 * pi * (z - f)
+    """
+    g vector obeying A @ g = 2 * pi * (z - f)
+    """
     A, Nf = circuit.get_cycle_matrix(), circuit._Nf()
     if Asq_solver is None:
         Asq_solver = scipy.sparse.linalg.factorized(A @ A.T)
     return 2 * np.pi * A.T @ Asq_solver(np.broadcast_to(z - f, (Nf,)))
 
 def change_phase_zone(circuit: Circuit, theta, z_old, z_new):
-    # adds multiples of 2*pi to theta such that it obeys A @ (th_new + L @ I) = 2 * pi * (z_new - f)
-    # (assuming it already satisfied A @ (th_old + L @ I) = 2 * pi * (z_old- f))
+    """
+    Converts solution theta in old phase zone z_old to the equivalent
+    state theta_out in new phase zone z_new.
+
+    More precisely: adds multiples of 2*pi to theta such that it obeys
+    A @ (th_new + L @ I) = 2 * pi * (z_new - f)
+    (assuming it already satisfied A @ (th_old + L @ I) = 2 * pi * (z_old- f))
+
+    Parameters
+    ----------
+    circuit : Circuit
+        Circuit.
+    theta : (Nj,) array
+        Theta in old phase zone.
+    z_old : (Nf,) int array
+        Old phase zone.
+    z_new : (Nf,) int array
+        New phase zone.
+
+    Returns
+    -------
+    theta_new : (Nj,) array
+        Theta expressed in new phase zone.
+    """
+
     return theta + circuit._A_solve(np.broadcast_to(z_new - z_old, (circuit._Nf(),)).copy()) * 2.0 * np.pi
 
 def node_to_junction_current(circuit: Circuit, node_current):
+    """
+    Conversion from node_current to junction_current.
+
+    Parameters
+    ----------
+    node_current : (Nn,) array
+        At each node how much current is injected or ejected  (+ if injected)
+
+    Returns
+    -------
+    junction_current: (Nj,) array
+        Returns a configuration of currents at each junction such that at any node
+        the net injected current through all its neighbouring edges matches the specified
+        node_current.
+    """
     Mr = circuit._Mr()
     return -Mr.T @ scipy.sparse.linalg.spsolve(Mr @ Mr.T, node_current[:-1])
 
@@ -1102,6 +1290,9 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
     # prepare info handle
     info = ParameterOptimizeInfo(Is_func, f_func, lambda_tol, circuit.get_cut_matrix())
 
+    # prepare cp
+    cp_func = cp if hasattr(cp, "__call__") else lambda x: cp
+
     # prepare matrices
     if Asq_factorized is None:
         A = circuit.get_cycle_matrix()
@@ -1112,7 +1303,7 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
     if theta_0 is None:
         theta_0 = london_approximation(circuit, f, n)
         theta_0 = change_phase_zone(circuit, theta_0, n, z)
-    out = static_compute(circuit, theta_0, Is, f, n, z, cp, tol=newton_tol,
+    out = static_compute(circuit, theta_0, Is, f, n, z, cp_func(0), tol=newton_tol,
                          maxiter=newton_maxiter, Asq_solver=Asq_factorized,
                          stop_as_residual_increases=newton_stop_as_residual_increases,
                          stop_if_not_target_n=newton_stop_if_not_target_n)
@@ -1120,7 +1311,7 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
     is_solution = newton_iter_info.found_target_solution()
 
     if is_solution and require_stability:
-        is_solution &= is_stable(circuit, theta, cp, maxiter=stable_maxiter)
+        is_solution &= is_stable(circuit, theta, cp_func(0), maxiter=stable_maxiter)
 
     info._preset(is_solution)
 
@@ -1140,8 +1331,9 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
 
         # determine solution at current lambda
         Is, f = Is_func(lambda_val), f_func(lambda_val)
-        out = static_compute(circuit, theta_0, Is, f, n, z, cp, tol=newton_tol,
-                             maxiter=newton_maxiter, Asq_solver=Asq_factorized,
+        out = static_compute(circuit, theta_0, Is, f, n, z, cp_func(lambda_val),
+                             tol=newton_tol, maxiter=newton_maxiter,
+                             Asq_solver=Asq_factorized,
                              stop_as_residual_increases=newton_stop_as_residual_increases,
                              stop_if_not_target_n=newton_stop_if_not_target_n)
         theta, status, newton_iter_info = out[0], out[1],  out[2]
@@ -1150,7 +1342,7 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
             break
 
         if require_stability and is_solution:
-            is_solution &= is_stable(circuit, theta, cp, maxiter=stable_maxiter)
+            is_solution &= is_stable(circuit, theta, cp_func(lambda_val), maxiter=stable_maxiter)
 
         # update information on current iteration in info handle
         info._set(lambda_val, lambda_stepsize, is_solution, newton_iter_info)
@@ -1180,6 +1372,9 @@ APPROXIMATE STATE FINDING ALGORITHMS
 """
 
 def london_approximation(circuit: Circuit, f, n, AIpLIcA_solver=None):
+    """
+    Core algorithm computing london approximation.
+    """
     A, Nf = circuit.get_cycle_matrix(),  circuit._Nf()
     if AIpLIcA_solver is None:
         Nj = circuit._Nj()
@@ -1188,11 +1383,17 @@ def london_approximation(circuit: Circuit, f, n, AIpLIcA_solver=None):
     return 2 * np.pi * A.T @ AIpLIcA_solver(np.broadcast_to(n - f, (Nf,)))
 
 def arctan_approximation(circuit: Circuit, f, n, Asq_solver=None, IpLIc_solver=None):
+    """
+    arctan_approximation implemented in arctan_approximation_placed_vortices()
+    """
     centr_x, centr_y = circuit.get_face_centroids()
     return arctan_approximation_placed_vortices(circuit, f, n[n != 0], centr_x[n != 0], centr_y[n != 0],
                                                 Asq_solver=Asq_solver, IpLIc_solver=IpLIc_solver)
 
 def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n, Asq_solver=None, IpLIc_solver=None):
+    """
+    Core algorithm computing arctan approximation.
+    """
     n = np.atleast_1d(n)
     x_n = np.atleast_1d(x_n)
     y_n = np.atleast_1d(y_n)
@@ -1212,7 +1413,7 @@ STATIONAIRY STATE FINDING ALGORITHMS
 """
 
 
-def static_compute(circuit: Circuit, theta0=0, Is=0, f=0, n=0, z=0,
+def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
                    cp=DefaultCPR(), tol=DEF_TOL,
                    maxiter=DEF_NEWTON_MAXITER, Asq_solver=None,
                    stop_as_residual_increases=True, stop_if_not_target_n=False):
@@ -1221,43 +1422,53 @@ def static_compute(circuit: Circuit, theta0=0, Is=0, f=0, n=0, z=0,
 
     Stand-alone method. The wrappers StaticProblem and StaticConfiguration are more convenient.
 
-    Input:
+    Status
     ------
-    circuit                               Circuit                   josephson junction circuit
-    theta0                              (Nj,) ndarray           initial guess
-    Is=0                                (Nj,) ndarray           Current sources at each junction
-    f=0                                 (Nf,) ndarray           Frustration in each face
-    n=0                                 (Nf,) ndarray           number of vortices in each face
-    z=0                                 (Nf,) ndarray           phase zone of each face
-    cp=DefaultCPR()    CurrentPhaseRelation    current phase relation
-    tol=DEF_TOL                         scalar                  tolerance. is solution if |residual| < tol
-    max_iter=100                        scalar                  maximum number of newton iterations.
-    Asq_solver=None                     func: vector->vector    Solver for A @ A.T @ x == b. If None, set equal to
-                                                                scipy.sparse.linalg.factorized(A @ A.T)
-    stop_as_residual_increases=True     bool                    iteration stops if error(iter) > error(iter - 3)
-    stop_if_not_target_n=False          bool                    iteration stops if n != target_n
+    Stops iterating if ( -> status):
+     - residual is smaller than tol, target_n: 0 (converged)
+     - residual smaller than tol, not target_n:  1 (diverged)
+     - iteration number iter exceeds maxiter: 2 (indeterminate)
+     - residual exceeds 0.5: 1 (diverged)
+     - if get_n(theta) != n and stop_if_not_target_n==True: 1 (diverged)
+     - resid(iter) > resid(iter-3) and stop_as_residual_increases==True : 1 (diverged)
 
-    Output:
+    Parameters
+    ------
+    circuit: Circuit
+        Josephson junction circuit
+    theta0 : (Nj,) ndarray
+        Initial guess
+    Is : (Nj,) ndarray
+        Current sources at each junction
+    f : (Nf,) ndarray
+        Frustration in each face
+    n : (Nf,) int ndarray
+        Number of vortices in each face
+    z=0 : (Nf,) int ndarray or scalar
+        Phase zone of each face
+    cp=DefaultCPR() : CurrentPhaseRelation
+        Current phase relation
+    tol=DEF_TOL :  scalar
+        Tolerance. is solution if |residual| < tol.
+    max_iter=100 :  scalar
+        Maximum number of newton iterations.
+    Asq_solver=None :  func: vector->vector
+        Solver for A @ A.T @ x == b. If None, set equal to scipy.sparse.linalg.factorized(A @ A.T)
+    stop_as_residual_increases=True : bool
+        Iteration stops if error(iter) > error(iter - 3)
+    stop_if_not_target_n=False : bool
+        Iteration stops if n != target_n
+
+    Returns
     -------
-    theta                              (Nj,) ndarray            gauge invariant phase difference of solution
-    convergence_status                 int                      0 -> converged
-                                                                1 -> diverged
-                                                                2 -> max_iter reached without converging or diverging.
-    info                               NewtonIterInfo           Information about iteration (timing, steps, residuals, etc)
-
-
-    Extra information:
-    ------------------
-    Stops iterating if:                         convergence_status
-     - residual is smaller than tol             0 (converged) if get_n(theta) == n
-                                                1 (diverged)  if get_n(theta) != n
-     - iteration number iter exceeds maxiter    2 (indeterminate)
-     - residual exceeds 0.5                     1 (diverged)
-     - if get_n(theta) != n and                 1 (diverged)
-       stop_if_not_target_n==True
-     - resid(iter) > resid(iter-3) and          1 (diverged)
-       stop_as_residual_increases==True
-
+    theta : (Nj,) ndarray
+        Gauge invariant phase difference of solution
+    convergence_status : int
+        * 0 -> converged
+        * 1 -> diverged
+        * 2 -> max_iter reached without converging or diverging.
+    info : NewtonIterInfo
+        Information about iteration (timing, steps, residuals, etc)
     """
 
     # prepare newton iter info
@@ -1324,7 +1535,7 @@ STABILITY ALGORITHMS
 
 def is_stable(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER):
     """
-    Determines if a configuration on a circuit with inductance is stable in the sense that
+    Core implementation to determine if a configuration on a circuit is stable in the sense that
     the Jacobian is negative definite. Does not explicitly check if configuration is a stationairy point.
     """
     Nj, Nnr = circuit._Nj(), circuit._Nnr()

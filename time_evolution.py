@@ -15,66 +15,76 @@ Time Evolution Module
 
 class TimeEvolutionProblem:
     """
-    Define multiple time evolution problems with varying parameters in a Josephson Junction Circuit circuit.
 
-     - All problems are computed in one call (generally much faster than computing individual problems).
-     - Use self.compute() to obtain a TimeEvolutionResult object containing the resulting time evolution.
+    Define multiple time evolution problems with varying parameters in a Josephson circuit.
 
-    Physical parameters:       symbol  default
-     - time_step               dt      0.05
-     - time_step_count         Nt      1000
-     - current_phase_relation  cp      DefaultCPR()
+     - All problems are computed in one call (ofter faster than computing one by one).
+     - The problem count is abbreviated with the symbol W.
+     - Use self.compute() to obtain a TimeEvolutionResult object containing the
+       resulting time evolution.
+     - Be careful input arrays for Is, f, etc. have the correct shape. See numpy
+       broadcasting for details https://numpy.org/doc/stable/user/basics.broadcasting.html
+       Remember Nj is number of junctions, Nn is number of nodes and Nf is number of faces.
 
-    Problem space parameters: symbol  default   shape
-     - frustration            f       0.0       array broadcast compatible to (Nf, W, Nt)
-                                                or f(i) -> broadcast compatible to (Nf, W) for i in range(Nt)
-     - current_sources        Is      0.0       array broadcast compatible to (Nj, W, Nt)
-                                                or Is(i) -> broadcast compatible to (Nj, W) for i in range(Nt)
-     - voltage_sources        Vs      0.0       array broadcast compatible to (Nj, W, Nt)
-                                                or Vs(i) -> broadcast compatible to (Nj, W) for i in range(Nt)
-     - temperature            T       0.0       array broadcast compatible to (Nj, W, Nt)
-                                                or T(i) -> broadcast compatible to (Nj, W) for i in range(Nt)
+    Parameters
+    ----------
+    circuit : Circuit
+        Josephson circuit on which the problem is based.
+    time_step=0.05 :
+        Time between consecutive steps (abbreviated dt).
+    time_step_count=1000 :         Nt
+        Total number of time steps in evolution (abbreviated Nt).
+    current_phase_relation= DefaultCPR()
+        Current-phase relation (abbreviated cp).
+    frustration=0.0 : array broadcastable to (Nf, W, Nt).
+        Normalized external flux per site, called frustration (abbreviated f)
+    frustration (alternative) : f(i) -> array broadcastable to (Nf, W) for i in range(Nt)
+        Alternative input type for frustration using a function.
+    current_sources : array broadcastable to (Nj, W, Nt)
+        Current source strength at each junction in circuit (abbreviated Is).
+    current_sources (alternative) : Is(i) -> array broadcastable to (Nj, W) for i in range(Nt)
+        Alternative input type for current_sources using a function.
+    voltage_sources=0.0 : array broadcastable to (Nj, W, Nt)
+        Voltage source value at each junction in circuit (abbreviated Vs).
+    voltage_sources (alternative) : Vs(i) -> array broadcastable to (Nj, W) for i in range(Nt)
+        Alternative input type for voltage_sources using a function.
+    temperature=0.0 : array broadcastable to (Nj, W, Nt)
+        Temperature at each junction in circuit (abbreviated T).
+    temperature (alternative) : T(i) -> array broadcastable to (Nj, W) for i in range(Nt)
+        Alternative input type for temperature using a function.
+    store_time_steps=None : array in range(Nt), mask of shape (Nt,) or None
+        Indicate at which timesteps data is stored in the output array(s).
+    store_theta=True : bool
+        If true, theta (the gauge invarian t phase difference) is stored during
+        a time evolution (at timesteps specified with store_time_steps) and
+        returned when simulation is done.
+    store_voltage=True : bool
+        If true, voltage is stored during a time evolution (at timesteps specified
+        with store_time_steps) and returned when simulation is done.
+    store_current=True : bool
+        If true, voltage is stored during a time evolution (at timesteps specified
+        with store_time_steps) and returned when simulation is done.
+    config_at_minus_1=None : (Nj, W) array or StaticConfiguration or None
+        initial condition at timestep=-1. set to self.get_static_problem(t=0,n=z).compute()
+    config_at_minus_2=None : (Nj, W) array or StaticConfiguration or None
+        initial condition at timestep=-2
 
-    Where W is problem_count.
-
-    Store parameters:     default    type                           Needed for:
-     - store_time_steps   None       None (represents all points)
-                                     or array in range(Nt)
-                                     or mask of shape (Nt,)
-     - store_theta        True       bool                           phi, EJ, ...
-     - store_voltage      True       bool
-     - store_current      True       bool                           Phi, ...
-
-    The store parameters allow one to control what quantities are stored at what timesteps. Only the base quantities
-    theta, voltage and current can be stored in the resulting TimeEvolutionResult; other quantities like energy
-    or magnetic_flux are computed based on these. A list is given which quantities require what base quantities
-    to be stored (see documentation of TimeEvolutionResult for more information).
-
-    Initial condition parameters:   default  type
-     - config_at_minus_1            None     StaticConfiguration    initial condition at timestep=-1
-                                             or None                 -> set to self.get_static_problem(t=0,n=z).compute()
-     - config_at_minus_2            None     StaticConfiguration    initial condition at timestep=-2
-                                             or None                 -> set to self.get_static_problem(t=0,n=z).compute()
-
-    Methods
-     - compute() -> TimeEvolutionResult
-     - get_static_problem(time_step=0) -> StaticProblem
-     - get_problem_count()
-     - get_circuit()
-     - get_time_step()
-     - get_time_step_count()
-     - get_current_phase_relation()
-     - get_phase_zone()
-     - get_frustration()
-     - get_current_sources()
-     - get_voltage_sources()
-     - get_temperature()
-     - get_store_time_steps()
-     - get_store_theta()
-     - get_store_voltage()
-     - get_store_current()
-
-
+    Notes
+    -----
+     - All physical quantities are dimensionless. See the UserManual (on github)
+       for how all quantities are normalized.
+     - It is assumed each junction has a current source and voltage source see
+       user manual (on github) for diagram of junction. To omit the sources in
+       particular junctions set the respective values to zero.
+     - To use a node-based source current (represented as an (Nn,) array Is_node
+       with current in/e-jected at each node), convert it to a junction-based
+       source with Is = static_problem.node_to_junction_current(circuit, Is_node)
+       and use Is as input for a time evolution.
+     - The store parameters allow one to control what quantities are stored at what timesteps.
+       Only the base quantities theta, voltage and current can be stored in the resulting
+       TimeEvolutionResult; other quantities like energy or magnetic_flux are computed based
+       on these. See documentation of `TimeEvolutionResult` to see per  quantity which
+       base quantities are required.
     """
 
     def __init__(self, circuit: Circuit, time_step=0.05, time_step_count=1000,
@@ -114,86 +124,167 @@ class TimeEvolutionProblem:
         self.store_current = store_current
 
         self.config_at_minus_1 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_1 is None else config_at_minus_1
+        if hasattr(self.config_at_minus_1, "get_theta"):
+            self.config_at_minus_1.get_theta()[:, None]
         self.config_at_minus_2 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_2 is None else config_at_minus_2
+        if hasattr(self.config_at_minus_2, "get_theta"):
+            self.config_at_minus_2.get_theta()[:, None]
         self.prepared_theta_s = np.zeros((Nj, W), dtype=np.double)
 
     def get_static_problem(self, vortex_configuration, problem_nr=0, time_step=0) -> StaticProblem:
+        """
+        Return a static problem with properties copied from this time evolution.
+
+        Parameters
+        ----------
+        vortex_configuration : (Nf,) array or None
+            Vortex configuration of returned static problem.
+        problem_nr=0 : int in range(W)
+            Selected problem number to copy properties of.
+        time_step=0 : int in range(Nt)
+            Selected timestep to copy properties of.
+        Returns
+        -------
+        static_problem : StaticProblem
+            Static problem where the parameters are copied from this time evolution.
+        """
         return StaticProblem(self.circuit, current_sources=self._Is(time_step)[:, problem_nr].copy(),
                              frustration=self._f(time_step)[:, problem_nr].copy(),
                              vortex_configuration=vortex_configuration,
                              current_phase_relation=self.current_phase_relation)
 
     def get_problem_count(self):
+        """
+        Return number of problems (abbreviated W).
+        """
         return self.problem_count
 
     def get_circuit(self) -> Circuit:
+        """
+        Returns the circuit.
+        """
         return self.circuit
 
     def get_time_step(self):
+        """
+        Return the timestep (abbreviated dt).
+        """
         return self.time_step
 
     def get_time_step_count(self):
+        """
+        Return the number of timesteps (abbreviated Nt).
+        """
         return self.time_step_count
 
     def get_current_phase_relation(self):
+        """
+        Returns the current-phase relation.
+        """
         return self.current_phase_relation
 
     def get_phase_zone(self):
+        """
+        Returns the phase zone (In all of pyJJAsim phase_zone=0).
+        """
         return 0
 
     def get_frustration(self):
+        """
+        Returns the frustration (abbreviated f).
+        """
         return self.frustration
 
     def get_current_sources(self):
+        """
+        Returns the current sources (abbreviated Is).
+        """
         return self.current_sources
 
     def get_net_sourced_current(self, time_step):
+        """
+        Gets the sum of all (positive) current injected at nodes to create Is.
+
+        Parameters
+        ----------
+        time_step : int
+            Time step at which to return net sourced current.
+
+        Returns
+        -------
+        net_sourced_current : (W,) array
+            Net sourced current through array for each problem at specified timestep.
+        """
         M = self.get_circuit().get_cut_matrix()
         return 0.5 * np.sum(np.abs((M @ self._Is(time_step))), axis=0)
 
     def get_node_current_sources(self, time_step):
+        """
+        Returns (Nn,) array of currents injected at nodes to create Is.
+
+        Parameters
+        ----------
+        time_step : int
+            Time step at which to return node currents.
+
+        Returns
+        -------
+        node_current : (Nn, W) array
+            Node currents for each problem at specified timestep.
+        """
         M = self.get_circuit().get_cut_matrix()
         return M @ self._Is(time_step)
 
     def get_voltage_sources(self):
+        """
+        Return voltage sources at each junction (abbreviated Vs)
+        """
         return self.voltage_sources
 
     def get_temperature(self):
+        """
+        Return temperature at each junction (abbreviated T)
+        """
         return self.temperature
 
     def get_store_time_steps(self):
+        """
+        Return at which timesteps data is stored in the output array(s).
+
+    config_at_minus_1=None : (Nj, W) array or StaticConfiguration or None
+        initial condition at timestep=-1. set to self.get_static_problem(t=0,n=z).compute()
+    config_at_minus_2=None : (Nj, W) array or StaticConfiguration or None
+        initial condition at timestep=-2
+        """
         return self.store_time_steps
 
     def get_store_theta(self):
+        """
+        Return if theta is stored during a time evolution.
+        """
         return self.store_theta
 
     def get_store_voltage(self):
+        """
+        Return if voltage is stored during a time evolution.
+        """
         return self.store_voltage
 
     def get_store_current(self):
+        """
+        Return if current is stored during a time evolution.
+        """
         return self.store_current
 
     def get_time(self):
+        """
+        Return (Nt,) array with time value at each step of evolution.
+        """
         return np.arange(self._Nt(), dtype=np.double) * self._dt()
-
-    def get_time_at_stored(self):
-        return self.get_time()[self.store_time_steps]
 
     def compute(self):
         """
         Compute time evolution on an Josephson Circuit.
-
-        Requires an initial configuration; step0_init. Must be StaticConfiguration or None.
-        If None; it is set to self.to_static_problem().compute()
-
-        If the circuit has capacitance, requires a second initial configuration; step1_init. If
-        this is set to None, it will be assigned the value of step0_init.
-
-        If there is no inductance and algorithm=0; the initial condition must obey A(th-g) = 0.
-        If this is not obeyed, it is automatically projected to obey the constraint. Due to numerical
-        rounding, it will slowly drift away from this condition. Use rounding_flux_drift_correction=True
-        to apply projection every 100 timesteps.
-
         """
         if self.get_circuit()._has_mixed_inductance():
             return time_evolution_algo_1(self)
@@ -278,6 +369,11 @@ class TimeEvolutionProblem:
         return time_points
 
 def time_evolution_algo_0(problem: TimeEvolutionProblem):
+    """
+    Algorithm 0 for time-evolution. Does not allow for mixed inductance, but if it
+    does it is usually faster than algorithm 1.
+    """
+
     out = TimeEvolutionResult(problem)
 
     circuit = problem.get_circuit()
@@ -325,7 +421,8 @@ def time_evolution_algo_0(problem: TimeEvolutionProblem):
 
 def time_evolution_algo_1(problem: TimeEvolutionProblem):
     """
-
+    Algorithm 1 for time-evolution. Allows for mixed inductance, but is
+    usually slower than algorithm 0.
     """
 
     out = TimeEvolutionResult(problem)
@@ -380,48 +477,27 @@ def time_evolution_algo_1(problem: TimeEvolutionProblem):
     return out
 
 
+class ThetaNotStored(Exception):
+    pass
+
+class CurrentNotStored(Exception):
+    pass
+
+class VoltageNotStored(Exception):
+    pass
+
+class DataAtTimepointNotStored(Exception):
+    pass
+
 class TimeEvolutionResult:
     """
     Represents data of simulated time evolution(s) on a Josephson circuit.
 
-    It is defined by a problem, circuit and any of the quantities theta, current and voltage.
-    These must be of shape (*problem.get_shape(), Nj, Nt_stored). Here Nj is the junction count
-    and Nt_stored is the number of time steps that are stored during simulation.
-
-    One can query several properties of the circuit configurations:
-
-     (property)                           (symbol)           (needs)    (shape)
-     - phases                             phi                th         (pr_shape, Nn, Nt_stored)
-     - gauge_invariant_phase_difference   theta                         (pr_shape, Nj, Nt_stored)
-     - vortex_configuration               n                  th         (pr_shape, Nj, Nt_stored)
-     - junction_current                   I                             (pr_shape, Nj, Nt_stored)
-     - supercurrent                       Isup               th         (pr_shape, Nj, Nt_stored)
-     - path_current                       J                  I          (pr_shape, Np, Nt_stored)
-     - magnetic_flux (through faces)      flux               I          (pr_shape, Nn, Nt_stored)
-     - junction_voltage                   V                             (pr_shape, Nj, Nt_stored)
-     - node_voltage                       U                  V          (pr_shape, Nn, Nt_stored)
-     - josephson_energy                   EJ                 th         (pr_shape, Nj, Nt_stored)
-     - magnetic_energy                    EM                 I          (pr_shape, Nj, Nt_stored)
-     - capacitor_energy                   EC                 V          (pr_shape, Nj, Nt_stored)
-     - total_energy                       Etot               th,(I),(V) (pr_shape, Nj, Nt_stored)
-
-    A property query is done with te command .get_[symbol](select_time_points=None)
-
-    where:
-        select_time_points      None (represents all stored points)
-                                or array in range(Nt)
-                                or mask of shape (Nt,)
-
-    TimeEvolutionResult only store theta, current and voltage data at specified timepoints,
-    other queried properties must be calculated from that. The above table shows which
-    quantities need to be stored to be able to query a certain property. (parenthesis
-    mean quantities may be needed).
-
-    Thermal quantities are based only on theta, and represent "thermal averages", in the
-    sense that derivatives are computed on theta over the data at the queried timepoints
-    (nót the stored timepoints). This naturally smooths the quantity, which filters the
-    thermal noise present at nonzero temperature.
-
+    One can query several properties of the circuit configurations, like currents
+    and voltages. TimeEvolutionResult only store theta, current and voltage data
+    from which all quantities are computed. However, one can choose not to store
+    all three to save memory. An error is raised if one attempts to compute a property
+    for which the required data is not stored.
     """
 
     def __init__(self, problem: TimeEvolutionProblem):
@@ -448,33 +524,55 @@ class TimeEvolutionResult:
 
     def _th(self, time_point) -> np.ndarray:
         if self.theta is None:
-            raise ValueError("Cannot query theta; quantity is not stored during time evolution simulation.")
+            raise ThetaNotStored("Cannot query theta; quantity is not stored during time evolution simulation.")
         return self.theta[:, :, self._time_point_index(time_point)]
 
     def _V(self, time_point) -> np.ndarray:
         if self.theta is None:
-            raise ValueError("Cannot query voltage; quantity is not stored during time evolution simulation.")
+            raise VoltageNotStored("Cannot query voltage; quantity is not stored during time evolution simulation.")
         return self.voltage[:, :, self._time_point_index(time_point)]
 
     def _I(self, time_point) -> np.ndarray:
         if self.theta is None:
-            raise ValueError("Cannot query current; quantity is not stored during time evolution simulation.")
+            raise CurrentNotStored("Cannot query current; quantity is not stored during time evolution simulation.")
         return self.current[:, :, self._time_point_index(time_point)]
 
     def _time_point_index(self, time_points):
         if time_points is None:
             time_points = self.problem.store_time_steps
         if not np.all(self.problem.store_time_steps[time_points]):
-            raise ValueError("Queried a timepoint that is not stored during time evolution simulation.")
+            raise DataAtTimepointNotStored("Queried a timepoint that is not stored during time evolution simulation.")
         return self.time_point_indices[time_points]
 
     def get_problem_count(self):
+        """
+        Return number of problems (abbreviated W).
+        """
         return self.problem.get_problem_count()
 
     def get_circuit(self) -> Circuit:
+        """
+        Return Josephson circuit.
+        """
         return self.problem.get_circuit()
 
     def select_static_configuration(self, prob_nr, time_step) -> StaticConfiguration:
+        """
+        Return a StaticConfiguration object with the data copied from this result for
+        a given problem number at a given timestep.
+
+        Parameters
+        ----------
+        prob_nr : int
+            Selected problem.
+        time_step : int
+            Selected timestep.
+
+        Returns
+        -------
+        static_conf : StaticConfiguration
+            A StaticConfiguration object with the data copied from this result
+        """
         if self.theta is None:
             raise ValueError("Theta not stored; cannot select static configuration.")
         problem = StaticProblem(self.get_circuit(), current_sources=self.problem._Is(time_step)[:, prob_nr],
@@ -484,6 +582,21 @@ class TimeEvolutionResult:
         return StaticConfiguration(problem, self.theta[:, prob_nr, time_step])
 
     def get_phi(self, select_time_points=None) -> np.ndarray:
+        """
+        Return node phases. Last node is grounded. Requires theta to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        phi : (Nn, W, nr_of_selected_timepoints) array
+             Node phases.
+        """
         M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
@@ -494,45 +607,196 @@ class TimeEvolutionResult:
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_theta(self, select_time_points=None) -> np.ndarray:
+        """
+        Return gauge invariant phase differences.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        theta : (Nj, W, nr_of_selected_timepoints) array
+             Gauge invariant phase differences.
+        """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._th)
 
     def get_n(self, select_time_points=None) -> np.ndarray:
+        """
+        Return vorticity at faces. Requires theta to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        n : (Nf, W, nr_of_selected_timepoints) int array
+             Vorticity.
+        """
         A = self.get_circuit().get_cycle_matrix()
         func = lambda tp:  -A @ np.round(self._th(tp) / (2.0 * np.pi))
         return self._select(select_time_points, self.get_circuit()._Nf(), func).astype(int)
 
     def get_EJ(self, select_time_points=None) -> np.ndarray:
+        """
+        Return Josephson energy of junctions. Requires theta to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        EJ : (Nf, W, nr_of_selected_timepoints) array
+             Josephson energy.
+        """
         func = lambda tp: self.problem._icp(self._th(tp))
         return self._select(select_time_points, self.get_circuit()._Nj(), func)
 
     def get_I(self, select_time_points=None) -> np.ndarray:
+        """
+        Return current through junctions.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        I : (Nj, W, nr_of_selected_timepoints) array
+             Current.
+        """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._I)
 
     def get_Isup(self, select_time_points=None) -> np.ndarray:
+        """
+        Return supercurrent through junctions. Requires theta to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        Isup : (Nj, W, nr_of_selected_timepoints) array
+             Supercurrent.
+        """
         func = lambda tp: self.problem._cp(self._th(tp))
         return self._select(select_time_points, self.get_circuit()._Nj(), func)
 
     def get_J(self, select_time_points=None) -> np.ndarray:
+        """
+        Return cycle-current around faces. Requires current to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        J : (Nf, W, nr_of_selected_timepoints) array
+             Cycle-current around faces.
+        """
         A = self.get_circuit().get_cycle_matrix()
         solver = scipy.sparse.linalg.factorized(A @ A.T)
         func = lambda tp: solver(A @ self._I(tp))
         return self._select(select_time_points, self.get_circuit()._Nf(), func)
 
     def get_flux(self, select_time_points=None) -> np.ndarray:
+        """
+        Return magnetic flux through faces. Requires current to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        flux : (Nf, W, nr_of_selected_timepoints) array
+             Magnetic flux through faces
+        """
         Nj, Nf = self.get_circuit()._Nj(), self.get_circuit()._Nf()
         A = self.get_circuit().get_cycle_matrix()
         func = lambda tp: A @ (self.get_circuit()._L() @ self._I(tp))
         return self._select(select_time_points, Nf, func)
 
     def get_EM(self, select_time_points=None) -> np.ndarray:
+        """
+        Return magnetic energy associated with wires. Requires current to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        EM : (Nf, W, nr_of_selected_timepoints) array
+             Magnetic energy associated with wires.
+        """
         Nj = self.get_circuit()._Nj()
         func = lambda tp: 0.5 * self.get_circuit()._L() @ (self._I(tp) ** 2)
         return self._select(select_time_points, Nj, func)
 
     def get_V(self, select_time_points=None):
+        """
+        Return voltage over junctions.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        V : (Nj, W, nr_of_selected_timepoints) array
+             Voltage.
+        """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._V)
 
     def get_U(self, select_time_points=None):
+        """
+        Return voltage potential at nodes. Last node is groudend.Requires
+        voltage to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        U : (Nn, W, nr_of_selected_timepoints) array
+             Voltage potential at nodes.
+        """
         M = self.get_circuit()._Mr()
         Mrsq = M @ M.T
         Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
@@ -541,11 +805,43 @@ class TimeEvolutionResult:
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_EC(self, select_time_points=None):
+        """
+        Return energy stored in capacitors at each junction. Requires voltage
+        to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        EC : (Nj, W, nr_of_selected_timepoints) array
+            Energy stored in capacitors
+        """
         C, Nj = self.get_circuit()._C(), self.get_circuit()._Nj()
         func = lambda tp: 0.5 * C[:, None] * self._V(tp) ** 2
         return self._select(select_time_points, Nj, func)
 
     def get_Etot(self, select_time_points=None) -> np.ndarray:
+        """
+        Return total energy associated with each junction. Requires theta,
+        current and voltage to be stored.
+
+        Parameters
+        ----------
+        select_time_points=None : array in range(Nt), (Nt,) mask or None
+            Selected time_points at which to return data. If None, all stored
+            timepoints are returned. Raises error if no data is available at
+            requested timepoint.
+
+        Returns
+        -------
+        Etot : (Nj, W, nr_of_selected_timepoints) array
+            Total energy associated with each junction.
+        """
         return self.get_EJ(select_time_points) + self.get_EM(select_time_points) + \
                self.get_EC(select_time_points)
 
@@ -566,6 +862,11 @@ class TimeEvolutionResult:
                 face_quantity_logarithmic_colors=False,
                 vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                 vortex_alpha=1):
+        """
+        Visualize a problem at a specified timestep.
+
+        See :py:attr:`circuit_visualize.CircuitPlot` for documentation.
+        """
         return self.animate(problem_nr=problem_nr, time_points=np.array([time_point]),
             vortex_diameter=vortex_diameter, vortex_color=vortex_color,
             anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
@@ -608,31 +909,37 @@ class TimeEvolutionResult:
                 vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                 vortex_alpha=1):
 
-        from pyjjasim.circuit_visualize import ConfigMovie
+        """
+        Animate time evolution of a problem as a movie.
 
-        self.animation =ConfigMovie(self, problem_nr=problem_nr, time_points=time_points,
-            vortex_diameter=vortex_diameter, vortex_color=vortex_color,
-            anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
-            vortex_quantity=vortex_quantity,
-            show_grid=show_grid, grid_width=grid_width,
-            grid_color=grid_color, grid_alpha=grid_alpha,
-            show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
-            junction_quantity=junction_quantity,
-            arrow_width=arrow_width, arrow_scale=arrow_scale,
-            arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-            arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-            arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-            arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
-            node_face_color=node_face_color, node_edge_color=node_edge_color,
-            node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
-            node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-            node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-            node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-            face_quantity=face_quantity,
-            face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-            face_quantity_alpha=face_quantity_alpha,
-            face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-            figsize=figsize, animate_interval=animate_interval, title=title).make()
+        See :py:attr:`circuit_visualize.TimeEvolutionMovie` for documentation.
+        """
+
+        from pyjjasim.circuit_visualize import TimeEvolutionMovie
+
+        self.animation = TimeEvolutionMovie(self, problem_nr=problem_nr, time_points=time_points,
+                                           vortex_diameter=vortex_diameter, vortex_color=vortex_color,
+                                           anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
+                                           vortex_quantity=vortex_quantity,
+                                           show_grid=show_grid, grid_width=grid_width,
+                                           grid_color=grid_color, grid_alpha=grid_alpha,
+                                           show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
+                                           junction_quantity=junction_quantity,
+                                           arrow_width=arrow_width, arrow_scale=arrow_scale,
+                                           arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
+                                           arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
+                                           arrow_minlength=arrow_minlength, arrow_color=arrow_color,
+                                           arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
+                                           node_face_color=node_face_color, node_edge_color=node_edge_color,
+                                           node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
+                                           node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
+                                           node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
+                                           node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
+                                           face_quantity=face_quantity,
+                                           face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
+                                           face_quantity_alpha=face_quantity_alpha,
+                                           face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
+                                           figsize=figsize, animate_interval=animate_interval, title=title).make()
         return self.animation
 
     def __str__(self):
@@ -657,7 +964,7 @@ class AnnealingProblem:
     """
     Anneals a circuit by gradually lowering the temperature, with the goal for finding a stationairy
     state with reasonably low energy. The temperature profile is computed automatically based on the
-    measured vortex mobility during the run.
+    measured vortex mobility during the run. Annealing is executed with the .compute() method.
 
      - Does interval_count iterations of interval_steps timeseteps.
      - The first iteration is done at T=start_T
@@ -666,10 +973,38 @@ class AnnealingProblem:
      - The target vortex mobility v_t at iter i  is v_t(i) = v * ((N - i)/N) ** 1.5, so goes from v to 0.
      - At the end it does some steps at T=0 to ensure it is settled in a stationairy state.
      - vortex mobility is defined as abs(n(i+1) - n(i))) / dt averaged over space and time.
+
+    Parameters
+    ----------
+    circuit : Circuit
+        Circuit used for annealing
+    time_step=0.5 : float
+        time step used in time evolution. Can be set quite large as the simulation does not
+        need to be accurate.
+    frustration=0.0 : float or (Nf,) array
+        Frustration at each face. If scalar; same frustration is assumed for each face.
+    current_sources=0 : float or (Nj,) array
+        Current sources. Note that if this is set too high, a static configuration
+        may not exist, so likely the temperature will go to zero.
+    problem_count=1 : int
+        Number of problems computed simultaneously. The problems are identical,
+        but will likely end up in different state.
+    interval_steps=10 : int
+        Number of timesteps for every iteration.
+    interval_count=1000 : int
+        Number of iterations. After each iteration the temperature is recomputed.
+    vortex_mobility=0.001 : float
+        Target vortex mobility is vortex_mobility at iteration and lowered to
+        zero by the last iteration. Temperature is adjusted such that this
+        target mobility is achieved.
+    start_T=1.0 : float
+        Temperature at first iteration.
+    T_factor=1.03 : float
+        Factor with which temperature is multiplied or divided by every iteration.
     """
     def __init__(self, circuit: Circuit, time_step=0.5, interval_steps=10,
-                 interval_count=1000, vortex_mobility=0.001,
                  frustration=0.0, current_sources=0, problem_count=1,
+                 interval_count=1000, vortex_mobility=0.001,
                  start_T=1.0, T_factor=1.03):
         self.circuit = circuit
         self.time_step = time_step
@@ -683,10 +1018,13 @@ class AnnealingProblem:
         self.T_factor = T_factor
 
     def get_vortex_mobility(self, n):
+        """
+        Computes vortex mobility on a set of consecutive vortex configurations.
+        """
         Nf = self.circuit.face_count()
         return np.sum(np.sum(np.abs(np.diff(n, axis=2)), axis=2), axis=0) / (Nf * self.time_step * (self.interval_count - 1))
 
-    def temperature_adjustment(self, vortex_mobility, iteration):
+    def _temperature_adjustment(self, vortex_mobility, iteration):
         v = self.vortex_mobility
         upper = v[iteration] if (np.array(v)).size == self.interval_count else \
             v * ((self.interval_count - iteration) / self.interval_count) ** 1.5
@@ -695,43 +1033,52 @@ class AnnealingProblem:
 
     def compute(self):
         """
-        Execute the annealing procedure. Returns:
-        vortex_configurations   (Nf, problem_count)
-        energies                (problem_count,)
-        status
-        configurations          (problem_count,) list of StaticConfiguration objects
-        temperature_profiles    (interval_count, problem_count)
+        Executes the annealing procedure.
+
+        Returns
+        -------
+        status : (problem_count,) int array
+            The value 0 means converged, 1 means diverged, 2 means indeterminate status.
+        configurations : (problem_count,) list
+            A list of StaticConfiguration objects containing the resulting configurations.
+        temperature_profiles : (interval_count, problem_count) array
+            For each problem the temperature profile used for the annealing.
         """
 
+        # prepare runs
         f = np.atleast_1d(self.frustration)[:, None, None]
         th = np.zeros((self.circuit.junction_count(), self.problem_count))
         prob = TimeEvolutionProblem(self.circuit, time_step_count=self.interval_steps, time_step=self.time_step,
                                     frustration=f, current_sources=self.current_sources, temperature=self.T,
                                     store_current=False, store_voltage=False)
-        T = np.zeros((self.interval_count, self.problem_count))
+        temperature_profiles = np.zeros((self.interval_count, self.problem_count))
+
+        # Do interval_count runs of interval_steps steps. After each step update temperature.
         for i in range(self.interval_count):
             prob.temperature = self.T * np.ones((1, 1, self.interval_steps))
             prob.config_at_minus_1 = th
             out = prob.compute()
             vortex_configurations = out.get_n()
             vortex_mobility = self.get_vortex_mobility(vortex_configurations)
-            self.temperature_adjustment(vortex_mobility, i)
+            self._temperature_adjustment(vortex_mobility, i)
             th = out.get_theta()[..., -1]
-            # stat_conf = out.select_static_configuration(prob_nr=0, time_step=self.interval_steps-1)
-            # print(stat_conf.get_error())
-            T[i, :] = self.T[0, :, 0]
+            temperature_profiles[i, :] = self.T[0, :, 0]
+
+        # finish with some runs at T=0 with half the timestep
         prob.temperature = np.zeros((1, 1, self.interval_steps))
         prob.time_step /=2
-        for i in range(1 + (self.interval_count//5)):
+        for i in range(5):
             prob.config_at_minus_1 = th
             out = prob.compute()
+            th = out.get_theta()[..., -1]
+
+        # extract result
         vortex_configurations = out.get_n()[:, :, -1]
         data = [prob.get_static_problem(vortex_configurations[:, p], problem_nr=0, time_step=0).compute()
                 for p in range(self.problem_count)]
         configurations = [d[0] for d in data]
-        energies = np.array([np.mean(d[0].get_Etot()) for d in data])
         status = np.array([d[1] for d in data])
-        return vortex_configurations, energies, status, configurations, T
+        return status, configurations, temperature_profiles
 
 
 

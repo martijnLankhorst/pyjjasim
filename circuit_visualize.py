@@ -15,7 +15,7 @@ from pyjjasim import Circuit
 from pyjjasim.static_problem import StaticConfiguration
 from pyjjasim.time_evolution import TimeEvolutionResult
 
-__all__ = ["CircuitPlot", "CircuitMovie", "ConfigMovie", "ConfigMovie"]
+__all__ = ["CircuitPlot", "ConfigPlot", "CircuitMovie", "TimeEvolutionMovie"]
 
 # TODO:
 
@@ -26,15 +26,117 @@ class CircuitPlot:
 
     Allows one to show node quantities, arrow quantities, face quantities and vortices.
         - Node quantities are shown as colors on the nodes.
-        - arrow quantities are displayed at the junctions and the length of the arrows is
+        - Arrow quantities are displayed at the junctions and the length of the arrows is
           proportional to the quantity value.
-        - face quantities are shown as colors on the faces.
-        - vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+        - Face quantities are shown as colors on the faces.
+        - Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
           color shows sign).
 
-    Base class used by ConfigPlot, where one can specify what physical quantities to display
-    in the circuit.
+    Base class used by :py:attr:`circuit_visualize.ConfigPlot`, where one can specify
+    what physical quantities to display in the circuit.
 
+    Parameters
+    ----------
+    circuit : :py:attr:`josephson_circuit.Circuit`
+        Object representing circuit.
+    node_data=None : (Nn,) array or None
+        Data associated with nodes in circuit. Can be visualized as colors.
+        If None, node data is not visualized.
+    arrow_data=None : (Nj,) array or None
+        Data associated with junctions in circuit. Can be visualized as arrows.
+        where the length corresponds with the magnitude of the data.
+        If None, arrow data is not visualized.
+    face_data=None : (Nf,) array or None
+        Data associated with faces in circuit. Can be visualized as colors.
+        If None, face data is not visualized.
+    vortex_data=None : (Nf,) int array or None
+        Integer data associated with faces in circuit. Can be visualized as
+        circular symbols. The value of the data equals the number of concentric
+        rings of the symbol. The color shows if it is + or -.
+        If None, vortex data is not visualized.
+    vortex_diameter=0.25 : float
+        Diameter of vortex symbols.
+    vortex_color=(0, 0, 0) : color
+        Color of vortex symbols.
+    anti_vortex_color=(0.8, 0.1, 0.2) : color
+        Color of anti-vortex symbols, whose data is negative.
+    vortex_alpha=1 : float
+        Transparency of vortex symbols.
+    vortex_label="" : str
+        Label given to vortex data in legend.
+    show_grid=True : bool
+        Display a grid at the edges of the graph.
+    grid_width=1 : float
+        Width of lines of grid.
+    grid_color=(0.4, 0.5, 0.6) : color
+        Color of grid.
+    grid_alpha=0.5 : float
+        Transparency of grid.
+    show_colorbar=True : bool
+        Show colorbar mapping face and/or node data to colors.
+    show_legend=True : bool
+        Show legend which includes colormaps, explanation of vortex sybols and
+        an arrow scale.
+    show_axes=True : bool
+        If True, shows axes with the coordinates of the circuit.
+    arrow_width=0.005 : float
+        Width of arrows.
+    arrow_scale=1 : float
+        Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
+    arrow_headwidth=3 : float
+        Width of head of arrows. (see matplotlib.quiver)
+    arrow_headlength=5 : float
+        Length of head of arrows. (see matplotlib.quiver)
+    arrow_headaxislength=4.5 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minshaft=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minlength=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_color=(0.15, 0.3, 0.8) : color
+        Color of arrows.
+    arrow_alpha=1 : float
+        Transparency of arrows.
+    arrow_label="" : str
+        Label given to arrow data in legend.
+    show_nodes=True : bool
+        If True, nodes are displayed as circles.
+    node_diameter=0.25 : float
+        Diameter of nodes.
+    node_face_color=(1,1,1) : color
+        Color of faces of nodes. Only used if there is no node data.
+    node_edge_color=(0, 0, 0) : color
+        Color of edge of nodes.  Only used if there is no node data.
+    nodes_as_voronoi=False : bool
+        If True, node data is visualized as colors of faces of a
+        voronoi diagram based on node coordinates rather than color
+        of circles at node coordinates.
+    node_alpha=1 : float
+        Transparency of nodes.
+    node_quantity_cmap=None : colormap or None
+        Colormap for node_data.
+    node_quantity_clim=None : (float, float) or None
+        Color limits for node_data.
+    node_quantity_alpha=1 : float
+        Transparency of colors used to represent node_data.
+    node_quantity_logarithmic_colors=False : bool
+        If True, node_data color-scale is logarithmic.
+    node_label="" : str
+        Label given to the node colormap.
+    face_quantity_cmap=None : colormap or None
+        Colormap for face_data.
+    face_quantity_clim=None : (float, float) or None
+        Color limits for face_data.
+    face_quantity_alpha=1 : float
+        Transparency of colors used to represent face_data.
+    face_quantity_logarithmic_colors=False : bool
+        If True, face_data color-scale is logarithmic.
+    face_label="" : str
+        Label given to the face colormap.
+    figsize=None : (float, float) or None
+        Size of figure in inches.
+    title="" : str
+        Title given to figure.
     """
 
     def __init__(self, circuit: Circuit, node_data=None,
@@ -56,115 +158,7 @@ class CircuitPlot:
                  face_quantity_logarithmic_colors=False, face_label="",
                  figsize=None, title="", _vortex_range=None):
 
-        """
-        Constructor for Plot and handling plot options.
 
-        Parameters
-        ----------
-        circuit: Circuit
-
-        node_data=None: (Nn,) array or None
-            Data associated with nodes in circuit. Can be visualized as colors.
-            If None, node data is not visualized.
-        arrow_data=None: (Nj,) array or None
-            Data associated with junctions in circuit. Can be visualized as arrows.
-            where the length corresponds with the magnitude of the data.
-            If None, arrow data is not visualized.
-        face_data=None: (Nf,) array or None
-            Data associated with faces in circuit. Can be visualized as colors.
-            If None, face data is not visualized.
-        vortex_data=None: (Nf,) int array or None
-            Integer data associated with faces in circuit. Can be visualized as
-            circular symbols. The value of the data equals the number of concentric
-            rings of the symbol. The color shows if it is + or -.
-            If None, vortex data is not visualized.
-        vortex_diameter=0.25: float
-            diameter of vortex symbols
-        vortex_color=(0, 0, 0): color
-            color of vortex symbols.
-        anti_vortex_color=(0.8, 0.1, 0.2): color
-            color of anti-vortex symbols, whose data is negative.
-        vortex_alpha=1: float
-            transparancy of vortex symbols.
-        vortex_label="": str
-            label given to vortex data in legend.
-        show_grid=True: bool
-            display a grid at the edges of the graph.
-        grid_width=1: float
-            width of lines of grid.
-        grid_color=(0.4, 0.5, 0.6): color
-            color of grid.
-        grid_alpha=0.5: float
-            transparency of grid.
-        show_colorbar=True: bool
-            show colorbar mapping face and/or node data to colors.
-        show_legend=True: bool
-            show legend which includes colormaps, explanation of vortex sybols and
-            an arrow scale.
-        arrow_width=0.005: float
-            width of arrows
-        arrow_scale=1: float
-            scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
-        arrow_headwidth=3: float
-            width of head of arrows
-        arrow_headlength=5: float
-            length of head of arrows
-        arrow_headaxislength=4.5: float
-            axislength of head of arrows
-        arrow_minshaft=1: float
-            arrow propertu
-        arrow_minlength=1: float
-            arrow property
-        arrow_color=(0.15, 0.3, 0.8): color
-            color of arrows.
-        arrow_alpha=1: float
-            transparency of arrows
-        arrow_label="": str
-            label given to arrow data in legend
-        show_nodes=True: bool
-            if True, nodes are displayed as circles
-        node_diameter=0.25: float
-            diameter of nodes.
-        node_face_color=(1,1,1): color
-            color of faces of nodes. Only used if there is no node data.
-        node_edge_color=(0, 0, 0): color
-            color of edge of nodes.  Only used if there is no node data.
-        nodes_as_voronoi=False: bool
-            if True, node data is visualized as colors of faces of a
-            voronoi diagram based on node coordinates rather than color
-            of circles at node coordinates.
-        node_alpha=1: float
-            transparency of nodes
-        node_quantity_cmap=None: colormap or None
-            colormap for node_data
-        node_quantity_clim=None: (float, float) or None
-            color limits for node_data
-        node_quantity_alpha=1: float
-            ...
-        node_quantity_logarithmic_colors=False: bool
-            if True, node_data color-scale is logarithmic
-        node_label="": str
-            label given to the node colormap
-        face_quantity_cmap=None: colormap or None
-
-        face_quantity_clim=None: (float, float) or None
-        face_quantity_alpha=1: float
-        face_quantity_logarithmic_colors=False: bool
-        face_label="": str
-        figsize=None: (float, float) or None
-        title="": str
-
-            coordinates of nodes of embedded graph
-        node1, node2: (E,) int array in range(N)
-            endpoint nodes of edges in embedded graph. Nodes are referred to by their index in
-            the coordinate arrays.
-        require_single_component=False:
-            If True, an error is raised if the graph is not single-component
-        require_planar_embedding=False:
-            If True, an error is raised if the graph is not a planar embedding
-
-
-        """
         self.circuit = circuit
 
         self.node_data = node_data
@@ -258,6 +252,16 @@ class CircuitPlot:
         self.ax_cb2 = self.ax_legend.inset_axes([0.64, 0.02 + s, 0.18, min(self.legend_stack[-1] - 0.1, 0.4)])
 
     def make(self):
+        """
+        Make circuit plot.
+
+        Returns
+        -------
+        fig :
+            figure handle
+        ax :
+            axis handle
+        """
         self.fig = plt.figure(figsize=self.figsize)
         left, width, l_width = 0.1, 0.68, 0.17
         bottom, height = 0.1, 0.85
@@ -299,11 +303,102 @@ class CircuitPlot:
         self.ax.set_ylim(ymin, ymax)
 
         # return handles
-        return self._return_figure_handles()
+        return self.fig, self.ax
 
-    def _return_figure_handles(self):
-        handles = [self.fig, self.ax, self.colorbar1, self.colorbar2]
-        return [h for h in handles if h is not None]
+    def get_node_data(self):
+        """
+        Get data visualized at nodes.
+        """
+        return self.node_data
+
+    def get_arrow_data(self):
+        """
+        Get data visualized with arrows.
+        """
+        return self.arrow_data
+
+    def get_junction_data(self):
+        """
+        Get data visualized with junctions.
+        """
+        return self.arrow_data
+
+    def get_face_data(self):
+        """
+        Get data visualized at faces with colors.
+        """
+        return self.face_data
+
+    def get_vortex_data(self):
+        """
+        Get integer data visualized at faces with symbols.
+        """
+        return self.vortex_data
+
+    def get_figure_handle(self):
+        """
+        Returns figure handle.
+        """
+        return self.fig
+
+    def get_axes_handle(self):
+        """
+        Returns main axes containing the visualization of the circuit.
+        """
+        return self.fig
+
+    def get_legend_axis_handle(self):
+        """
+        Get axis-handle containing the legend (with arrow-scale, vortex symbol legend
+        and colormaps).
+        """
+        return self.ax_legend
+
+    def get_colorbar1_handle(self):
+        """
+        Get handle of first (left) colorbar. Representing node-or face data colors.
+        """
+        return self.colorbar1
+
+    def get_colorbar2_handle(self):
+        """
+        Get handle of second (right) colorbar.
+        """
+        return self.colorbar2
+
+    def get_node_data_handle(self):
+        """
+        Get handle containing visualization of node_data.
+        """
+        return self.node_handle
+
+    def get_face_data_handle(self):
+        """
+        Get handle containing visualization of face_data.
+        """
+        return self.face_handle
+
+    def get_vortex_data_handles(self):
+        """
+        Get handles containing vortex symbols.
+        """
+        return self.vortex_handles
+
+    def get_arrow_data_handles(self):
+        """
+        Get handle containing visualization of arrow_data.
+        """
+        return self.arrow_handle
+
+    def get_grid_handle(self):
+        """
+        Get handle containing grid.
+        """
+        return self.grid_handle
+
+    # def _return_figure_handles(self):
+    #     handles = [self.fig, self.ax, self.colorbar1, self.colorbar2]
+    #     return [h for h in handles if h is not None]
 
     def _assign_arrow_scale(self, arrow_scale):
         self.arrow_scale = arrow_scale
@@ -359,7 +454,7 @@ class CircuitPlot:
         x1, y1, x2, y2 = self.circuit.get_juncion_coordinates()
         lines = [((x1[i], y1[i]), (x2[i], y2[i])) for i in range(len(x1))]
         lc = LineCollection(lines, colors=self.grid_color,  alpha=self.grid_alpha,linewidths=self.grid_width, zorder=0)
-        self.ax.add_collection(lc)
+        self.grid_handle = self.ax.add_collection(lc)
 
     @staticmethod
     def _voronoi(ax, x, y, data, cnorm, cmap, alpha):
@@ -623,16 +718,119 @@ class CircuitMovie(CircuitPlot):
 
     Allows one to show node quantities, arrow quantities, face quantities and vortices.
         - Node quantities are shown as colors on the nodes.
-        - arrow quantities are displayed at the junctions and the length of the arrows is
+        - Arrow quantities are displayed at the junctions and the length of the arrows is
           proportional to the quantity value.
-        - face quantities are shown as colors on the faces.
-        - vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+        - Face quantities are shown as colors on the faces.
+        - Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
           color shows sign).
 
-    Base class used by ConfigMovie, where one can specify what physical quantities to display
-    in the circuit.
+    Base class used by :py:attr:`circuit_visualize.TimeEvolutionMovie`, where one can
+    specify what physical quantities to display in the circuit.
 
-    node_data: (Nn, time_points) or (Nn,) or None
+    Parameters
+    ----------
+    circuit : :py:attr:`josephson_circuit.Circuit`
+        Object representing circuit.
+    animate_interval : scalar
+        Frame delay in ms.
+    node_data=None : (Nn, time_points) array or (Nn,) array or None
+        Data associated with nodes in circuit. Can be visualized as colors.
+        If None, node data is not visualized. Time independent if shape (Nn,).
+    arrow_data=None : (Nj, time_points) array or (Nj,) array or None
+        Data associated with junctions in circuit. Can be visualized as arrows.
+        where the length corresponds with the magnitude of the data.
+        If None, arrow data is not visualized. Time independent if shape (Nj,).
+    face_data=None : (Nf, time_points) array or (Nf,) array or None
+        Data associated with faces in circuit. Can be visualized as colors.
+        If None, face data is not visualized. Time independent if shape (Nf,).
+    vortex_data=None : (Nf, time_points) int array or (Nf,) int array or None
+        Integer data associated with faces in circuit. Can be visualized as
+        circular symbols. The value of the data equals the number of concentric
+        rings of the symbol. The color shows if it is + or -.
+        If None, vortex data is not visualized. Time independent if shape (Nf,).
+    vortex_diameter=0.25 : float
+        Diameter of vortex symbols.
+    vortex_color=(0, 0, 0) : color
+        Color of vortex symbols.
+    anti_vortex_color=(0.8, 0.1, 0.2) : color
+        Color of anti-vortex symbols, whose data is negative.
+    vortex_alpha=1 : float
+        Transparency of vortex symbols.
+    vortex_label="" : str
+        Label given to vortex data in legend.
+    show_grid=True : bool
+        Display a grid at the edges of the graph.
+    grid_width=1 : float
+        Width of lines of grid.
+    grid_color=(0.4, 0.5, 0.6) : color
+        Color of grid.
+    grid_alpha=0.5 : float
+        Transparency of grid.
+    show_colorbar=True : bool
+        Show colorbar mapping face and/or node data to colors.
+    show_legend=True : bool
+        Show legend which includes colormaps, explanation of vortex sybols and
+        an arrow scale.
+    show_axes=True : bool
+        If True, shows axes with the coordinates of the circuit.
+    arrow_width=0.005 : float
+        Width of arrows.
+    arrow_scale=1 : float
+        Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
+    arrow_headwidth=3 : float
+        Width of head of arrows. (see matplotlib.quiver)
+    arrow_headlength=5 : float
+        Length of head of arrows. (see matplotlib.quiver)
+    arrow_headaxislength=4.5 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minshaft=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minlength=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_color=(0.15, 0.3, 0.8) : color
+        Color of arrows.
+    arrow_alpha=1 : float
+        Transparency of arrows.
+    arrow_label="" : str
+        Label given to arrow data in legend.
+    show_nodes=True : bool
+        If True, nodes are displayed as circles.
+    node_diameter=0.25 : float
+        Diameter of nodes.
+    node_face_color=(1,1,1) : color
+        Color of faces of nodes. Only used if there is no node data.
+    node_edge_color=(0, 0, 0) : color
+        Color of edge of nodes.  Only used if there is no node data.
+    nodes_as_voronoi=False : bool
+        If True, node data is visualized as colors of faces of a
+        voronoi diagram based on node coordinates rather than color
+        of circles at node coordinates.
+    node_alpha=1 : float
+        Transparency of nodes.
+    node_quantity_cmap=None : colormap or None
+        Colormap for node_data.
+    node_quantity_clim=None : (float, float) or None
+        Color limits for node_data.
+    node_quantity_alpha=1 : float
+        Transparency of colors used to represent node_data.
+    node_quantity_logarithmic_colors=False : bool
+        If True, node_data color-scale is logarithmic.
+    node_label="" : str
+        Label given to the node colormap.
+    face_quantity_cmap=None : colormap or None
+        Volormap for face_data
+    face_quantity_clim=None : (float, float) or None
+        Color limits for face_data.
+    face_quantity_alpha=1 : float
+        Transparency of colors used to represent face_data.
+    face_quantity_logarithmic_colors=False : bool
+        If True, face_data color-scale is logarithmic.
+    face_label="" : str
+        Label given to the face colormap.
+    figsize=None : (float, float) or None
+        Size of figure in inches.
+    title="" : str
+        Title given to figure.
     """
 
     def __init__(self, circuit: Circuit, animate_interval=10,
@@ -726,11 +924,27 @@ class CircuitMovie(CircuitPlot):
         return [h for h in handles if h is not None]
 
     def make(self):
-        handles = super().make()
+        """
+        Make circuit plot.
+
+        Returns
+        -------
+        fig :
+            Figure handle.
+        ax :
+            Axis handle.
+        """
+        super().make()
         self.ani = animation.FuncAnimation(self.fig, self._animate, np.arange(self.Nt, dtype=int),
                                            init_func=self._init, interval=self.animate_interval,
                                            blit=True)
-        return [self.ani] + handles
+        return self.fig, self.ax
+
+    def get_animation_handle(self):
+        """
+        Return FuncAnimation handle.
+        """
+        return self.ani
 
     def _assign_arrow_scale(self, arrow_scale):
         self.arrow_scale = arrow_scale
@@ -747,6 +961,123 @@ class CircuitMovie(CircuitPlot):
 
 
 class ConfigPlot(CircuitPlot):
+
+    """
+    Visualize static configuration on a circuit.
+
+    Allows one to show node quantities, junction quantities, face quantities and vortices.
+        - Node quantities are shown as colors on the nodes.
+        - Junction quantities are displayed at the junctions as arrows, where the length of
+          the arrows is proportional to the quantity value.
+        - Face quantities are shown as colors on the faces.
+        - Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+          color shows sign).
+
+    Parameters
+    ----------
+    config : :py:attr:`static_problem.StaticConfiguration`
+        Static configuration to plot.
+    node_quantity=None : str or None
+        What physical quantity of config to visualize at nodes. Options:
+            * "" or None :   no quantity displayed
+            * "phi" :        gauge dependent phases
+            * "Is_node" :    current sourced at nodes
+    junction_quantity="I" : str or None
+        What physical quantity of config to visualize on junctions. Options:
+            * "" or None :   no quantity displayed
+            * "theta" :  gauge invariant phase difference
+            * "I" :      current
+            * "Is" :     junction current sources
+            * "EJ" :     josephson energy
+            * "EM" :     magnetic energy
+            * "Etot" :   total energy
+    face_quantity=None : str or None
+        What physical quantity of config to visualize at faces. Options:
+            * "" or None :   no quantity displayed
+            * "flux" :   magnetic flux through face
+            * "J" :      cycle-current
+            * "n" :      vorticity
+    vortex_quantity="n" : str or None
+        What face-integer physical quantity of config to visualize with vortex symbols. Options:
+            * "" or None : no quantity displayed
+            * "n" :   vortices
+    vortex_diameter=0.25 : float
+        Diameter of vortex symbols.
+    vortex_color=(0, 0, 0) : color
+        Color of vortex symbols.
+    anti_vortex_color=(0.8, 0.1, 0.2) : color
+        Color of anti-vortex symbols, whose data is negative.
+    vortex_alpha=1 : float
+        Transparency of vortex symbols.
+    show_grid=True : bool
+        Display a grid at the edges of the graph.
+    grid_width=1 : float
+        Width of lines of grid.
+    grid_color=(0.4, 0.5, 0.6) : color
+        Color of grid.
+    grid_alpha=0.5 : float
+        Transparency of grid.
+    show_colorbar=True : bool
+        Show colorbar mapping face and/or node data to colors.
+    show_legend=True : bool
+        Show legend which includes colormaps, explanation of vortex sybols and
+        an arrow scale.
+    show_axes=True : bool
+        If True, shows axes with the coordinates of the circuit.
+    arrow_width=0.005 : float
+        Width of arrows.
+    arrow_scale=1 : float
+        Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
+    arrow_headwidth=3 : float
+        Width of head of arrows. (see matplotlib.quiver)
+    arrow_headlength=5 : float
+        Length of head of arrows. (see matplotlib.quiver)
+    arrow_headaxislength=4.5 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minshaft=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minlength=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_color=(0.15, 0.3, 0.8) : color
+        Color of arrows.
+    arrow_alpha=1 : float
+        Transparency of arrows.
+    show_nodes=True : bool
+        If True, nodes are displayed as circles.
+    node_diameter=0.25 : float
+        Diameter of nodes.
+    node_face_color=(1,1,1) : color
+        Color of faces of nodes. Only used if there is no node data.
+    node_edge_color=(0, 0, 0) : color
+        Color of edge of nodes.  Only used if there is no node data.
+    nodes_as_voronoi=False : bool
+        If True, node data is visualized as colors of faces of a
+        voronoi diagram based on node coordinates rather than color
+        of circles at node coordinates.
+    node_alpha=1 : float
+        Transparency of nodes.
+    node_quantity_cmap=None : colormap or None
+        Colormap for node_data
+    node_quantity_clim=None : (float, float) or None
+        Color limits for node_data.
+    node_quantity_alpha=1 : float
+        Transparency of colors used to represent node_data.
+    node_quantity_logarithmic_colors=False : bool
+        If True, node_data color-scale is logarithmic.
+    face_quantity_cmap=None : colormap or None
+        Colormap for face_data.
+    face_quantity_clim=None : (float, float) or None
+        Color limits for face_data.
+    face_quantity_alpha=1 : float
+        Transparency of colors used to represent face_data.
+    face_quantity_logarithmic_colors=False : bool
+        If True, face_data color-scale is logarithmic.
+    figsize=None : (float, float) or None
+        Size of figure in inches.
+    title="" : str
+        Title given to figure.
+
+    """
 
     def __init__(self, config: StaticConfiguration, node_quantity=None,
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
@@ -816,8 +1147,8 @@ class ConfigPlot(CircuitPlot):
         "I": 1, "current": 1, "Isup": 1, "I_sup": 1, "Isuper": 1, "I_super": 1,
         "supercurrent": 1, "super_current": 1,
         "I_s": 2, "Is": 2, "current_sources": 2,
-        "EJ": 3, "josephson_energy": 3,
-        "EM": 4, "magnetic_energy": 4,
+        "EJ": 3, "josephson_energy": 3, "Ej": 3,
+        "EM": 4, "magnetic_energy": 4, "Em": 4,
         "Etot": 5, "E_tot": 5, "ETot": 5, "total_energy": 5, "energy": 5,
     }
 
@@ -825,7 +1156,7 @@ class ConfigPlot(CircuitPlot):
         "": -1,
         "Phi": 0, "flux": 0, "magnetic_flux": 0,
         "n": 1, "vortices": 1, "vortex_configuration": 1,
-        "face_current": 2, "J": 2,
+        "face_current": 2, "J": 2, "cycle_current": 2,
     }
 
     _vortex_quantities = {
@@ -833,10 +1164,32 @@ class ConfigPlot(CircuitPlot):
         "n": 0, "vortices": 0, "vortex_configuration": 0,
     }
 
+    def get_node_quantity(self):
+        """
+        Get physical quantity displayed at nodes. (None, "phi" or "Is_node")
+        """
+        return self.node_label
+
+    def get_junction_quantity(self):
+        """
+        Get physical quantity displayed at junctions. (None, "th", "I",
+        "Is", "EJ", "EM" or "Etot")
+        """
+        return self.arrow_label
+
+    def get_face(self):
+        """
+        Get physical quantity displayed at faces with colors. (None, "flux", " n" or "J")
+        """
+        return self.face_label
+
+    def get_vortex_quantity(self):
+        """
+        Get integer physical quantity displayed at faces with symbols. (None or "n")
+        """
+        return self.vortex_label
+
     def _get_node_quantity(self):
-        """
-        Get node quantity (either "phi": gauge dependent phases or  "U": potential)
-        """
         if isinstance(self.node_quantity, np.ndarray):
             return self.node_quantity.flatten(), "custom"
         quantity = self._node_quantities[self.node_quantity]
@@ -848,7 +1201,7 @@ class ConfigPlot(CircuitPlot):
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
             return out, "phi"
         if quantity == 1:   # Is
-            return None, None
+            return self.config.problem.get_node_current_sources(), "Is_node"
 
     def _get_junction_quantity(self):
         if isinstance(self.arrow_quantity, np.ndarray):
@@ -900,7 +1253,129 @@ class ConfigPlot(CircuitPlot):
             raise ValueError("must select single configuration")
 
 
-class ConfigMovie(CircuitMovie):
+class TimeEvolutionMovie(CircuitMovie):
+
+
+    """
+    Visualize time evolution on a circuit as a movie.
+
+    Allows one to show node quantities, junction quantities, face quantities and vortices.
+        - Node quantities are shown as colors on the nodes.
+        - Junction quantities are displayed at the junctions as arrows, where the length of
+          the arrows is proportional to the quantity value.
+        - Face quantities are shown as colors on the faces.
+        - Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+          color shows sign).
+
+    Parameters
+    ----------
+    config : :py:attr:`time_evolution.TimeEvolutionResult`
+        Time evolution to visualize.
+    node_quantity=None : str or None
+        What physical quantity of config to visualize at nodes. Options:
+            * "" or None :   no quantity displayed
+            * "phi" :        gauge dependent phases
+            * "Is_node" :    current sourced at nodes
+            * "U" :          Voltage potential
+    junction_quantity="I" : str or None
+        What physical quantity of config to visualize on junctions. Options:
+            * "" or None :   no quantity displayed
+            * "theta" :  gauge invariant phase difference
+            * "I" :      current
+            * "V" :      Voltage
+            * "Isuper" : supercurrent
+            * "Is" :     junction current sources
+            * "EJ" :     josephson energy
+            * "EM" :     magnetic energy
+            * "EC" :     capacative energy
+            * "Etot" :   total energy
+    face_quantity=None : str or None
+        What physical quantity of config to visualize at faces. Options:
+            * "" or None :   no quantity displayed
+            * "flux" :   magnetic flux through face
+            * "J" :      cycle-current
+            * "n" :      vorticity
+    vortex_quantity="n" : str or None
+        What face-integer physical quantity of config to visualize with vortex symbols. Options:
+            * "" or None  : no quantity displayed
+            * "n" :   vortices
+    vortex_diameter=0.25 : float
+        Diameter of vortex symbols.
+    vortex_color=(0, 0, 0) : color
+        Color of vortex symbols.
+    anti_vortex_color=(0.8, 0.1, 0.2) : color
+        Color of anti-vortex symbols, whose data is negative.
+    vortex_alpha=1 : float
+        Transparancy of vortex symbols.
+    show_grid=True : bool
+        Display a grid at the edges of the graph.
+    grid_width=1 : float
+        Width of lines of grid.
+    grid_color=(0.4, 0.5, 0.6) : color
+        Color of grid.
+    grid_alpha=0.5 : float
+        Transparency of grid.
+    show_colorbar=True : bool
+        Show colorbar mapping face and/or node data to colors.
+    show_legend=True : bool
+        Show legend which includes colormaps, explanation of vortex sybols and
+        an arrow scale.
+    show_axes=True : bool
+        If True, shows axes with the coordinates of the circuit.
+    arrow_width=0.005 : float
+        Width of arrows.
+    arrow_scale=1 : float
+        Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
+    arrow_headwidth=3 : float
+        Width of head of arrows. (see matplotlib.quiver)
+    arrow_headlength=5 : float
+        Length of head of arrows. (see matplotlib.quiver)
+    arrow_headaxislength=4.5 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minshaft=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_minlength=1 : float
+        Arrow property. (see matplotlib.quiver)
+    arrow_color=(0.15, 0.3, 0.8) : color
+        Color of arrows.
+    arrow_alpha=1 : float
+        Transparency of arrows.
+    show_nodes=True : bool
+        If True, nodes are displayed as circles
+    node_diameter=0.25 : float
+        Diameter of nodes.
+    node_face_color=(1,1,1) : color
+        Color of faces of nodes. Only used if there is no node data.
+    node_edge_color=(0, 0, 0) : color
+        Color of edge of nodes.  Only used if there is no node data.
+    nodes_as_voronoi=False : bool
+        If True, node data is visualized as colors of faces of a
+        voronoi diagram based on node coordinates rather than color
+        of circles at node coordinates.
+    node_alpha=1 : float
+        Transparency of nodes.
+    node_quantity_cmap=None : colormap or None
+        Colormap for node_data.
+    node_quantity_clim=None : (float, float) or None
+        Color limits for node_data.
+    node_quantity_alpha=1 : float
+        Transparency of colors used to represent node_data.
+    node_quantity_logarithmic_colors=False : bool
+        If True, node_data color-scale is logarithmic.
+    face_quantity_cmap=None : colormap or None
+        Colormap for face_data.
+    face_quantity_clim=None : (float, float) or None
+        Color limits for face_data.
+    face_quantity_alpha=1 : float
+        Transparency of colors used to represent face_data.
+    face_quantity_logarithmic_colors=False : bool
+        If True, face_data color-scale is logarithmic.
+    figsize=None : (float, float) or None
+        Size of figure in inches.
+    title="" : str
+        Title given to figure.
+
+    """
 
     def __init__(self, config: TimeEvolutionResult, problem_nr=0, time_points=None, node_quantity=None,
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
@@ -1012,6 +1487,32 @@ class ConfigMovie(CircuitMovie):
     _vortex_quantities = {
         "n": 0, "vortices": 0, "vortex_configuration": 0,
     }
+
+    def get_node_quantity(self):
+        """
+        Get physical quantity displayed at nodes. (None, "phi", "Is_node" or "U")
+        """
+        return self.node_label
+
+    def get_junction_quantity(self):
+        """
+        Get physical quantity displayed at junctions. (None, "th", "I",
+        "V", "Isup", "Is", "EJ", "EM", "EC" or "Etot")
+        """
+        return self.arrow_label
+
+    def get_face(self):
+        """
+        Get physical quantity displayed at faces with colors. (None, "flux", " n" or "J")
+        """
+        return self.face_label
+
+    def get_vortex_quantity(self):
+        """
+        Get physical quantity displayed at faces with symbols. (None or "n")
+        """
+        return self.vortex_label
+
 
     def _get_node_quantity(self, node_quantity):
         """
