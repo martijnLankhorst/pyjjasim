@@ -9,19 +9,14 @@ import scipy.spatial
 __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID"]
 
 # TODO:
-# work out if area and frustration definition
-# give error if criterion all-or-nothing inductance is not met.
-# give warning if timestep too small in low-inductance-case
-
-# give error for mixed-inductance problems
-
-# suggestions:
-# - parameter optimization allow disabling stability requirement
-# - parameter optimization frustration vector?
-# - stable_region return factors?
+# - work out if area and frustration definition
+# - give error if criterion all-or-nothing inductance is not met.
+# - give warning if timestep too small in low-inductance-case
+# - give error for mixed-inductance problems
 # - only show combined error?
-# - handle time evolution proper errors if required quatities are not computed.
+# - handle time evolution proper errors if required quantities are not computed.
 # - time evolution config_at_minus1 list of configs
+# - put references in documentation
 
 # nice to haves
 # - lattices
@@ -29,7 +24,6 @@ __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID
 # - 3D
 # - Multigrid
 # - Nonlinear resistors
-# - mixed inductor/non-inductor elements
 # - GPU
 #   * single/double precision
 #   * phase build-up rounding correction

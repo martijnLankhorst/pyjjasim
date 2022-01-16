@@ -9,23 +9,27 @@ from scipy.sparse.linalg import ArpackNoConvergence
 
 from pyjjasim.josephson_circuit import Circuit
 
-__all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem", "StaticConfiguration",
-           "node_to_junction_current", "DEF_TOL", "DEF_NEWTON_MAXITER", "DEF_STAB_MAXITER",
-           "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT", "NewtonIterInfo", "ParameterOptimizeInfo"]
+__all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem",
+           "StaticConfiguration", "compute_maximal_parameter",
+           "node_to_junction_current", "DEF_TOL", "DEF_NEWTON_MAXITER",
+           "DEF_STAB_MAXITER", "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT",
+           "NewtonIterInfo", "ParameterOptimizeInfo"]
 
 
 """
 Static Problem Module
 """
 
-
 DEF_TOL = 1E-10
 
 DEF_NEWTON_MAXITER = 30
+
 DEF_STAB_MAXITER = 100
 
 DEF_MAX_PAR_TOL = 1E-4
 DEF_MAX_PAR_REDUCE_FACT = 0.42
+DEF_MAX_PAR_MAXITER = 100
+
 
 class CurrentPhaseRelation:
 
@@ -204,24 +208,25 @@ class ParameterOptimizeInfo:
     Use print(parameter_optimize_info) to display a summary of
     the information.
     """
-    def __init__(self, Is_func, f_func, lambda_tol, M):
-        self.Is_func = Is_func
-        self.f_func = f_func
+    def __init__(self, problem_func, lambda_tol, require_stability, maxiter):
+        self.problem_func = problem_func
         self.lambda_tol = lambda_tol
-        self.has_stable_target_solution_at_zero = False
-        self.lambda_history = np.zeros(1000, dtype=np.double)
-        self.stepsize_history = np.zeros(1000, dtype=np.double)
-        self.solution_history = np.zeros(1000, dtype=np.bool)
+        self.require_stability = require_stability
+        self.maxiter = maxiter
+        self.has_solution_at_zero = False
+        self.lambda_history = np.zeros(self.maxiter, dtype=np.double)
+        self.stepsize_history = np.zeros(self.maxiter, dtype=np.double)
+        self.solution_history = np.zeros(self.maxiter, dtype=np.bool)
+        self.stable_history = np.zeros(self.maxiter, dtype=np.bool)
         self.newton_iter_infos = []
-        self.M = M
         self._step = 0
         self._time = time.perf_counter()
 
-    def get_has_stable_target_solution_at_zero(self):
+    def get_has_solution_at_zero(self):
         """
         Returns if a stable target solution is found at lambda=0.
         """
-        return self.has_stable_target_solution_at_zero
+        return self.has_solution_at_zero
 
     def get_lambda(self):
         """
@@ -239,41 +244,35 @@ class ParameterOptimizeInfo:
         """
         Returns lower bound for lambda.
         """
-        if not self.get_has_stable_target_solution_at_zero():
+        if not self.get_has_solution_at_zero():
             return np.nan
-        s = self.get_lambda()[self.get_found_stable_target_solution()]
+        s = self.get_lambda()[self.get_found_solution()]
         return s[-1] if s.size > 0 else 0
 
     def get_lambda_upper_bound(self):
         """
         Returns upper bound for lambda.
         """
-        s = self.get_lambda()[~self.get_found_stable_target_solution()]
+        s = self.get_lambda()[~self.get_found_solution()]
         return s[-1] if s.size > 0 else np.inf
 
-    def get_found_stable_target_solution(self):
+    def get_found_solution(self):
         """
         Returns (nr_of_steps,) array if a stable target solution is found at step.
         """
         return self.solution_history[:self._step]
+
+    def get_is_stable(self):
+        """
+        Returns (nr_of_steps,) array if a stable target solution is found at step.
+        """
+        return self.stable_history[:self._step]
 
     def get_newton_iter_all_info(self):
         """
         Returns (nr_of_steps,) list containing newton_iter_infos.
         """
         return self.newton_iter_infos
-
-    def get_newton_converged(self):
-        """
-        Returns (nr_of_steps,) array if newton iteration converged at step.
-        """
-        return np.array([info.converged() for info in self.newton_iter_infos], dtype=int)
-
-    def get_newton_target_n(self):
-        """
-        Returns (nr_of_steps,) array if target n at step.
-        """
-        return np.array([info.get_is_target_vortex_configuration()[-1] for info in self.newton_iter_infos], dtype=int)
 
     def get_newton_steps(self):
         """
@@ -308,38 +307,39 @@ class ParameterOptimizeInfo:
     def __str__(self):
         np.set_printoptions(linewidth=100000)
         out = "parameter optimize info:\n\t"
-        if not self.get_has_stable_target_solution_at_zero():
+        if not self.get_has_solution_at_zero():
             out += "optimization failed because not solution was found at lambda=0"
         else:
             def int_digit_count(x):
                 return np.ceil(np.log(np.max(x)) / np.log(10)).astype(int)
             n = max(5, 3 + int_digit_count(1/self.lambda_tol), int_digit_count(self.get_newton_steps()))
-            out += f"Found lambda between {self.get_lambda_lower_bound()} and {self.get_lambda_upper_bound()}"
+            out += f"Found lambda between {self.get_lambda_lower_bound()} and {self.get_lambda_upper_bound()}\n\t"
             if self.last_step_status != 2:
-                out += f" at desired tolerance (resid={self.get_lambda_error()[-1]}) \n\t"
+                if self._step == self.maxiter:
+                    out += f"optimization reached maxiter {self.maxiter} before reaching desired tolerance. (resid={self.get_lambda_error()[-1]})\n\t"
+                else:
+                    out += f" at desired tolerance (resid={self.get_lambda_error()[-1]}) \n\t"
             else:
                 out += f"; stopped because newton iteration was indeterminate. Consider increasing newton_maxiter.)\n\t"
             out += f"runtime: {np.round(self.get_runtime(), 7)} sec\n\t"
-            out += f"lambda: {self.get_lambda()}\n\t"
-            out += f"net I:  {self._get_net_I()}\n\t"
-            out += f"mean f: {self._get_mean_f()}\n\t"
             np.set_printoptions(formatter={'float': lambda x: ("{0:0." + str(n - 2) + "f}").format(x)})
-            out += f"lambda / lambda[0]:    {self.get_lambda() / self.get_lambda()[0]}\n\t"
+            out += f"lambda:    {self.get_lambda()}\n\t"
             np.set_printoptions(formatter={'bool': lambda x: ("{:>" + str(n) + "}").format(x)})
-            out += f"newton converged:      {self.get_found_stable_target_solution().astype(bool)}\n\t"
-            out += f"to target n:           {self.get_newton_target_n().astype(bool)}\n\t"
-            np.set_printoptions(formatter={'int': lambda x: ("{:>" + str(n) + "}").format(x)})
+            out += f"found solution:      {self.get_found_solution().astype(bool)}\n\t"
+            if self.require_stability:
+                out += f"is so; is stable:    {self.get_is_stable().astype(bool)}\n\t"
             out += f"total newton steps:    {self.get_newton_steps()}\n\t"
         return out
 
-    def _preset(self, has_stable_target_solution_at_zero):
-        self.has_stable_target_solution_at_zero = has_stable_target_solution_at_zero
+    def _preset(self, has_solution_at_zero):
+        self.has_solution_at_zero = has_solution_at_zero
         return self
 
-    def _set(self, lambda_value, lambda_stepsize, found_stable_target_solution, newton_iter_info):
+    def _set(self, lambda_value, lambda_stepsize, found_solution, newton_iter_info, is_stable=False):
         self.lambda_history[self._step] = lambda_value
         self.stepsize_history[self._step] = lambda_stepsize
-        self.solution_history[self._step] = found_stable_target_solution
+        self.solution_history[self._step] = found_solution
+        self.stable_history[self._step] = is_stable
         self.newton_iter_infos += [newton_iter_info]
         self._step += 1
         return self
@@ -351,12 +351,6 @@ class ParameterOptimizeInfo:
 
     def _get_lambda_stepsize(self):
         return self.stepsize_history[:self._step]
-
-    def _get_net_I(self):
-        return np.array([0.5 * np.sum(np.abs(self.M @ np.broadcast_to(self.Is_func(l), (self.M.shape[1],)))) for l in self.get_lambda()])
-
-    def _get_mean_f(self):
-        return np.array([np.mean(self.f_func(l)) for l in self.get_lambda()])
 
 
 class StaticProblem:
@@ -555,106 +549,10 @@ class StaticProblem:
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
-    def compute_maximal_parameter(self, Is_func, f_func, cp_func=None,
-                                  initial_guess = None,
-                                  lambda_tol=DEF_MAX_PAR_TOL, estimated_upper_bound=1.0,
-                                  newton_tol=DEF_TOL, newton_maxiter=DEF_NEWTON_MAXITER,
-                                  newton_stop_as_residual_increases=True,
-                                  newton_stop_if_not_target_n=False,
-                                  require_stability=True, stable_maxiter=DEF_STAB_MAXITER):
-
-        """
-        Finds the largest value of lambda for which a problem which current_sources=Is_func(lambda)
-        and frustration=f_func(lambda) has a stable stationary state.
-
-         - Must be able to find a stable configuration at lambda=0.
-         - One can manually specify an initial_guess for lambda=0.
-         - returns a lower- and upperbound for lambda. Stops when the difference < lambda_tol * lower_bound
-         - furthermore returns config containing the solutions at the lower_bound. Also its
-           accompanied problem has f and Is of lower_bound.
-         - ignores self.current_sources and self.frustration.
-         - Also returns ParameterOptimizeInfo object containing information about the iteration.
-         - Algorithm stops if lambda_tol is reached or when newton_iteration failed to converge or diverge.
-         - Algorithm needs an estimate of the upperbound for lambda to work.
-
-        Parameters
-        ----------
-        Is_func : func(lambda) -> Is
-            Function with argument the optimization parameter lambda returning a valid
-            current-source input for a StaticProblem
-        f_func : func(lambda) -> f
-            Function with argument the optimization parameter lambda returning a valid
-            frustration input for a StaticProblem
-        cp_func=None : func(lambda) -> CurrentPhaseRelation or None
-            Parametrized current-phase relation. If None,
-            problem.get_current_phase_relation() is used.
-        initial_guess=None : valid initial_guess input for StaticProblem.compute()
-            Initial guess for the algorithm to start at lambda=0.
-        lambda_tol=DEF_MAX_PAR_TOL : float
-            Target precision for parameter lambda. Stops iterating if
-            upperbound - lowerbound < lambda_tol * lower_bound.
-        estimated_upper_bound=1.0 : float
-            Estimate for the upperbound for lambda.
-        newton_tol=DEF_TOL : float
-            Tolerance for newton iteration at a given value of lambda.
-        max_total_newton_steps=DEF_MAX_PAR_NEWT_STEPS
-            Maximum number of newton iterations at a given value of lambda.
-            If any newton iteration reaches this, the parameter optimization stops
-            as the bounds on lambda cannot be reliably refined.
-        newton_stop_as_residual_increases=True : bool
-            Stopping criterion for newton iteration given to .compute().
-        newton_stop_if_not_target_n=False : bool
-            Stopping criterion for newton iteration given to .compute().
-        require_stability=True : bool
-            If True, convergence to a state that is dynamically unstable is
-            considered diverged. (see StaticConfiguration.is_stable())
-        stable_maxiter=DEF_STAB_MAXITER : int
-            Maximum number of iterations of determining dynamic stability.
-
-        Returns
-        -------
-        lambda_lowerbound : float
-            Lowerbound of lambda.
-        lambda_upperbound : float
-            Upperbound of lambda.
-        config : StaticConfiguration
-            Containing solutions at lambda=lambda_lowerbound
-        iteration_info : ParameterOptimizeInfo
-            Object containing information about the iteration.
-        """
-        if initial_guess is None:
-            initial_guess = self.new_problem(frustration=f_func(0), current_sources=Is_func(0)).approximate(algorithm=1)
-
-        if isinstance(initial_guess, StaticConfiguration):
-            initial_guess = initial_guess._th()
-
-        if cp is None:
-            cp = self.get_current_phase_relation()
-        else:
-            cp = cp_func
-
-        out = compute_maximal_parameter(self.get_circuit(), Is_func, f_func, z=0, n=self._nt(),
-                                        cp=cp, theta_0=initial_guess, lambda_tol=lambda_tol,
-                                        lambda_initial_stepsize=estimated_upper_bound,
-                                        stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT,
-                                        newton_tol=newton_tol, newton_maxiter=newton_maxiter,
-                                        newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n,
-                                        require_stability=require_stability,
-                                        stable_maxiter=stable_maxiter,
-                                        Asq_factorized=self._Asq_factorization())
-        lower_bound, upper_bound, theta, info = out
-
-        if lower_bound is None:
-            config = None
-        else:
-            out_problem = self.new_problem(current_sources=Is_func(lower_bound), frustration=f_func(lower_bound))
-            config = StaticConfiguration(out_problem, theta)
-        return lower_bound, upper_bound, config, info
 
     def compute_frustration_bounds(self, initial_guess = None,
                                    start_frustration=None, lambda_tol=DEF_MAX_PAR_TOL,
-                                   newton_tol=DEF_TOL,
+                                   maxiter=DEF_MAX_PAR_MAXITER, newton_tol=DEF_TOL,
                                    newton_maxiter=DEF_NEWTON_MAXITER,
                                    newton_stop_as_residual_increases=True,
                                    newton_stop_if_not_target_n=False, require_stability=True,
@@ -664,7 +562,7 @@ class StaticProblem:
         Computes smallest and largest uniform frustration for which a (stable) solution
         exists at the specified target vortex configuration and source current.
 
-        For unlisted parameters see documentation of .compute_maximal_parameter()
+        For unlisted parameters see documentation of compute_maximal_parameter()
 
         Parameters
         ----------
@@ -688,36 +586,32 @@ class StaticProblem:
         if start_frustration is None:
             start_frustration = np.mean(self._nt())
         frustration_initial_stepsize = 1.0
-        Is_func = lambda x: self._Is()
-        f_func_smallest = lambda x: start_frustration - x
-        f_func_largest = lambda x: start_frustration + x
-        start_problem = self.new_problem(frustration=start_frustration)
-        start_config, status, info = start_problem.compute(initial_guess=initial_guess)
-        if not start_config.is_stable_target_solution():
-            return (None, None), (None, None), (None, None)
-        out = self.compute_maximal_parameter(Is_func, f_func_smallest, initial_guess=start_config._th(),
-                                             lambda_tol=lambda_tol, estimated_upper_bound=frustration_initial_stepsize,
-                                             newton_tol=newton_tol,
-                                             newton_maxiter=newton_maxiter,
-                                             newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                             newton_stop_if_not_target_n=newton_stop_if_not_target_n,
-                                             require_stability=require_stability, stable_maxiter=stable_maxiter)
+        problem_small_func = lambda x: self.new_problem(frustration=start_frustration - x)
+        problem_large_func = lambda x: self.new_problem(frustration=start_frustration + x)
+        out = compute_maximal_parameter(problem_small_func, initial_guess=initial_guess,
+                                        lambda_tol=lambda_tol, maxiter=maxiter,
+                                        estimated_upper_bound=frustration_initial_stepsize,
+                                        newton_tol=newton_tol, newton_maxiter=newton_maxiter,
+                                        newton_stop_as_residual_increases=newton_stop_as_residual_increases,
+                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n,
+                                        require_stability=require_stability, stable_maxiter=stable_maxiter)
         smallest_factor, _, smallest_f_config, smallest_f_info = out
-        smallest_f = f_func_smallest(smallest_factor) if smallest_factor is not None else None
-        out = self.compute_maximal_parameter(Is_func, f_func_largest, initial_guess=start_config._th(),
-                                             lambda_tol=lambda_tol, estimated_upper_bound=frustration_initial_stepsize,
-                                             newton_tol=newton_tol,
-                                             newton_maxiter=newton_maxiter,
-                                             newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                             newton_stop_if_not_target_n=newton_stop_if_not_target_n,
-                                             require_stability=require_stability, stable_maxiter=stable_maxiter)
+        smallest_f = start_frustration - smallest_factor if smallest_factor is not None else None
+        out = compute_maximal_parameter(problem_large_func, initial_guess=initial_guess,
+                                        lambda_tol=lambda_tol, maxiter=maxiter,
+                                        estimated_upper_bound=frustration_initial_stepsize,
+                                        newton_tol=newton_tol, newton_maxiter=newton_maxiter,
+                                        newton_stop_as_residual_increases=newton_stop_as_residual_increases,
+                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n,
+                                        require_stability=require_stability, stable_maxiter=stable_maxiter)
 
         largest_factor, _, largest_f_config, largest_f_info = out
-        largest_f = f_func_largest(largest_factor) if largest_factor is not None else None
+        largest_f = start_frustration + largest_factor if largest_factor is not None else None
         return (smallest_f, largest_f), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
 
-    def compute_maximal_current(self, initial_guess = None,
+    def compute_maximal_current(self, initial_guess=None,
                                 lambda_tol=DEF_MAX_PAR_TOL, newton_tol=DEF_TOL,
+                                maxiter=DEF_MAX_PAR_MAXITER,
                                 newton_maxiter=DEF_NEWTON_MAXITER,
                                 newton_stop_as_residual_increases=True,
                                 newton_stop_if_not_target_n=False,
@@ -728,7 +622,7 @@ class StaticProblem:
         specified target vortex configuration and frustration, where the  source
         current is assumed to be max_current_factor * self.get_current_sources().
 
-        For parameters see documentation of .compute_maximal_parameter()
+        For parameters see documentation of compute_maximal_parameter()
 
         Returns
         -------
@@ -746,26 +640,24 @@ class StaticProblem:
         M, Nj = self.get_circuit()._Mr(), self.get_circuit()._Nj()
         if np.all(self._Is() == 0):
             raise ValueError("Problem must contain nonzero current sources.")
-
         Is_per_node = np.abs(M @ self._Is())
         max_super_I_per_node = np.abs(M) @ self.get_circuit()._Ic()
         current_factor_initial_stepsize = 1.0 / np.max(Is_per_node / max_super_I_per_node)
-        Is_func = lambda x: x * self._Is()
-        f_func = lambda x: self._f()
-        out = self.compute_maximal_parameter(Is_func, f_func, initial_guess=initial_guess, lambda_tol=lambda_tol,
-                                             estimated_upper_bound=current_factor_initial_stepsize,
-                                             newton_maxiter=newton_maxiter, newton_tol=newton_tol,
-                                             newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                             newton_stop_if_not_target_n=newton_stop_if_not_target_n,
-                                             require_stability=require_stability, stable_maxiter=stable_maxiter)
+        problem_func = lambda x: self.new_problem(current_sources=x * self._Is())
+        out = compute_maximal_parameter(problem_func, initial_guess=initial_guess,
+                                        lambda_tol=lambda_tol, maxiter=maxiter,
+                                        estimated_upper_bound=current_factor_initial_stepsize,
+                                        newton_maxiter=newton_maxiter, newton_tol=newton_tol,
+                                        newton_stop_as_residual_increases=newton_stop_as_residual_increases,
+                                        newton_stop_if_not_target_n=newton_stop_if_not_target_n,
+                                        require_stability=require_stability, stable_maxiter=stable_maxiter)
         max_current_factor, upper_bound, out_config, info = out
         net_I = out_config.get_problem().get_net_sourced_current() if out_config is not None else None
         return max_current_factor, net_I, out_config, info
 
-
     def compute_stable_region(self, angles=np.linspace(0, 2*np.pi, 61), start_frustration=None,
-                              start_initial_guess = None,
-                              lambda_tol=DEF_MAX_PAR_TOL, newton_tol=DEF_TOL,
+                              start_initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
+                              newton_tol=DEF_TOL, maxiter=DEF_MAX_PAR_MAXITER,
                               newton_maxiter=DEF_NEWTON_MAXITER,
                               newton_stop_as_residual_increases=True,
                               newton_stop_if_not_target_n=False,
@@ -774,7 +666,10 @@ class StaticProblem:
         """
         Finds edge of stable region in (f, Is) space for vortex configuration n.
 
-        For unlisted parameters see documentation of .compute_maximal_parameter()
+        The frustration is assumed to be uniform. Ignores self.frustration and
+        works with constant * self.current_sources.
+
+        For unlisted parameters see documentation of compute_maximal_parameter()
 
         Parameters
         ----------
@@ -798,7 +693,7 @@ class StaticProblem:
         frust_bnd_prb = self.new_problem(current_sources=0)
         out = frust_bnd_prb.compute_frustration_bounds(initial_guess=start_initial_guess,
                                               start_frustration=start_frustration,
-                                              lambda_tol=lambda_tol,
+                                              lambda_tol=lambda_tol, maxiter=maxiter,
                                               newton_tol=newton_tol, newton_maxiter=newton_maxiter,
                                               newton_stop_as_residual_increases=newton_stop_as_residual_increases,
                                               newton_stop_if_not_target_n=newton_stop_if_not_target_n,
@@ -809,27 +704,30 @@ class StaticProblem:
             return None, None, None, None
         dome_center_f = 0.5 * (smallest_f + largest_f)
         dome_center_problem = self.new_problem(frustration=dome_center_f)
-        out = dome_center_problem.compute_maximal_current(lambda_tol=lambda_tol,
+        out = dome_center_problem.compute_maximal_current(lambda_tol=lambda_tol, maxiter=maxiter,
+                                                          initial_guess=start_initial_guess,
                                                           newton_tol=newton_tol, newton_maxiter=newton_maxiter,
                                                           newton_stop_as_residual_increases=newton_stop_as_residual_increases,
                                                           newton_stop_if_not_target_n=newton_stop_if_not_target_n,
                                                           require_stability=require_stability, stable_maxiter=stable_maxiter)
-        max_current_factor, _, _, _ = out
+        max_current_factor, _, _, info = out
         if max_current_factor is None:
             return None, None, None, None
+
         frustration = np.zeros(num_angles, dtype=np.double)
         net_current = np.zeros(num_angles, dtype=np.double)
         all_configs, all_infos = [], []
-        dome_center_problem = self.new_problem(frustration=dome_center_f, current_sources=0)
         for angle_nr in range(num_angles):
             angle = angles[angle_nr]
             Is_func = lambda x: x * self._Is() * np.sin(angle) * max_current_factor
             f_func = lambda x: dome_center_f + x * np.cos(angle) * (0.5 * (largest_f - smallest_f))
-            out = dome_center_problem.compute_maximal_parameter(Is_func, f_func, lambda_tol=lambda_tol,
-                                                 newton_tol=newton_tol, newton_maxiter=newton_maxiter,
-                                                 newton_stop_as_residual_increases=newton_stop_as_residual_increases,
-                                                 newton_stop_if_not_target_n=newton_stop_if_not_target_n,
-                                                 require_stability=require_stability, stable_maxiter=stable_maxiter)
+            problem_func = lambda x: self.new_problem(frustration=f_func(x), current_sources=Is_func(x))
+            out = compute_maximal_parameter(problem_func, initial_guess=start_initial_guess,
+                                            lambda_tol=lambda_tol, newton_tol=newton_tol,
+                                            maxiter=maxiter, newton_maxiter=newton_maxiter,
+                                            newton_stop_as_residual_increases=newton_stop_as_residual_increases,
+                                            newton_stop_if_not_target_n=newton_stop_if_not_target_n,
+                                            require_stability=require_stability, stable_maxiter=stable_maxiter)
             lower_bound, upper_bound, out_config, info = out
             net_current[angle_nr] = out_config.get_problem().get_net_sourced_current() * np.sign(np.sin(angle)) if lower_bound is not None else np.nan
             frustration[angle_nr] = f_func(lower_bound) if lower_bound is not None else np.nan
@@ -1231,87 +1129,87 @@ def node_to_junction_current(circuit: Circuit, node_current):
 PARAMETER MAXIMIZATION ALGORITHMS
 """
 
-def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=DefaultCPR(),
-                              theta_0=None, lambda_tol=DEF_MAX_PAR_TOL, lambda_initial_stepsize=1.0,
+def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
+                              estimated_upper_bound=1.0, maxiter=DEF_MAX_PAR_MAXITER,
                               stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT, newton_tol=DEF_TOL,
                               newton_maxiter=DEF_NEWTON_MAXITER, newton_stop_as_residual_increases=True,
                               newton_stop_if_not_target_n=False, require_stability=True,
-                              stable_maxiter=DEF_STAB_MAXITER, Asq_factorized=None):
-
+                              stable_maxiter=DEF_STAB_MAXITER):
     """
-    Core algorithm for parameter optimization.
-
-    Stand-alone method. The wrappers StaticProblem and StaticConfiguration are more convenient.
-
-    Finds the largest value of lambda for which a problem which current_sources=Is_func(lambda)
-    and frustration=f_func(lambda) has a stable stationary state.
+    Finds the largest value of lambda for which problem_function(lambda)
+    has a stable stationary state.
 
      - Must be able to find a stable configuration at lambda=0.
      - One can manually specify an initial_guess for lambda=0.
      - returns a lower- and upperbound for lambda. Stops when the difference < lambda_tol * lower_bound
      - furthermore returns config containing the solutions at the lower_bound. Also its
        accompanied problem has f and Is of lower_bound.
-     - ignores self.current_sources and self.frustration.
      - Also returns ParameterOptimizeInfo object containing information about the iteration.
      - Algorithm stops if lambda_tol is reached or when newton_iteration failed to converge or diverge.
+     - Algorithm needs an estimate of the upperbound for lambda to work.
 
-    Input:
-    ------
-    circuit                                   Circuit object
-    Is_func                                 Is_func(lambda) -> Is
-    f_func                                  f_func(lambda) -> f
-    z                                       (Nf,) array containing phase zone
-    n                                       (Nf,) array containing vortex configuration
-    cp=DefaultCPR()        current-phase relation
-    theta_0=None                            manual approximation at lambda=0
-                                            or None; then London approximation is used.
-    lambda_tol=DEF_MAX_PAR_TOL              stop iterating if upperbound - lowerbound < lambda_tol * lower_bound
-    lambda_initial_stepsize=1.0             Estimate for the upperbound for lambda used as initial stepsize
-
-    (for newton iteration at given lambda, see .compute() for documentation)
-    newton_tol=DEF_TOL
+    Parameters
+    ----------
+    problem_function : func(lambda) -> StaticProblem
+        Function with argument the optimization parameter lambda returning a valid
+        StaticProblem object.
+    initial_guess=None : valid initial_guess input for StaticProblem.compute()
+        Initial guess for problem_function(0) used as starting point for iteration.
+    lambda_tol=DEF_MAX_PAR_TOL : float
+        Target precision for parameter lambda. Stops iterating if
+        upperbound - lowerbound < lambda_tol * lower_bound.
+    estimated_upper_bound=1.0 : float
+        Estimate for the upperbound for lambda.
+    maxiter=DEF_MAX_PAR_MAXITER : int
+        Maximum number of iterations.
+    stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT : float
+        Lambda is multiplied by this factor every time an upper_bound is found.
+    newton_tol=DEF_TOL : float
+        Tolerance for newton iteration at a given value of lambda.
     max_total_newton_steps=DEF_MAX_PAR_NEWT_STEPS
-    newton_stop_as_residual_increases=True
-    newton_stop_if_not_target_n=False
+        Maximum number of newton iterations at a given value of lambda.
+        If any newton iteration reaches this, the parameter optimization stops
+        as the bounds on lambda cannot be reliably refined.
+    newton_stop_as_residual_increases=True : bool
+        Stopping criterion for newton iteration given to .compute().
+    newton_stop_if_not_target_n=False : bool
+        Stopping criterion for newton iteration given to .compute().
+    require_stability=True : bool
+        If True, convergence to a state that is dynamically unstable is
+        considered diverged. (see StaticConfiguration.is_stable())
+    stable_maxiter=DEF_STAB_MAXITER : int
+        Maximum number of iterations of determining dynamic stability.
 
-    (for determining stability of solution at given lambda, see StaticConfiguration.is_stable())
-    require_stability=True,
-    stable_maxiter=DEF_STAB_MAXITER
-    Asq_factorized                      Solver for A @ A.T @ x == b. If None, set equal to
-                                        scipy.sparse.linalg.factorized(A @ A.T)
-    Output:
+    Returns
     -------
-    lambda_lowerbound       float                   Lowerbound of lambda
-    lambda_upperbound       float                   Upperbound of lambda
-    theta0                  ndarray                 solution at lambda=lambda_lowerbound
-    iteration_info          ParameterOptimizeInfo   Object containing information about the iteration.
+    lambda_lowerbound : float
+        Lowerbound of lambda.
+    lambda_upperbound : float
+        Upperbound of lambda.
+    config : StaticConfiguration
+        Containing solutions at lambda=lambda_lowerbound
+    iteration_info : ParameterOptimizeInfo
+        Object containing information about the iteration.
     """
 
     # prepare info handle
-    info = ParameterOptimizeInfo(Is_func, f_func, lambda_tol, circuit.get_cut_matrix())
-
-    # prepare cp
-    cp_func = cp if hasattr(cp, "__call__") else lambda x: cp
-
-    # prepare matrices
-    if Asq_factorized is None:
-        A = circuit.get_cycle_matrix()
-        Asq_factorized = scipy.sparse.linalg.factorized(A @ A.T)
+    info = ParameterOptimizeInfo(problem_function, lambda_tol, require_stability, maxiter)
 
     # determine solution at lambda=0
-    Is, f = Is_func(0), f_func(0)
-    if theta_0 is None:
-        theta_0 = london_approximation(circuit, f, n)
-        theta_0 = change_phase_zone(circuit, theta_0, n, z)
-    out = static_compute(circuit, theta_0, Is, f, n, z, cp_func(0), tol=newton_tol,
-                         maxiter=newton_maxiter, Asq_solver=Asq_factorized,
-                         stop_as_residual_increases=newton_stop_as_residual_increases,
-                         stop_if_not_target_n=newton_stop_if_not_target_n)
-    theta, status, newton_iter_info = out[0], out[1], out[2]
-    is_solution = newton_iter_info.found_target_solution()
-
+    cur_problem = problem_function(0)
+    if initial_guess is None:
+        initial_guess = cur_problem.approximate(algorithm=1)
+    if isinstance(initial_guess, StaticConfiguration):
+        initial_guess = initial_guess._th()
+    theta_0 = initial_guess
+    out = cur_problem.compute(initial_guess=theta_0, tol=newton_tol, maxiter=newton_maxiter,
+                              stop_as_residual_increases=newton_stop_as_residual_increases,
+                              stop_if_not_target_n=newton_stop_if_not_target_n)
+    config, status, newton_iter_info = out[0], out[1], out[2]
+    is_solution = config.is_target_solution(tol=newton_tol)
     if is_solution and require_stability:
-        is_solution &= is_stable(circuit, theta, cp_func(0), maxiter=stable_maxiter)
+        is_solution &= config.is_stable(maxiter=stable_maxiter)
+    theta = config.theta
 
     info._preset(is_solution)
 
@@ -1321,7 +1219,7 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
 
     # prepare iteration to find maximum lambda
     found_upper_bound = False
-    lambda_stepsize = lambda_initial_stepsize
+    lambda_stepsize = estimated_upper_bound
     lambda_val = lambda_stepsize
     theta0 = theta
 
@@ -1330,22 +1228,29 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
     while True:
 
         # determine solution at current lambda
-        Is, f = Is_func(lambda_val), f_func(lambda_val)
-        out = static_compute(circuit, theta_0, Is, f, n, z, cp_func(lambda_val),
-                             tol=newton_tol, maxiter=newton_maxiter,
-                             Asq_solver=Asq_factorized,
-                             stop_as_residual_increases=newton_stop_as_residual_increases,
-                             stop_if_not_target_n=newton_stop_if_not_target_n)
-        theta, status, newton_iter_info = out[0], out[1],  out[2]
-        is_solution = newton_iter_info.found_target_solution()
+        cur_problem = problem_function(lambda_val)
+        out = cur_problem.compute(initial_guess=theta_0, tol=newton_tol, maxiter=newton_maxiter,
+                                  stop_as_residual_increases=newton_stop_as_residual_increases,
+                                  stop_if_not_target_n=newton_stop_if_not_target_n)
+        config, status, newton_iter_info = out[0], out[1], out[2]
+        has_converged = config.is_target_solution(tol=newton_tol)
+        theta = config.theta
+
         if status == 2:
             break
 
-        if require_stability and is_solution:
-            is_solution &= is_stable(circuit, theta, cp_func(lambda_val), maxiter=stable_maxiter)
+        if require_stability:
+            if has_converged:
+                is_stable = config.is_stable(maxiter=stable_maxiter)
+            else:
+                is_stable = False
+            is_solution = has_converged and is_stable
+        else:
+            is_stable = False
+            is_solution = has_converged
 
         # update information on current iteration in info handle
-        info._set(lambda_val, lambda_stepsize, is_solution, newton_iter_info)
+        info._set(lambda_val, lambda_stepsize, has_converged, newton_iter_info, is_stable)
 
         # determine new lambda value to try (and corresponding initial condition)
         if is_solution:
@@ -1357,6 +1262,8 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
             found_upper_bound = True
         if (lambda_stepsize / lambda_val) < lambda_tol:
             break
+        if iter_nr >= (maxiter - 1):
+            break
         iter_nr += 1
 
     # determine lower- and upperbound on lambda
@@ -1364,7 +1271,12 @@ def compute_maximal_parameter(circuit: Circuit, Is_func, f_func, z, n, cp=Defaul
     lower_bound = lambda_val - lambda_stepsize
     upper_bound = lambda_val if found_upper_bound else np.inf
 
-    return lower_bound, upper_bound, theta0, info
+    if lower_bound is None:
+        config = None
+    else:
+        out_problem = problem_function(lower_bound)
+        config = StaticConfiguration(out_problem, theta0)
+    return lower_bound, upper_bound, config, info
 
 
 """
