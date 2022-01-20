@@ -156,7 +156,7 @@ class CircuitPlot:
                  node_quantity_logarithmic_colors=False, node_label="",
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
                  face_quantity_logarithmic_colors=False, face_label="",
-                 figsize=None, title="", _vortex_range=None):
+                 figsize=None, title="", _vortex_range=None, fig=None):
 
 
         self.circuit = circuit
@@ -225,7 +225,7 @@ class CircuitPlot:
         self.colorbar2 = None
         self.cb2_label = None
         self.title = title
-        self.fig = None
+        self.fig = fig
         self.ax = None
         self.ax_legend = None
         self.ax_cb1 = None
@@ -262,7 +262,10 @@ class CircuitPlot:
         ax :
             axis handle
         """
-        self.fig = plt.figure(figsize=self.figsize)
+        if self.fig is None:
+            self.fig = plt.figure(figsize=self.figsize)
+        else:
+            self.fig.clear()
         left, width, l_width = 0.1, 0.68, 0.17
         bottom, height = 0.1, 0.85
         spacing = 0.005
@@ -850,7 +853,7 @@ class CircuitMovie(CircuitPlot):
                  node_quantity_logarithmic_colors=False, node_label="",
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
                  face_quantity_logarithmic_colors=False, face_label="",
-                 figsize=None, title=""):
+                 figsize=None, title="", fig=None):
 
         def handle_data(data, N):
             if data is None:
@@ -899,7 +902,8 @@ class CircuitMovie(CircuitPlot):
                          node_quantity_alpha=node_quantity_alpha, node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
                          face_quantity_cmap=face_quantity_cmap,
                          face_quantity_clim=face_quantity_clim, face_quantity_alpha=face_quantity_alpha,
-                         face_quantity_logarithmic_colors=face_quantity_logarithmic_colors, figsize=figsize, title=title)
+                         face_quantity_logarithmic_colors=face_quantity_logarithmic_colors, figsize=figsize,
+                         title=title, fig=fig)
 
         self.animate_interval = animate_interval
 
@@ -1095,7 +1099,7 @@ class ConfigPlot(CircuitPlot):
                  node_quantity_logarithmic_colors=False,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
                  face_quantity_logarithmic_colors=False,
-                 figsize=None, title=""):
+                 figsize=None, title="", fig=None):
 
         self.config = config
         self.node_quantity = node_quantity if node_quantity is not None else ""
@@ -1132,7 +1136,8 @@ class ConfigPlot(CircuitPlot):
                          node_quantity_alpha=node_quantity_alpha, node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
                          face_quantity_cmap=face_quantity_cmap,
                          face_quantity_clim=face_quantity_clim, face_quantity_alpha=face_quantity_alpha,
-                         face_quantity_logarithmic_colors=face_quantity_logarithmic_colors, figsize=figsize, title=title)
+                         face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
+                         figsize=figsize, title=title, fig=fig)
 
 
     _node_quantities = {
@@ -1393,7 +1398,7 @@ class TimeEvolutionMovie(CircuitMovie):
                  node_quantity_logarithmic_colors=False,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
                  face_quantity_logarithmic_colors=False,
-                 figsize=None, title="", animate_interval=10):
+                 figsize=None, title="", animate_interval=10, fig=None):
 
         self.config = config
         self.problem_nr = problem_nr
@@ -1457,7 +1462,7 @@ class TimeEvolutionMovie(CircuitMovie):
                          face_quantity_cmap=face_quantity_cmap,
                          face_quantity_clim=face_quantity_clim, face_quantity_alpha=face_quantity_alpha,
                          face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-                         figsize=figsize, title=title, animate_interval=animate_interval)
+                         figsize=figsize, title=title, animate_interval=animate_interval, fig=fig)
 
 
     _node_quantities = {

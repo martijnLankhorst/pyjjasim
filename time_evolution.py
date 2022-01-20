@@ -845,69 +845,22 @@ class TimeEvolutionResult:
         return self.get_EJ(select_time_points) + self.get_EM(select_time_points) + \
                self.get_EC(select_time_points)
 
-    def plot(self, problem_nr=0, time_point=0,
+    def plot(self, problem_nr=0, time_point=0, fig=None,
                 node_quantity=None, junction_quantity="I", face_quantity=None,
-                vortex_quantity="n", show_grid=True, show_nodes=True, show_colorbar=True,
-                show_legend=True, show_axes=True, title="", figsize=None,
-                nodes_as_voronoi=False,
-                grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5, grid_width=1,
-                node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1,
-                node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
-                node_quantity_logarithmic_colors=False,
-                arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.15, 0.3, 0.8),
-                arrow_alpha=1, node_diameter=0.25,
-                face_quantity_cmap=None,
-                face_quantity_clim=None, face_quantity_alpha=1,
-                face_quantity_logarithmic_colors=False,
-                vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
-                vortex_alpha=1):
+                vortex_quantity="n", show_grid=True, show_nodes=True, **kwargs):
         """
         Visualize a problem at a specified timestep.
 
         See :py:attr:`circuit_visualize.CircuitPlot` for documentation.
         """
         return self.animate(problem_nr=problem_nr, time_points=np.array([time_point]),
-            vortex_diameter=vortex_diameter, vortex_color=vortex_color,
-            anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
-            vortex_quantity=vortex_quantity,
-            show_grid=show_grid, grid_width=grid_width,
-            grid_color=grid_color, grid_alpha=grid_alpha,
-            show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
-            junction_quantity=junction_quantity,
-            arrow_width=arrow_width, arrow_scale=arrow_scale,
-            arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-            arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-            arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-            arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
-            node_face_color=node_face_color, node_edge_color=node_edge_color,
-            node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
-            node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-            node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-            node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-            face_quantity=face_quantity,
-            face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-            face_quantity_alpha=face_quantity_alpha,
-            face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-            figsize=figsize, title=title, animate_interval=1000)
+                            node_quantity=node_quantity, junction_quantity=junction_quantity,
+                            face_quantity=face_quantity, vortex_quantity=vortex_quantity,
+                            show_grid=show_grid, show_nodes=show_nodes, fig=fig, **kwargs)
 
-    def animate(self, problem_nr=0, time_points=None,
+    def animate(self, problem_nr=0, time_points=None, fig=None,
                 node_quantity=None, junction_quantity="I", face_quantity=None,
-                vortex_quantity="n", show_grid=True, show_nodes=True, show_colorbar=True,
-                show_legend=True, show_axes=True, animate_interval=5, title="", figsize=None,
-                nodes_as_voronoi=False,
-                grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5, grid_width=1,
-                node_face_color=(1, 1, 1), node_edge_color=(0, 0, 0), node_alpha=1,
-                node_quantity_cmap=None, node_quantity_clim=None, node_quantity_alpha=1,
-                node_quantity_logarithmic_colors=False,
-                arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1, arrow_color=(0.15, 0.3, 0.8),
-                arrow_alpha=1, node_diameter=0.25,
-                face_quantity_cmap=None,
-                face_quantity_clim=None, face_quantity_alpha=1,
-                face_quantity_logarithmic_colors=False,
-                vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
-                vortex_alpha=1):
+                vortex_quantity="n", show_grid=True, show_nodes=True, **kwargs):
 
         """
         Animate time evolution of a problem as a movie.
@@ -918,28 +871,10 @@ class TimeEvolutionResult:
         from pyjjasim.circuit_visualize import TimeEvolutionMovie
 
         self.animation = TimeEvolutionMovie(self, problem_nr=problem_nr, time_points=time_points,
-                                           vortex_diameter=vortex_diameter, vortex_color=vortex_color,
-                                           anti_vortex_color=anti_vortex_color, vortex_alpha=vortex_alpha,
-                                           vortex_quantity=vortex_quantity,
-                                           show_grid=show_grid, grid_width=grid_width,
-                                           grid_color=grid_color, grid_alpha=grid_alpha,
-                                           show_colorbar=show_colorbar, show_legend=show_legend, show_axes=show_axes,
-                                           junction_quantity=junction_quantity,
-                                           arrow_width=arrow_width, arrow_scale=arrow_scale,
-                                           arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
-                                           arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,
-                                           arrow_minlength=arrow_minlength, arrow_color=arrow_color,
-                                           arrow_alpha=arrow_alpha, show_nodes=show_nodes, node_diameter=node_diameter,
-                                           node_face_color=node_face_color, node_edge_color=node_edge_color,
-                                           node_alpha=node_alpha, nodes_as_voronoi=nodes_as_voronoi,
-                                           node_quantity=node_quantity, node_quantity_cmap=node_quantity_cmap,
-                                           node_quantity_clim=node_quantity_clim, node_quantity_alpha=node_quantity_alpha,
-                                           node_quantity_logarithmic_colors=node_quantity_logarithmic_colors,
-                                           face_quantity=face_quantity,
-                                           face_quantity_cmap=face_quantity_cmap, face_quantity_clim=face_quantity_clim,
-                                           face_quantity_alpha=face_quantity_alpha,
-                                           face_quantity_logarithmic_colors=face_quantity_logarithmic_colors,
-                                           figsize=figsize, animate_interval=animate_interval, title=title).make()
+                                            vortex_quantity=vortex_quantity, show_grid=show_grid,
+                                            show_nodes=show_nodes, junction_quantity=junction_quantity,
+                                            node_quantity=node_quantity, face_quantity=face_quantity,
+                                            fig=fig, **kwargs).make()
         return self.animation
 
     def __str__(self):

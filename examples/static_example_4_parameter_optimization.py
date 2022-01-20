@@ -2,7 +2,6 @@ from pyjjasim import *
 
 import matplotlib.pyplot as plt
 
-
 """
 EXAMPLE 4: Parameter optimization
 
@@ -22,7 +21,7 @@ if __name__ == "__main__":
 
     # compute maximal current
     prob = StaticProblem(array, frustration=0, current_sources=Iv)
-    I_factor, net_I, max_I_config, _ = prob.compute_maximal_current()
+    I_factor, net_I, max_I_config, info = prob.compute_maximal_current()
     np.set_printoptions(linewidth=10000000)
     print(f"largest current factor {I_factor} (corresponding to net current of  {net_I}) at which the zero-vortex state exists at zero frustration")
     max_I_config.plot(title=f"maximal current in zero vortex state (net_I={np.round(net_I, 4)})")
