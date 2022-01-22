@@ -4,8 +4,8 @@ from pyjjasim import *
 import matplotlib.pyplot as plt
 
 # If animation does not start; try the following lines of code:
-# import matplotlib
-# matplotlib.use("TkAgg")
+import matplotlib
+matplotlib.use("TkAgg")
 
 """
 Static Example 0: Single vortex

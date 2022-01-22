@@ -1,0 +1,1185 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>circuit_visualize module &#8212; pyjjasim 2.2.7 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="time_evolution module" href="time_evolution.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">pyjjasim</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="pyjjasim.html">
+  pyjjasim API
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyjjasim.html">pyjjasim API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="josephson_circuit.html">josephson_circuit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="embedded_graph.html">embedded_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="static_problem.html">static_problem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_evolution.html">time_evolution module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">circuit_visualize module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="time_evolution.html"
+                        title="previous chapter">time_evolution module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/circuit_visualize.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="module-circuit_visualize">
+<span id="circuit-visualize-module"></span><h1>circuit_visualize module<a class="headerlink" href="#module-circuit_visualize" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitMovie">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">circuit_visualize.</span></span><span class="sig-name descname"><span class="pre">CircuitMovie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animate_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anti_vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_vortex_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headaxislength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minshaft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.15,</span> <span class="pre">0.3,</span> <span class="pre">0.8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_face_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_edge_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes_as_voronoi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitMovie"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitMovie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Animation of circuit where the quantities evolve over time.</p>
+<dl class="simple">
+<dt>Allows one to show node quantities, arrow quantities, face quantities and vortices.</dt><dd><ul class="simple">
+<li><p>Node quantities are shown as colors on the nodes.</p></li>
+<li><p>Arrow quantities are displayed at the junctions and the length of the arrows is
+proportional to the quantity value.</p></li>
+<li><p>Face quantities are shown as colors on the faces.</p></li>
+<li><p>Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+color shows sign).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Base class used by <a class="reference internal" href="#circuit_visualize.TimeEvolutionMovie" title="circuit_visualize.TimeEvolutionMovie"><code class="xref py py-attr docutils literal notranslate"><span class="pre">circuit_visualize.TimeEvolutionMovie</span></code></a>, where one can
+specify what physical quantities to display in the circuit.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>circuit</strong><span class="classifier"><a class="reference internal" href="josephson_circuit.html#josephson_circuit.Circuit" title="josephson_circuit.Circuit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">josephson_circuit.Circuit</span></code></a></span></dt><dd><p>Object representing circuit.</p>
+</dd>
+<dt><strong>animate_interval</strong><span class="classifier">scalar</span></dt><dd><p>Frame delay in ms.</p>
+</dd>
+<dt><strong>node_data=None</strong><span class="classifier">(Nn, time_points) array or (Nn,) array or None</span></dt><dd><p>Data associated with nodes in circuit. Can be visualized as colors.
+If None, node data is not visualized. Time independent if shape (Nn,).</p>
+</dd>
+<dt><strong>arrow_data=None</strong><span class="classifier">(Nj, time_points) array or (Nj,) array or None</span></dt><dd><p>Data associated with junctions in circuit. Can be visualized as arrows.
+where the length corresponds with the magnitude of the data.
+If None, arrow data is not visualized. Time independent if shape (Nj,).</p>
+</dd>
+<dt><strong>face_data=None</strong><span class="classifier">(Nf, time_points) array or (Nf,) array or None</span></dt><dd><p>Data associated with faces in circuit. Can be visualized as colors.
+If None, face data is not visualized. Time independent if shape (Nf,).</p>
+</dd>
+<dt><strong>vortex_data=None</strong><span class="classifier">(Nf, time_points) int array or (Nf,) int array or None</span></dt><dd><p>Integer data associated with faces in circuit. Can be visualized as
+circular symbols. The value of the data equals the number of concentric
+rings of the symbol. The color shows if it is + or -.
+If None, vortex data is not visualized. Time independent if shape (Nf,).</p>
+</dd>
+<dt><strong>vortex_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of vortex symbols.</p>
+</dd>
+<dt><strong>anti_vortex_color=(0.8, 0.1, 0.2)</strong><span class="classifier">color</span></dt><dd><p>Color of anti-vortex symbols, whose data is negative.</p>
+</dd>
+<dt><strong>vortex_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to vortex data in legend.</p>
+</dd>
+<dt><strong>show_grid=True</strong><span class="classifier">bool</span></dt><dd><p>Display a grid at the edges of the graph.</p>
+</dd>
+<dt><strong>grid_width=1</strong><span class="classifier">float</span></dt><dd><p>Width of lines of grid.</p>
+</dd>
+<dt><strong>grid_color=(0.4, 0.5, 0.6)</strong><span class="classifier">color</span></dt><dd><p>Color of grid.</p>
+</dd>
+<dt><strong>grid_alpha=0.5</strong><span class="classifier">float</span></dt><dd><p>Transparency of grid.</p>
+</dd>
+<dt><strong>show_colorbar=True</strong><span class="classifier">bool</span></dt><dd><p>Show colorbar mapping face and/or node data to colors.</p>
+</dd>
+<dt><strong>show_legend=True</strong><span class="classifier">bool</span></dt><dd><p>Show legend which includes colormaps, explanation of vortex sybols and
+an arrow scale.</p>
+</dd>
+<dt><strong>show_axes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, shows axes with the coordinates of the circuit.</p>
+</dd>
+<dt><strong>arrow_width=0.005</strong><span class="classifier">float</span></dt><dd><p>Width of arrows.</p>
+</dd>
+<dt><strong>arrow_scale=1</strong><span class="classifier">float</span></dt><dd><p>Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)</p>
+</dd>
+<dt><strong>arrow_headwidth=3</strong><span class="classifier">float</span></dt><dd><p>Width of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headlength=5</strong><span class="classifier">float</span></dt><dd><p>Length of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headaxislength=4.5</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minshaft=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minlength=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_color=(0.15, 0.3, 0.8)</strong><span class="classifier">color</span></dt><dd><p>Color of arrows.</p>
+</dd>
+<dt><strong>arrow_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of arrows.</p>
+</dd>
+<dt><strong>arrow_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to arrow data in legend.</p>
+</dd>
+<dt><strong>show_nodes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, nodes are displayed as circles.</p>
+</dd>
+<dt><strong>node_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of nodes.</p>
+</dd>
+<dt><strong>node_face_color=(1,1,1)</strong><span class="classifier">color</span></dt><dd><p>Color of faces of nodes. Only used if there is no node data.</p>
+</dd>
+<dt><strong>node_edge_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of edge of nodes.  Only used if there is no node data.</p>
+</dd>
+<dt><strong>nodes_as_voronoi=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node data is visualized as colors of faces of a
+voronoi diagram based on node coordinates rather than color
+of circles at node coordinates.</p>
+</dd>
+<dt><strong>node_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of nodes.</p>
+</dd>
+<dt><strong>node_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for node_data.</p>
+</dd>
+<dt><strong>node_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for node_data.</p>
+</dd>
+<dt><strong>node_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent node_data.</p>
+</dd>
+<dt><strong>node_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>node_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to the node colormap.</p>
+</dd>
+<dt><strong>face_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Volormap for face_data</p>
+</dd>
+<dt><strong>face_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for face_data.</p>
+</dd>
+<dt><strong>face_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent face_data.</p>
+</dd>
+<dt><strong>face_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, face_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>face_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to the face colormap.</p>
+</dd>
+<dt><strong>figsize=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Size of figure in inches.</p>
+</dd>
+<dt><strong>title=””</strong><span class="classifier">str</span></dt><dd><p>Title given to figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitMovie.get_animation_handle" title="circuit_visualize.CircuitMovie.get_animation_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_animation_handle</span></code></a>()</p></td>
+<td><p>Return FuncAnimation handle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data</span></code>()</p></td>
+<td><p>Get data visualized with arrows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data_handles</span></code>()</p></td>
+<td><p>Get handle containing visualization of arrow_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_axes_handle</span></code>()</p></td>
+<td><p>Returns main axes containing the visualization of the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar1_handle</span></code>()</p></td>
+<td><p>Get handle of first (left) colorbar.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar2_handle</span></code>()</p></td>
+<td><p>Get handle of second (right) colorbar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data</span></code>()</p></td>
+<td><p>Get data visualized at faces with colors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of face_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_handle</span></code>()</p></td>
+<td><p>Returns figure handle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_grid_handle</span></code>()</p></td>
+<td><p>Get handle containing grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_data</span></code>()</p></td>
+<td><p>Get data visualized with junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_legend_axis_handle</span></code>()</p></td>
+<td><p>Get axis-handle containing the legend (with arrow-scale, vortex symbol legend and colormaps).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data</span></code>()</p></td>
+<td><p>Get data visualized at nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of node_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data</span></code>()</p></td>
+<td><p>Get integer data visualized at faces with symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data_handles</span></code>()</p></td>
+<td><p>Get handles containing vortex symbols.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitMovie.make" title="circuit_visualize.CircuitMovie.make"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make</span></code></a>()</p></td>
+<td><p>Make circuit plot.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitMovie.get_animation_handle">
+<span class="sig-name descname"><span class="pre">get_animation_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitMovie.get_animation_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitMovie.get_animation_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return FuncAnimation handle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitMovie.make">
+<span class="sig-name descname"><span class="pre">make</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitMovie.make"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitMovie.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make circuit plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>fig :</dt><dd><p>Figure handle.</p>
+</dd>
+<dt>ax :</dt><dd><p>Axis handle.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">circuit_visualize.</span></span><span class="sig-name descname"><span class="pre">CircuitPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anti_vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headaxislength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minshaft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.15,</span> <span class="pre">0.3,</span> <span class="pre">0.8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_face_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_edge_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes_as_voronoi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_vortex_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a circuit configuration.</p>
+<dl class="simple">
+<dt>Allows one to show node quantities, arrow quantities, face quantities and vortices.</dt><dd><ul class="simple">
+<li><p>Node quantities are shown as colors on the nodes.</p></li>
+<li><p>Arrow quantities are displayed at the junctions and the length of the arrows is
+proportional to the quantity value.</p></li>
+<li><p>Face quantities are shown as colors on the faces.</p></li>
+<li><p>Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+color shows sign).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Base class used by <a class="reference internal" href="#circuit_visualize.ConfigPlot" title="circuit_visualize.ConfigPlot"><code class="xref py py-attr docutils literal notranslate"><span class="pre">circuit_visualize.ConfigPlot</span></code></a>, where one can specify
+what physical quantities to display in the circuit.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>circuit</strong><span class="classifier"><a class="reference internal" href="josephson_circuit.html#josephson_circuit.Circuit" title="josephson_circuit.Circuit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">josephson_circuit.Circuit</span></code></a></span></dt><dd><p>Object representing circuit.</p>
+</dd>
+<dt><strong>node_data=None</strong><span class="classifier">(Nn,) array or None</span></dt><dd><p>Data associated with nodes in circuit. Can be visualized as colors.
+If None, node data is not visualized.</p>
+</dd>
+<dt><strong>arrow_data=None</strong><span class="classifier">(Nj,) array or None</span></dt><dd><p>Data associated with junctions in circuit. Can be visualized as arrows.
+where the length corresponds with the magnitude of the data.
+If None, arrow data is not visualized.</p>
+</dd>
+<dt><strong>face_data=None</strong><span class="classifier">(Nf,) array or None</span></dt><dd><p>Data associated with faces in circuit. Can be visualized as colors.
+If None, face data is not visualized.</p>
+</dd>
+<dt><strong>vortex_data=None</strong><span class="classifier">(Nf,) int array or None</span></dt><dd><p>Integer data associated with faces in circuit. Can be visualized as
+circular symbols. The value of the data equals the number of concentric
+rings of the symbol. The color shows if it is + or -.
+If None, vortex data is not visualized.</p>
+</dd>
+<dt><strong>vortex_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of vortex symbols.</p>
+</dd>
+<dt><strong>anti_vortex_color=(0.8, 0.1, 0.2)</strong><span class="classifier">color</span></dt><dd><p>Color of anti-vortex symbols, whose data is negative.</p>
+</dd>
+<dt><strong>vortex_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to vortex data in legend.</p>
+</dd>
+<dt><strong>show_grid=True</strong><span class="classifier">bool</span></dt><dd><p>Display a grid at the edges of the graph.</p>
+</dd>
+<dt><strong>grid_width=1</strong><span class="classifier">float</span></dt><dd><p>Width of lines of grid.</p>
+</dd>
+<dt><strong>grid_color=(0.4, 0.5, 0.6)</strong><span class="classifier">color</span></dt><dd><p>Color of grid.</p>
+</dd>
+<dt><strong>grid_alpha=0.5</strong><span class="classifier">float</span></dt><dd><p>Transparency of grid.</p>
+</dd>
+<dt><strong>show_colorbar=True</strong><span class="classifier">bool</span></dt><dd><p>Show colorbar mapping face and/or node data to colors.</p>
+</dd>
+<dt><strong>show_legend=True</strong><span class="classifier">bool</span></dt><dd><p>Show legend which includes colormaps, explanation of vortex sybols and
+an arrow scale.</p>
+</dd>
+<dt><strong>show_axes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, shows axes with the coordinates of the circuit.</p>
+</dd>
+<dt><strong>arrow_width=0.005</strong><span class="classifier">float</span></dt><dd><p>Width of arrows.</p>
+</dd>
+<dt><strong>arrow_scale=1</strong><span class="classifier">float</span></dt><dd><p>Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)</p>
+</dd>
+<dt><strong>arrow_headwidth=3</strong><span class="classifier">float</span></dt><dd><p>Width of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headlength=5</strong><span class="classifier">float</span></dt><dd><p>Length of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headaxislength=4.5</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minshaft=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minlength=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_color=(0.15, 0.3, 0.8)</strong><span class="classifier">color</span></dt><dd><p>Color of arrows.</p>
+</dd>
+<dt><strong>arrow_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of arrows.</p>
+</dd>
+<dt><strong>arrow_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to arrow data in legend.</p>
+</dd>
+<dt><strong>show_nodes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, nodes are displayed as circles.</p>
+</dd>
+<dt><strong>node_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of nodes.</p>
+</dd>
+<dt><strong>node_face_color=(1,1,1)</strong><span class="classifier">color</span></dt><dd><p>Color of faces of nodes. Only used if there is no node data.</p>
+</dd>
+<dt><strong>node_edge_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of edge of nodes.  Only used if there is no node data.</p>
+</dd>
+<dt><strong>nodes_as_voronoi=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node data is visualized as colors of faces of a
+voronoi diagram based on node coordinates rather than color
+of circles at node coordinates.</p>
+</dd>
+<dt><strong>node_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of nodes.</p>
+</dd>
+<dt><strong>node_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for node_data.</p>
+</dd>
+<dt><strong>node_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for node_data.</p>
+</dd>
+<dt><strong>node_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent node_data.</p>
+</dd>
+<dt><strong>node_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>node_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to the node colormap.</p>
+</dd>
+<dt><strong>face_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for face_data.</p>
+</dd>
+<dt><strong>face_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for face_data.</p>
+</dd>
+<dt><strong>face_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent face_data.</p>
+</dd>
+<dt><strong>face_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, face_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>face_label=””</strong><span class="classifier">str</span></dt><dd><p>Label given to the face colormap.</p>
+</dd>
+<dt><strong>figsize=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Size of figure in inches.</p>
+</dd>
+<dt><strong>title=””</strong><span class="classifier">str</span></dt><dd><p>Title given to figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_arrow_data" title="circuit_visualize.CircuitPlot.get_arrow_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data</span></code></a>()</p></td>
+<td><p>Get data visualized with arrows.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_arrow_data_handles" title="circuit_visualize.CircuitPlot.get_arrow_data_handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data_handles</span></code></a>()</p></td>
+<td><p>Get handle containing visualization of arrow_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_axes_handle" title="circuit_visualize.CircuitPlot.get_axes_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_axes_handle</span></code></a>()</p></td>
+<td><p>Returns main axes containing the visualization of the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_colorbar1_handle" title="circuit_visualize.CircuitPlot.get_colorbar1_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar1_handle</span></code></a>()</p></td>
+<td><p>Get handle of first (left) colorbar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_colorbar2_handle" title="circuit_visualize.CircuitPlot.get_colorbar2_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar2_handle</span></code></a>()</p></td>
+<td><p>Get handle of second (right) colorbar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_face_data" title="circuit_visualize.CircuitPlot.get_face_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data</span></code></a>()</p></td>
+<td><p>Get data visualized at faces with colors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_face_data_handle" title="circuit_visualize.CircuitPlot.get_face_data_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data_handle</span></code></a>()</p></td>
+<td><p>Get handle containing visualization of face_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_figure_handle" title="circuit_visualize.CircuitPlot.get_figure_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_handle</span></code></a>()</p></td>
+<td><p>Returns figure handle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_grid_handle" title="circuit_visualize.CircuitPlot.get_grid_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_grid_handle</span></code></a>()</p></td>
+<td><p>Get handle containing grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_junction_data" title="circuit_visualize.CircuitPlot.get_junction_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_data</span></code></a>()</p></td>
+<td><p>Get data visualized with junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_legend_axis_handle" title="circuit_visualize.CircuitPlot.get_legend_axis_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_legend_axis_handle</span></code></a>()</p></td>
+<td><p>Get axis-handle containing the legend (with arrow-scale, vortex symbol legend and colormaps).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_node_data" title="circuit_visualize.CircuitPlot.get_node_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data</span></code></a>()</p></td>
+<td><p>Get data visualized at nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_node_data_handle" title="circuit_visualize.CircuitPlot.get_node_data_handle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data_handle</span></code></a>()</p></td>
+<td><p>Get handle containing visualization of node_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_vortex_data" title="circuit_visualize.CircuitPlot.get_vortex_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data</span></code></a>()</p></td>
+<td><p>Get integer data visualized at faces with symbols.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.get_vortex_data_handles" title="circuit_visualize.CircuitPlot.get_vortex_data_handles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data_handles</span></code></a>()</p></td>
+<td><p>Get handles containing vortex symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.CircuitPlot.make" title="circuit_visualize.CircuitPlot.make"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make</span></code></a>()</p></td>
+<td><p>Make circuit plot.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_arrow_data">
+<span class="sig-name descname"><span class="pre">get_arrow_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_arrow_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_arrow_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data visualized with arrows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_arrow_data_handles">
+<span class="sig-name descname"><span class="pre">get_arrow_data_handles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_arrow_data_handles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_arrow_data_handles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle containing visualization of arrow_data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_axes_handle">
+<span class="sig-name descname"><span class="pre">get_axes_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_axes_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_axes_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns main axes containing the visualization of the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_colorbar1_handle">
+<span class="sig-name descname"><span class="pre">get_colorbar1_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_colorbar1_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_colorbar1_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle of first (left) colorbar. Representing node-or face data colors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_colorbar2_handle">
+<span class="sig-name descname"><span class="pre">get_colorbar2_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_colorbar2_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_colorbar2_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle of second (right) colorbar.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_face_data">
+<span class="sig-name descname"><span class="pre">get_face_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_face_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_face_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data visualized at faces with colors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_face_data_handle">
+<span class="sig-name descname"><span class="pre">get_face_data_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_face_data_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_face_data_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle containing visualization of face_data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_figure_handle">
+<span class="sig-name descname"><span class="pre">get_figure_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_figure_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_figure_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns figure handle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_grid_handle">
+<span class="sig-name descname"><span class="pre">get_grid_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_grid_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_grid_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle containing grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_junction_data">
+<span class="sig-name descname"><span class="pre">get_junction_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_junction_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_junction_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data visualized with junctions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_legend_axis_handle">
+<span class="sig-name descname"><span class="pre">get_legend_axis_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_legend_axis_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_legend_axis_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get axis-handle containing the legend (with arrow-scale, vortex symbol legend
+and colormaps).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_node_data">
+<span class="sig-name descname"><span class="pre">get_node_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_node_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_node_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data visualized at nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_node_data_handle">
+<span class="sig-name descname"><span class="pre">get_node_data_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_node_data_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_node_data_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle containing visualization of node_data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_vortex_data">
+<span class="sig-name descname"><span class="pre">get_vortex_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_vortex_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_vortex_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get integer data visualized at faces with symbols.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.get_vortex_data_handles">
+<span class="sig-name descname"><span class="pre">get_vortex_data_handles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.get_vortex_data_handles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.get_vortex_data_handles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handles containing vortex symbols.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.CircuitPlot.make">
+<span class="sig-name descname"><span class="pre">make</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#CircuitPlot.make"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.CircuitPlot.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make circuit plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>fig :</dt><dd><p>figure handle</p>
+</dd>
+<dt>ax :</dt><dd><p>axis handle</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="circuit_visualize.ConfigPlot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">circuit_visualize.</span></span><span class="sig-name descname"><span class="pre">ConfigPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.static_problem.StaticConfiguration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junction_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anti_vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_vortex_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headaxislength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minshaft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.15,</span> <span class="pre">0.3,</span> <span class="pre">0.8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_face_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_edge_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes_as_voronoi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#ConfigPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.ConfigPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize static configuration on a circuit.</p>
+<dl class="simple">
+<dt>Allows one to show node quantities, junction quantities, face quantities and vortices.</dt><dd><ul class="simple">
+<li><p>Node quantities are shown as colors on the nodes.</p></li>
+<li><p>Junction quantities are displayed at the junctions as arrows, where the length of
+the arrows is proportional to the quantity value.</p></li>
+<li><p>Face quantities are shown as colors on the faces.</p></li>
+<li><p>Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+color shows sign).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>config</strong><span class="classifier"><code class="xref py py-attr docutils literal notranslate"><span class="pre">static_problem.StaticConfiguration</span></code></span></dt><dd><p>Static configuration to plot.</p>
+</dd>
+<dt><strong>node_quantity=None</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize at nodes. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“phi” :        gauge dependent phases</p></li>
+<li><p>“Is_node” :    current sourced at nodes</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>junction_quantity=”I”</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize on junctions. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“theta” :  gauge invariant phase difference</p></li>
+<li><p>“I” :      current</p></li>
+<li><p>“Is” :     junction current sources</p></li>
+<li><p>“EJ” :     josephson energy</p></li>
+<li><p>“EM” :     magnetic energy</p></li>
+<li><p>“Etot” :   total energy</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>face_quantity=None</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize at faces. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“flux” :   magnetic flux through face</p></li>
+<li><p>“J” :      cycle-current</p></li>
+<li><p>“n” :      vorticity</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>vortex_quantity=”n”</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What face-integer physical quantity of config to visualize with vortex symbols. Options:</dt><dd><ul class="simple">
+<li><p>“” or None : no quantity displayed</p></li>
+<li><p>“n” :   vortices</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>vortex_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of vortex symbols.</p>
+</dd>
+<dt><strong>anti_vortex_color=(0.8, 0.1, 0.2)</strong><span class="classifier">color</span></dt><dd><p>Color of anti-vortex symbols, whose data is negative.</p>
+</dd>
+<dt><strong>vortex_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of vortex symbols.</p>
+</dd>
+<dt><strong>show_grid=True</strong><span class="classifier">bool</span></dt><dd><p>Display a grid at the edges of the graph.</p>
+</dd>
+<dt><strong>grid_width=1</strong><span class="classifier">float</span></dt><dd><p>Width of lines of grid.</p>
+</dd>
+<dt><strong>grid_color=(0.4, 0.5, 0.6)</strong><span class="classifier">color</span></dt><dd><p>Color of grid.</p>
+</dd>
+<dt><strong>grid_alpha=0.5</strong><span class="classifier">float</span></dt><dd><p>Transparency of grid.</p>
+</dd>
+<dt><strong>show_colorbar=True</strong><span class="classifier">bool</span></dt><dd><p>Show colorbar mapping face and/or node data to colors.</p>
+</dd>
+<dt><strong>show_legend=True</strong><span class="classifier">bool</span></dt><dd><p>Show legend which includes colormaps, explanation of vortex sybols and
+an arrow scale.</p>
+</dd>
+<dt><strong>show_axes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, shows axes with the coordinates of the circuit.</p>
+</dd>
+<dt><strong>arrow_width=0.005</strong><span class="classifier">float</span></dt><dd><p>Width of arrows.</p>
+</dd>
+<dt><strong>arrow_scale=1</strong><span class="classifier">float</span></dt><dd><p>Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)</p>
+</dd>
+<dt><strong>arrow_headwidth=3</strong><span class="classifier">float</span></dt><dd><p>Width of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headlength=5</strong><span class="classifier">float</span></dt><dd><p>Length of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headaxislength=4.5</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minshaft=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minlength=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_color=(0.15, 0.3, 0.8)</strong><span class="classifier">color</span></dt><dd><p>Color of arrows.</p>
+</dd>
+<dt><strong>arrow_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of arrows.</p>
+</dd>
+<dt><strong>show_nodes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, nodes are displayed as circles.</p>
+</dd>
+<dt><strong>node_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of nodes.</p>
+</dd>
+<dt><strong>node_face_color=(1,1,1)</strong><span class="classifier">color</span></dt><dd><p>Color of faces of nodes. Only used if there is no node data.</p>
+</dd>
+<dt><strong>node_edge_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of edge of nodes.  Only used if there is no node data.</p>
+</dd>
+<dt><strong>nodes_as_voronoi=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node data is visualized as colors of faces of a
+voronoi diagram based on node coordinates rather than color
+of circles at node coordinates.</p>
+</dd>
+<dt><strong>node_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of nodes.</p>
+</dd>
+<dt><strong>node_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for node_data</p>
+</dd>
+<dt><strong>node_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for node_data.</p>
+</dd>
+<dt><strong>node_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent node_data.</p>
+</dd>
+<dt><strong>node_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>face_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for face_data.</p>
+</dd>
+<dt><strong>face_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for face_data.</p>
+</dd>
+<dt><strong>face_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent face_data.</p>
+</dd>
+<dt><strong>face_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, face_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>figsize=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Size of figure in inches.</p>
+</dd>
+<dt><strong>title=””</strong><span class="classifier">str</span></dt><dd><p>Title given to figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data</span></code>()</p></td>
+<td><p>Get data visualized with arrows.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data_handles</span></code>()</p></td>
+<td><p>Get handle containing visualization of arrow_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_axes_handle</span></code>()</p></td>
+<td><p>Returns main axes containing the visualization of the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar1_handle</span></code>()</p></td>
+<td><p>Get handle of first (left) colorbar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar2_handle</span></code>()</p></td>
+<td><p>Get handle of second (right) colorbar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.ConfigPlot.get_face" title="circuit_visualize.ConfigPlot.get_face"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at faces with colors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data</span></code>()</p></td>
+<td><p>Get data visualized at faces with colors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of face_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_handle</span></code>()</p></td>
+<td><p>Returns figure handle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_grid_handle</span></code>()</p></td>
+<td><p>Get handle containing grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_data</span></code>()</p></td>
+<td><p>Get data visualized with junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.ConfigPlot.get_junction_quantity" title="circuit_visualize.ConfigPlot.get_junction_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_quantity</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_legend_axis_handle</span></code>()</p></td>
+<td><p>Get axis-handle containing the legend (with arrow-scale, vortex symbol legend and colormaps).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data</span></code>()</p></td>
+<td><p>Get data visualized at nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of node_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.ConfigPlot.get_node_quantity" title="circuit_visualize.ConfigPlot.get_node_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_quantity</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data</span></code>()</p></td>
+<td><p>Get integer data visualized at faces with symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data_handles</span></code>()</p></td>
+<td><p>Get handles containing vortex symbols.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.ConfigPlot.get_vortex_quantity" title="circuit_visualize.ConfigPlot.get_vortex_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_quantity</span></code></a>()</p></td>
+<td><p>Get integer physical quantity displayed at faces with symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make</span></code>()</p></td>
+<td><p>Make circuit plot.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.ConfigPlot.get_face">
+<span class="sig-name descname"><span class="pre">get_face</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#ConfigPlot.get_face"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.ConfigPlot.get_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at faces with colors. (None, “flux”, ” n” or “J”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.ConfigPlot.get_junction_quantity">
+<span class="sig-name descname"><span class="pre">get_junction_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#ConfigPlot.get_junction_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.ConfigPlot.get_junction_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at junctions. (None, “th”, “I”,
+“Is”, “EJ”, “EM” or “Etot”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.ConfigPlot.get_node_quantity">
+<span class="sig-name descname"><span class="pre">get_node_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#ConfigPlot.get_node_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.ConfigPlot.get_node_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at nodes. (None, “phi” or “Is_node”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.ConfigPlot.get_vortex_quantity">
+<span class="sig-name descname"><span class="pre">get_vortex_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#ConfigPlot.get_vortex_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.ConfigPlot.get_vortex_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get integer physical quantity displayed at faces with symbols. (None or “n”)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="circuit_visualize.TimeEvolutionMovie">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">circuit_visualize.</span></span><span class="sig-name descname"><span class="pre">TimeEvolutionMovie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.time_evolution.TimeEvolutionResult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_nr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junction_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anti_vortex_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_vortex_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_headaxislength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minshaft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_minlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.15,</span> <span class="pre">0.3,</span> <span class="pre">0.8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_face_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_edge_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes_as_voronoi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_clim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity_logarithmic_colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animate_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#TimeEvolutionMovie"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.TimeEvolutionMovie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize time evolution on a circuit as a movie.</p>
+<dl class="simple">
+<dt>Allows one to show node quantities, junction quantities, face quantities and vortices.</dt><dd><ul class="simple">
+<li><p>Node quantities are shown as colors on the nodes.</p></li>
+<li><p>Junction quantities are displayed at the junctions as arrows, where the length of
+the arrows is proportional to the quantity value.</p></li>
+<li><p>Face quantities are shown as colors on the faces.</p></li>
+<li><p>Vortices are displayed by symbols (concentric rings, vorticity equals nr of rings,
+color shows sign).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>config</strong><span class="classifier"><a class="reference internal" href="time_evolution.html#time_evolution.TimeEvolutionResult" title="time_evolution.TimeEvolutionResult"><code class="xref py py-attr docutils literal notranslate"><span class="pre">time_evolution.TimeEvolutionResult</span></code></a></span></dt><dd><p>Time evolution to visualize.</p>
+</dd>
+<dt><strong>node_quantity=None</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize at nodes. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“phi” :        gauge dependent phases</p></li>
+<li><p>“Is_node” :    current sourced at nodes</p></li>
+<li><p>“U” :          Voltage potential</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>junction_quantity=”I”</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize on junctions. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“theta” :  gauge invariant phase difference</p></li>
+<li><p>“I” :      current</p></li>
+<li><p>“V” :      Voltage</p></li>
+<li><p>“Isuper” : supercurrent</p></li>
+<li><p>“Is” :     junction current sources</p></li>
+<li><p>“EJ” :     josephson energy</p></li>
+<li><p>“EM” :     magnetic energy</p></li>
+<li><p>“EC” :     capacative energy</p></li>
+<li><p>“Etot” :   total energy</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>face_quantity=None</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What physical quantity of config to visualize at faces. Options:</dt><dd><ul class="simple">
+<li><p>“” or None :   no quantity displayed</p></li>
+<li><p>“flux” :   magnetic flux through face</p></li>
+<li><p>“J” :      cycle-current</p></li>
+<li><p>“n” :      vorticity</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>vortex_quantity=”n”</strong><span class="classifier">str or None</span></dt><dd><dl class="simple">
+<dt>What face-integer physical quantity of config to visualize with vortex symbols. Options:</dt><dd><ul class="simple">
+<li><p>“” or None  : no quantity displayed</p></li>
+<li><p>“n” :   vortices</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>vortex_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of vortex symbols.</p>
+</dd>
+<dt><strong>vortex_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of vortex symbols.</p>
+</dd>
+<dt><strong>anti_vortex_color=(0.8, 0.1, 0.2)</strong><span class="classifier">color</span></dt><dd><p>Color of anti-vortex symbols, whose data is negative.</p>
+</dd>
+<dt><strong>vortex_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparancy of vortex symbols.</p>
+</dd>
+<dt><strong>show_grid=True</strong><span class="classifier">bool</span></dt><dd><p>Display a grid at the edges of the graph.</p>
+</dd>
+<dt><strong>grid_width=1</strong><span class="classifier">float</span></dt><dd><p>Width of lines of grid.</p>
+</dd>
+<dt><strong>grid_color=(0.4, 0.5, 0.6)</strong><span class="classifier">color</span></dt><dd><p>Color of grid.</p>
+</dd>
+<dt><strong>grid_alpha=0.5</strong><span class="classifier">float</span></dt><dd><p>Transparency of grid.</p>
+</dd>
+<dt><strong>show_colorbar=True</strong><span class="classifier">bool</span></dt><dd><p>Show colorbar mapping face and/or node data to colors.</p>
+</dd>
+<dt><strong>show_legend=True</strong><span class="classifier">bool</span></dt><dd><p>Show legend which includes colormaps, explanation of vortex sybols and
+an arrow scale.</p>
+</dd>
+<dt><strong>show_axes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, shows axes with the coordinates of the circuit.</p>
+</dd>
+<dt><strong>arrow_width=0.005</strong><span class="classifier">float</span></dt><dd><p>Width of arrows.</p>
+</dd>
+<dt><strong>arrow_scale=1</strong><span class="classifier">float</span></dt><dd><p>Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)</p>
+</dd>
+<dt><strong>arrow_headwidth=3</strong><span class="classifier">float</span></dt><dd><p>Width of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headlength=5</strong><span class="classifier">float</span></dt><dd><p>Length of head of arrows. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_headaxislength=4.5</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minshaft=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_minlength=1</strong><span class="classifier">float</span></dt><dd><p>Arrow property. (see matplotlib.quiver)</p>
+</dd>
+<dt><strong>arrow_color=(0.15, 0.3, 0.8)</strong><span class="classifier">color</span></dt><dd><p>Color of arrows.</p>
+</dd>
+<dt><strong>arrow_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of arrows.</p>
+</dd>
+<dt><strong>show_nodes=True</strong><span class="classifier">bool</span></dt><dd><p>If True, nodes are displayed as circles</p>
+</dd>
+<dt><strong>node_diameter=0.25</strong><span class="classifier">float</span></dt><dd><p>Diameter of nodes.</p>
+</dd>
+<dt><strong>node_face_color=(1,1,1)</strong><span class="classifier">color</span></dt><dd><p>Color of faces of nodes. Only used if there is no node data.</p>
+</dd>
+<dt><strong>node_edge_color=(0, 0, 0)</strong><span class="classifier">color</span></dt><dd><p>Color of edge of nodes.  Only used if there is no node data.</p>
+</dd>
+<dt><strong>nodes_as_voronoi=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node data is visualized as colors of faces of a
+voronoi diagram based on node coordinates rather than color
+of circles at node coordinates.</p>
+</dd>
+<dt><strong>node_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of nodes.</p>
+</dd>
+<dt><strong>node_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for node_data.</p>
+</dd>
+<dt><strong>node_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for node_data.</p>
+</dd>
+<dt><strong>node_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent node_data.</p>
+</dd>
+<dt><strong>node_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, node_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>face_quantity_cmap=None</strong><span class="classifier">colormap or None</span></dt><dd><p>Colormap for face_data.</p>
+</dd>
+<dt><strong>face_quantity_clim=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Color limits for face_data.</p>
+</dd>
+<dt><strong>face_quantity_alpha=1</strong><span class="classifier">float</span></dt><dd><p>Transparency of colors used to represent face_data.</p>
+</dd>
+<dt><strong>face_quantity_logarithmic_colors=False</strong><span class="classifier">bool</span></dt><dd><p>If True, face_data color-scale is logarithmic.</p>
+</dd>
+<dt><strong>figsize=None</strong><span class="classifier">(float, float) or None</span></dt><dd><p>Size of figure in inches.</p>
+</dd>
+<dt><strong>title=””</strong><span class="classifier">str</span></dt><dd><p>Title given to figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_animation_handle</span></code>()</p></td>
+<td><p>Return FuncAnimation handle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data</span></code>()</p></td>
+<td><p>Get data visualized with arrows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arrow_data_handles</span></code>()</p></td>
+<td><p>Get handle containing visualization of arrow_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_axes_handle</span></code>()</p></td>
+<td><p>Returns main axes containing the visualization of the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar1_handle</span></code>()</p></td>
+<td><p>Get handle of first (left) colorbar.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colorbar2_handle</span></code>()</p></td>
+<td><p>Get handle of second (right) colorbar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.TimeEvolutionMovie.get_face" title="circuit_visualize.TimeEvolutionMovie.get_face"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at faces with colors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data</span></code>()</p></td>
+<td><p>Get data visualized at faces with colors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of face_data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figure_handle</span></code>()</p></td>
+<td><p>Returns figure handle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_grid_handle</span></code>()</p></td>
+<td><p>Get handle containing grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_data</span></code>()</p></td>
+<td><p>Get data visualized with junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.TimeEvolutionMovie.get_junction_quantity" title="circuit_visualize.TimeEvolutionMovie.get_junction_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_quantity</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_legend_axis_handle</span></code>()</p></td>
+<td><p>Get axis-handle containing the legend (with arrow-scale, vortex symbol legend and colormaps).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data</span></code>()</p></td>
+<td><p>Get data visualized at nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_data_handle</span></code>()</p></td>
+<td><p>Get handle containing visualization of node_data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#circuit_visualize.TimeEvolutionMovie.get_node_quantity" title="circuit_visualize.TimeEvolutionMovie.get_node_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_quantity</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data</span></code>()</p></td>
+<td><p>Get integer data visualized at faces with symbols.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_data_handles</span></code>()</p></td>
+<td><p>Get handles containing vortex symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#circuit_visualize.TimeEvolutionMovie.get_vortex_quantity" title="circuit_visualize.TimeEvolutionMovie.get_vortex_quantity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_quantity</span></code></a>()</p></td>
+<td><p>Get physical quantity displayed at faces with symbols.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make</span></code>()</p></td>
+<td><p>Make circuit plot.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.TimeEvolutionMovie.get_face">
+<span class="sig-name descname"><span class="pre">get_face</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#TimeEvolutionMovie.get_face"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.TimeEvolutionMovie.get_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at faces with colors. (None, “flux”, ” n” or “J”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.TimeEvolutionMovie.get_junction_quantity">
+<span class="sig-name descname"><span class="pre">get_junction_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#TimeEvolutionMovie.get_junction_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.TimeEvolutionMovie.get_junction_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at junctions. (None, “th”, “I”,
+“V”, “Isup”, “Is”, “EJ”, “EM”, “EC” or “Etot”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.TimeEvolutionMovie.get_node_quantity">
+<span class="sig-name descname"><span class="pre">get_node_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#TimeEvolutionMovie.get_node_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.TimeEvolutionMovie.get_node_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at nodes. (None, “phi”, “Is_node” or “U”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="circuit_visualize.TimeEvolutionMovie.get_vortex_quantity">
+<span class="sig-name descname"><span class="pre">get_vortex_quantity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/circuit_visualize.html#TimeEvolutionMovie.get_vortex_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#circuit_visualize.TimeEvolutionMovie.get_vortex_quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get physical quantity displayed at faces with symbols. (None or “n”)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="time_evolution.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">time_evolution module</p>
+        </div>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, MartijnLankhorst.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.3.2.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

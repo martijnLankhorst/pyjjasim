@@ -1,0 +1,1271 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>embedded_graph module &#8212; pyjjasim 2.2.7 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="static_problem module" href="static_problem.html" />
+    <link rel="prev" title="josephson_circuit module" href="josephson_circuit.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">pyjjasim</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="pyjjasim.html">
+  pyjjasim API
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyjjasim.html">pyjjasim API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="josephson_circuit.html">josephson_circuit module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">embedded_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="static_problem.html">static_problem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_evolution.html">time_evolution module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="circuit_visualize.html">circuit_visualize module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="josephson_circuit.html"
+                        title="previous chapter">josephson_circuit module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="static_problem.html"
+                        title="next chapter">static_problem module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/embedded_graph.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="embedded-graph-module">
+<h1>embedded_graph module<a class="headerlink" href="#embedded-graph-module" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">embedded_graph.</span></span><span class="sig-name descname"><span class="pre">EmbeddedGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_edges_are_sorted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for embedded 2D graphs. Can be used to construct faces and check planarity.</p>
+<dl class="simple">
+<dt>Definitions:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>l-cycle:</dt><dd><p>Cycle generated by traversing the embedded graph always taking the leftmost turn at
+every node.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>face-cycle:</dt><dd><p>An l-cycle with positive oriented area (using shoelace formula). If the graph is planar,
+face cycles are the boundaries of faces.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Requirements:</dt><dd><ul class="simple">
+<li><p>No self-loops</p></li>
+<li><p>Simple (no multigraph)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(N,) array</span></dt><dd><p>Coordinates of nodes of embedded graph.</p>
+</dd>
+<dt><strong>node1, node2</strong><span class="classifier">(E,) int array in range(N)</span></dt><dd><p>endpoint nodes of edges in embedded graph. Nodes are referred to by their index in
+the coordinate arrays.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True, an error is raised if the graph is not single-component.</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True, an error is raised if the graph is not a planar embedding.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>NonSimpleError</dt><dd><p>If graph is not simple.</p>
+</dd>
+<dt>SelfLoopError</dt><dd><p>if graph contains self-loops.</p>
+</dd>
+<dt>NotSingleComponentError</dt><dd><p>if graph has disconnected components and require_single_component=True.</p>
+</dd>
+<dt>NotPlanarEmbeddingError</dt><dd><p>If graph in not a planar embedding and require_planar_embedding=True.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.add_edges" title="embedded_graph.EmbeddedGraph.add_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges</span></code></a>(node1, node2[, ...])</p></td>
+<td><p>Add edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.add_nodes" title="embedded_graph.EmbeddedGraph.add_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes</span></code></a>(x, y)</p></td>
+<td><p>Add nodes to graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.add_nodes_and_edges" title="embedded_graph.EmbeddedGraph.add_nodes_and_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_and_edges</span></code></a>(x, y, node1, node2[, ...])</p></td>
+<td><p>Add nodes and edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.adjacency_matrix" title="embedded_graph.EmbeddedGraph.adjacency_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjacency_matrix</span></code></a>()</p></td>
+<td><p>Returns adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.coo" title="embedded_graph.EmbeddedGraph.coo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coo</span></code></a>()</p></td>
+<td><p>Returns coordinates of nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.cut_space_matrix" title="embedded_graph.EmbeddedGraph.cut_space_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cut_space_matrix</span></code></a>()</p></td>
+<td><p>Returns cut-space matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.edge_count" title="embedded_graph.EmbeddedGraph.edge_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_count</span></code></a>()</p></td>
+<td><p>Returns number of edges in graph (abbreviated by E).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.face_count" title="embedded_graph.EmbeddedGraph.face_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_count</span></code></a>()</p></td>
+<td><p>Returns number of face cycles in graph (abbreviated by F).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.face_cycle_matrix" title="embedded_graph.EmbeddedGraph.face_cycle_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_cycle_matrix</span></code></a>()</p></td>
+<td><p>Returns cycle matrix build with face cycles</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_boundary_faces" title="embedded_graph.EmbeddedGraph.get_boundary_faces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_boundary_faces</span></code></a>()</p></td>
+<td><p>Returns indices of l_cycles that are boundary faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_common_edge_of_l_cycles" title="embedded_graph.EmbeddedGraph.get_common_edge_of_l_cycles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_common_edge_of_l_cycles</span></code></a>(cycle1, cycle2)</p></td>
+<td><p>Returns index of an edge occurring in both cycles if it exists; otherwise -1.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_components" title="embedded_graph.EmbeddedGraph.get_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_components</span></code></a>()</p></td>
+<td><p>Returns components of graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_edge_ids" title="embedded_graph.EmbeddedGraph.get_edge_ids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edge_ids</span></code></a>(node1, node2)</p></td>
+<td><p>Return indices of edges with given endpoint nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_edges" title="embedded_graph.EmbeddedGraph.get_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edges</span></code></a>()</p></td>
+<td><p>Return node endpoints of all edges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_face_areas" title="embedded_graph.EmbeddedGraph.get_face_areas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_areas</span></code></a>()</p></td>
+<td><p>Returns areas of face-cycles.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_face_centroids" title="embedded_graph.EmbeddedGraph.get_face_centroids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_centroids</span></code></a>()</p></td>
+<td><p>Returns centroids of faces in graph</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_face_cycles" title="embedded_graph.EmbeddedGraph.get_face_cycles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_cycles</span></code></a>([to_list])</p></td>
+<td><p>Returns for all face-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_l_cycle_areas" title="embedded_graph.EmbeddedGraph.get_l_cycle_areas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_areas</span></code></a>()</p></td>
+<td><p>Returns signed areas of l-cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_l_cycle_centroids" title="embedded_graph.EmbeddedGraph.get_l_cycle_centroids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_centroids</span></code></a>()</p></td>
+<td><p>Returns centroids of l_cycles in graph</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_l_cycles" title="embedded_graph.EmbeddedGraph.get_l_cycles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycles</span></code></a>([to_list])</p></td>
+<td><p>Returns for all l-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.get_num_components" title="embedded_graph.EmbeddedGraph.get_num_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_components</span></code></a>()</p></td>
+<td><p>Returns number of connected components of graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.is_planar_embedding" title="embedded_graph.EmbeddedGraph.is_planar_embedding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_planar_embedding</span></code></a>()</p></td>
+<td><p>Returns if graph is planar embedding, which is true if edges only intersect at their endpoints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.l_cycle_count" title="embedded_graph.EmbeddedGraph.l_cycle_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_count</span></code></a>()</p></td>
+<td><p>Returns number of l-cycles in graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.l_cycle_matrix" title="embedded_graph.EmbeddedGraph.l_cycle_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_matrix</span></code></a>()</p></td>
+<td><p>Returns cycle matrix build with l_cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.locate_faces" title="embedded_graph.EmbeddedGraph.locate_faces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_faces</span></code></a>(x, y)</p></td>
+<td><p>Get faces whose centroids are closest to queried coordinate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.node_count" title="embedded_graph.EmbeddedGraph.node_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">node_count</span></code></a>()</p></td>
+<td><p>Returns number of nodes in graph (abbreviated by N).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.permute_faces" title="embedded_graph.EmbeddedGraph.permute_faces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_faces</span></code></a>(permutation)</p></td>
+<td><p>Permute face order.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.permute_nodes" title="embedded_graph.EmbeddedGraph.permute_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_nodes</span></code></a>(permutation)</p></td>
+<td><p>Permute node order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.remove_edges" title="embedded_graph.EmbeddedGraph.remove_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges</span></code></a>(node1, node2[, ...])</p></td>
+<td><p>Remove edges from graph with node endpoints as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.remove_edges_by_ids" title="embedded_graph.EmbeddedGraph.remove_edges_by_ids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges_by_ids</span></code></a>(edge_ids[, ...])</p></td>
+<td><p>Remove edges from graph with edge ids as input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.remove_nodes" title="embedded_graph.EmbeddedGraph.remove_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes</span></code></a>(node_ids[, ...])</p></td>
+<td><p>Remove nodes from graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#embedded_graph.EmbeddedGraph.split_components" title="embedded_graph.EmbeddedGraph.split_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_components</span></code></a>()</p></td>
+<td><p>Returns list of individual components of graph as separate EmbeddedGraph objects.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 66%" />
+<col style="width: 34%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>face_dual_graph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>plot</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.add_edges">
+<span class="sig-name descname"><span class="pre">add_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.add_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.add_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add edges to graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node1, node2</strong><span class="classifier">arrays in range(N)</span></dt><dd><p>Endpoints of edges.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not single-component.</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not a planar embedding.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>New graph with edges added to it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.add_nodes">
+<span class="sig-name descname"><span class="pre">add_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.add_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.add_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add nodes to graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">arrays</span></dt><dd><p>Coordinates of the nodes to be added to the graph</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>New graph with nodes added to it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.add_nodes_and_edges">
+<span class="sig-name descname"><span class="pre">add_nodes_and_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.add_nodes_and_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.add_nodes_and_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add nodes and edges to graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">arrays</span></dt><dd><p>coordinates of the nodes to be added to the graph</p>
+</dd>
+<dt><strong>node1, node2</strong><span class="classifier">arrays in range(N + x.size)</span></dt><dd><p>endpoints of edges. The i-th new node must be referred to by index N + i.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not single-component</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not a planar embedding</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>new graph with nodes and edges added to it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.adjacency_matrix">
+<span class="sig-name descname"><span class="pre">adjacency_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.adjacency_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.adjacency_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns adjacency matrix.</p>
+<p>Adjacency matrix is an (N, N) sparse symmetric matrix where a node-pair
+entry is 1 if the nodes share an edge, 0 if not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.coo">
+<span class="sig-name descname"><span class="pre">coo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.coo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.coo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns coordinates of nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(N,) arrays</span></dt><dd><p>Coordinates of nodes in graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.cut_space_matrix">
+<span class="sig-name descname"><span class="pre">cut_space_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.cut_space_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.cut_space_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cut-space matrix.</p>
+<p>Cut-space matrix is an (N, E) sparse matrix where the i-th row corresponds to the
+i-th node. The entry is +1 or -1 if the node is an endpoint of that edge. It is +1
+if the node is the endpoint with highest idx, -1 otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.edge_count">
+<span class="sig-name descname"><span class="pre">edge_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.edge_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.edge_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of edges in graph (abbreviated by E).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.face_count">
+<span class="sig-name descname"><span class="pre">face_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.face_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.face_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of face cycles in graph (abbreviated by F). In a planar
+graph this equals the number of faces.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.face_cycle_matrix">
+<span class="sig-name descname"><span class="pre">face_cycle_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.face_cycle_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.face_cycle_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cycle matrix build with face cycles</p>
+<p>Cycle matrix is an (F, E) sparse matrix where the i-th row corresponds to the
+i-th face. The entry is +1 or -1 if the cycle contains that edge.</p>
+<p>The value +1 is assigned if traversing the cycle counter clockwise first encounters
+the endpoint node of the edge with lowest id. If not, -1 is assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_boundary_faces">
+<span class="sig-name descname"><span class="pre">get_boundary_faces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_boundary_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_boundary_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns indices of l_cycles that are boundary faces.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_common_edge_of_l_cycles">
+<span class="sig-name descname"><span class="pre">get_common_edge_of_l_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycle1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_common_edge_of_l_cycles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_common_edge_of_l_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index of an edge occurring in both cycles if it exists; otherwise -1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cycle1, cycle2</strong><span class="classifier">int arrays in range(F)</span></dt><dd><p>Indices referring to l_cycles.</p>
+</dd>
+<dt><strong>return_orientation=False :</strong></dt><dd><p>If True, orientation of edge with respect to cycle pair is returned.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>shared_edge</strong><span class="classifier">array in range(E) with same size as cycle1,2</span></dt><dd><p>Edge shared by l_cycle1 and l_cycle2. If multiple exist;
+returns one with the lowest index.</p>
+</dd>
+<dt><strong>orientation</strong><span class="classifier">bool array with same size as cycle1,2 (optional)</span></dt><dd><p>True if cycle1 passes edge counterclockwise first encountering its
+node with lowest index.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_components">
+<span class="sig-name descname"><span class="pre">get_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_components"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns components of graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>components</strong><span class="classifier">(N,) int array in range(num_components)</span></dt><dd><p>Components of graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_edge_ids">
+<span class="sig-name descname"><span class="pre">get_edge_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_edge_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_edge_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return indices of edges with given endpoint nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node1, node2</strong><span class="classifier">arrays in range(N)</span></dt><dd><p>Endpoints of edges.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>edge_ids</strong><span class="classifier">array with same size as node1 in range(E)</span></dt><dd><p>Returns indices of edges.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>EdgeNotExistError</dt><dd><p>If a queried node-pair does not exist.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_edges">
+<span class="sig-name descname"><span class="pre">get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node endpoints of all edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node1, node2</strong><span class="classifier">(E,) int arrays in range(N)</span></dt><dd><p>Node endpoints of all edges.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_face_areas">
+<span class="sig-name descname"><span class="pre">get_face_areas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_face_areas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_face_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns areas of face-cycles. These correspond to face-areas is the graph
+is planar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>areas</strong><span class="classifier">(F,) array</span></dt><dd><p>Areas of face-cycles.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_face_centroids">
+<span class="sig-name descname"><span class="pre">get_face_centroids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_face_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_face_centroids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns centroids of faces in graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(F,) arrays</span></dt><dd><p>Returns coordinates of centroids of faces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_face_cycles">
+<span class="sig-name descname"><span class="pre">get_face_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_face_cycles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_face_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns for all face-cycles the nodes it traverses in order. If the graph is planar,
+these enclose individual faces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>to_list=False :</strong></dt><dd><p>If true, output is in form of list-of-lists, otherwise concatenated array.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>nodes</strong><span class="classifier">list-of-lists or array</span></dt><dd><p>For all face-cycles the nodes it traverses in order.</p>
+</dd>
+<dt><strong>lengths</strong><span class="classifier">(F,) int array</span></dt><dd><p>Length of every face-cycle.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_l_cycle_areas">
+<span class="sig-name descname"><span class="pre">get_l_cycle_areas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_l_cycle_areas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_l_cycle_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns signed areas of l-cycles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>areas</strong><span class="classifier">(FR,) array</span></dt><dd><p>Signed areas of l-cycles.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_l_cycle_centroids">
+<span class="sig-name descname"><span class="pre">get_l_cycle_centroids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_l_cycle_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_l_cycle_centroids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns centroids of l_cycles in graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(F,) arrays</span></dt><dd><p>Returns coordinates of centroids of l_cycles.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_l_cycles">
+<span class="sig-name descname"><span class="pre">get_l_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_l_cycles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_l_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns for all l-cycles the nodes it traverses in order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>to_list=False :</strong></dt><dd><p>If true, output is in form of list-of-lists, otherwise concatenated array.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>nodes</strong><span class="classifier">list-of-lists or array</span></dt><dd><p>For all l-cycles the nodes it traverses in order.</p>
+</dd>
+<dt><strong>lengths</strong><span class="classifier">(FR,) int array</span></dt><dd><p>Length of every l-cycle.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.get_num_components">
+<span class="sig-name descname"><span class="pre">get_num_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.get_num_components"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.get_num_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of connected components of graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.is_planar_embedding">
+<span class="sig-name descname"><span class="pre">is_planar_embedding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.is_planar_embedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.is_planar_embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns if graph is planar embedding, which is true if edges only intersect at their endpoints.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.l_cycle_count">
+<span class="sig-name descname"><span class="pre">l_cycle_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.l_cycle_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.l_cycle_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of l-cycles in graph. (abbreviated by FR)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.l_cycle_matrix">
+<span class="sig-name descname"><span class="pre">l_cycle_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.l_cycle_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.l_cycle_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cycle matrix build with l_cycles.</p>
+<p>Cycle matrix is an (F, E) sparse matrix where the i-th row corresponds to the
+i-th l_cycle. The entry is +1 or -1 if the cycle contains that edge.</p>
+<p>The value +1 is assigned if traversing the cycle counter clockwise first encounters
+the endpoint node of the edge with lowest id. If not, -1 is assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.locate_faces">
+<span class="sig-name descname"><span class="pre">locate_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.locate_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.locate_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get faces whose centroids are closest to queried coordinate.
+Graph must be planar embedding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>face_ids</strong><span class="classifier">int array with same size as x in range(F)</span></dt><dd><p>Returns indices of located faces.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x, y: arrays :</strong></dt><dd><p>Coordinates at which one wants to locate faces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.node_count">
+<span class="sig-name descname"><span class="pre">node_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.node_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.node_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of nodes in graph (abbreviated by N).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.permute_faces">
+<span class="sig-name descname"><span class="pre">permute_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.permute_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.permute_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permute face order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.permute_nodes">
+<span class="sig-name descname"><span class="pre">permute_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.permute_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.permute_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permute node order. Because edges refer to nodes by their position,
+this also changes node1 and node2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.remove_edges">
+<span class="sig-name descname"><span class="pre">remove_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.remove_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.remove_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove edges from graph with node endpoints as input.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node1, node2</strong><span class="classifier">int arrays in range(N)</span></dt><dd><p>The indices of node endpoints of edges to be removed.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not single-component.</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not a planar embedding.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>new graph with edges removed from it.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>EdgeNotExistError</dt><dd><p>If a queried node-pair does not exist.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.remove_edges_by_ids">
+<span class="sig-name descname"><span class="pre">remove_edges_by_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.remove_edges_by_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.remove_edges_by_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove edges from graph with edge ids as input.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>edge_ids</strong><span class="classifier">int array in range(E)</span></dt><dd><p>Indices of nodes to be removed.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not single-component.</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not a planar embedding.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>new graph with edges removed from it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.remove_nodes">
+<span class="sig-name descname"><span class="pre">remove_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_single_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_planar_embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.remove_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.remove_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove nodes from graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node_ids</strong><span class="classifier">int array in range(N)</span></dt><dd><p>Indices of nodes to be removed.</p>
+</dd>
+<dt><strong>require_single_component=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not single-component.</p>
+</dd>
+<dt><strong>require_planar_embedding=False :</strong></dt><dd><p>If True; raises error if the resulting graph is not a planar embedding.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_graph</strong><span class="classifier"><a class="reference internal" href="#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">EmbeddedGraph</span></code></a></span></dt><dd><p>New graph with nodes removed from it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedGraph.split_components">
+<span class="sig-name descname"><span class="pre">split_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedGraph.split_components"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedGraph.split_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of individual components of graph as separate EmbeddedGraph objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedSquareGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">embedded_graph.</span></span><span class="sig-name descname"><span class="pre">EmbeddedSquareGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedSquareGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedSquareGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Embedded graph for a square lattice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>count_x, count_y</strong><span class="classifier">int scalar</span></dt><dd><p>Node count of square lattice in x- and y-direction respectively.</p>
+</dd>
+<dt><strong>x_scale, y_scale=1.0</strong><span class="classifier">float scalar</span></dt><dd><p>Stretch factors for square lattice in x- and y-direction respectively.
+Bottom-left node is at origin.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Add edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes</span></code>(x, y)</p></td>
+<td><p>Add nodes to graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_and_edges</span></code>(x, y, node1, node2[, ...])</p></td>
+<td><p>Add nodes and edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjacency_matrix</span></code>()</p></td>
+<td><p>Returns adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">coo</span></code>()</p></td>
+<td><p>Returns coordinates of nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cut_space_matrix</span></code>()</p></td>
+<td><p>Returns cut-space matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_count</span></code>()</p></td>
+<td><p>Returns number of edges in graph (abbreviated by E).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_count</span></code>()</p></td>
+<td><p>Returns number of face cycles in graph (abbreviated by F).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with face cycles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_boundary_faces</span></code>()</p></td>
+<td><p>Returns indices of l_cycles that are boundary faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_common_edge_of_l_cycles</span></code>(cycle1, cycle2)</p></td>
+<td><p>Returns index of an edge occurring in both cycles if it exists; otherwise -1.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_components</span></code>()</p></td>
+<td><p>Returns components of graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edge_ids</span></code>(node1, node2)</p></td>
+<td><p>Return indices of edges with given endpoint nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edges</span></code>()</p></td>
+<td><p>Return node endpoints of all edges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_areas</span></code>()</p></td>
+<td><p>Returns areas of face-cycles.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_centroids</span></code>()</p></td>
+<td><p>Returns centroids of faces in graph</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all face-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_areas</span></code>()</p></td>
+<td><p>Returns signed areas of l-cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_centroids</span></code>()</p></td>
+<td><p>Returns centroids of l_cycles in graph</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all l-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_components</span></code>()</p></td>
+<td><p>Returns number of connected components of graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_planar_embedding</span></code>()</p></td>
+<td><p>Returns if graph is planar embedding, which is true if edges only intersect at their endpoints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_count</span></code>()</p></td>
+<td><p>Returns number of l-cycles in graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with l_cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_faces</span></code>(x, y)</p></td>
+<td><p>Get faces whose centroids are closest to queried coordinate.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">node_count</span></code>()</p></td>
+<td><p>Returns number of nodes in graph (abbreviated by N).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_faces</span></code>(permutation)</p></td>
+<td><p>Permute face order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_nodes</span></code>(permutation)</p></td>
+<td><p>Permute node order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Remove edges from graph with node endpoints as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges_by_ids</span></code>(edge_ids[, ...])</p></td>
+<td><p>Remove edges from graph with edge ids as input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes</span></code>(node_ids[, ...])</p></td>
+<td><p>Remove nodes from graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_components</span></code>()</p></td>
+<td><p>Returns list of individual components of graph as separate EmbeddedGraph objects.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 66%" />
+<col style="width: 34%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>face_dual_graph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>plot</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedHoneycombGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">embedded_graph.</span></span><span class="sig-name descname"><span class="pre">EmbeddedHoneycombGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedHoneycombGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedHoneycombGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Embedded graph for a honeycomb lattice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>count_x, count_y</strong><span class="classifier">int scalar</span></dt><dd><p>The amount of times the unit cell (with shape /¯and has 4 nodes) is
+repeated in the x- and y-direction; generating a honeycomb lattice.</p>
+</dd>
+<dt><strong>x_scale, y_scale=1.0</strong><span class="classifier">float scalar</span></dt><dd><p>Stretch factors for honeycomb lattice in x- and y-direction respectively.
+Bottom-left node is at origin.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Add edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes</span></code>(x, y)</p></td>
+<td><p>Add nodes to graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_and_edges</span></code>(x, y, node1, node2[, ...])</p></td>
+<td><p>Add nodes and edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjacency_matrix</span></code>()</p></td>
+<td><p>Returns adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">coo</span></code>()</p></td>
+<td><p>Returns coordinates of nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cut_space_matrix</span></code>()</p></td>
+<td><p>Returns cut-space matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_count</span></code>()</p></td>
+<td><p>Returns number of edges in graph (abbreviated by E).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_count</span></code>()</p></td>
+<td><p>Returns number of face cycles in graph (abbreviated by F).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with face cycles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_boundary_faces</span></code>()</p></td>
+<td><p>Returns indices of l_cycles that are boundary faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_common_edge_of_l_cycles</span></code>(cycle1, cycle2)</p></td>
+<td><p>Returns index of an edge occurring in both cycles if it exists; otherwise -1.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_components</span></code>()</p></td>
+<td><p>Returns components of graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edge_ids</span></code>(node1, node2)</p></td>
+<td><p>Return indices of edges with given endpoint nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edges</span></code>()</p></td>
+<td><p>Return node endpoints of all edges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_areas</span></code>()</p></td>
+<td><p>Returns areas of face-cycles.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_centroids</span></code>()</p></td>
+<td><p>Returns centroids of faces in graph</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all face-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_areas</span></code>()</p></td>
+<td><p>Returns signed areas of l-cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_centroids</span></code>()</p></td>
+<td><p>Returns centroids of l_cycles in graph</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all l-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_components</span></code>()</p></td>
+<td><p>Returns number of connected components of graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_planar_embedding</span></code>()</p></td>
+<td><p>Returns if graph is planar embedding, which is true if edges only intersect at their endpoints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_count</span></code>()</p></td>
+<td><p>Returns number of l-cycles in graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with l_cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_faces</span></code>(x, y)</p></td>
+<td><p>Get faces whose centroids are closest to queried coordinate.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">node_count</span></code>()</p></td>
+<td><p>Returns number of nodes in graph (abbreviated by N).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_faces</span></code>(permutation)</p></td>
+<td><p>Permute face order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_nodes</span></code>(permutation)</p></td>
+<td><p>Permute node order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Remove edges from graph with node endpoints as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges_by_ids</span></code>(edge_ids[, ...])</p></td>
+<td><p>Remove edges from graph with edge ids as input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes</span></code>(node_ids[, ...])</p></td>
+<td><p>Remove nodes from graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_components</span></code>()</p></td>
+<td><p>Returns list of individual components of graph as separate EmbeddedGraph objects.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 66%" />
+<col style="width: 34%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>face_dual_graph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>plot</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="embedded_graph.EmbeddedTriangularGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">embedded_graph.</span></span><span class="sig-name descname"><span class="pre">EmbeddedTriangularGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/embedded_graph.html#EmbeddedTriangularGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#embedded_graph.EmbeddedTriangularGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Embedded graph for a triangular lattice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>count_x, count_y</strong><span class="classifier">int scalar</span></dt><dd><p>The amount of times the unit cell (with shape / and has 2 nodes) is
+repeated in the x- and y-direction; generating a triangular lattice.</p>
+</dd>
+<dt><strong>x_scale, y_scale=1.0</strong><span class="classifier">float scalar</span></dt><dd><p>Stretch factors for triangular lattice in x- and y-direction respectively.
+Bottom-left node is at origin.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Add edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes</span></code>(x, y)</p></td>
+<td><p>Add nodes to graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_and_edges</span></code>(x, y, node1, node2[, ...])</p></td>
+<td><p>Add nodes and edges to graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjacency_matrix</span></code>()</p></td>
+<td><p>Returns adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">coo</span></code>()</p></td>
+<td><p>Returns coordinates of nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cut_space_matrix</span></code>()</p></td>
+<td><p>Returns cut-space matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_count</span></code>()</p></td>
+<td><p>Returns number of edges in graph (abbreviated by E).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_count</span></code>()</p></td>
+<td><p>Returns number of face cycles in graph (abbreviated by F).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with face cycles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_boundary_faces</span></code>()</p></td>
+<td><p>Returns indices of l_cycles that are boundary faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_common_edge_of_l_cycles</span></code>(cycle1, cycle2)</p></td>
+<td><p>Returns index of an edge occurring in both cycles if it exists; otherwise -1.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_components</span></code>()</p></td>
+<td><p>Returns components of graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edge_ids</span></code>(node1, node2)</p></td>
+<td><p>Return indices of edges with given endpoint nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edges</span></code>()</p></td>
+<td><p>Return node endpoints of all edges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_areas</span></code>()</p></td>
+<td><p>Returns areas of face-cycles.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_centroids</span></code>()</p></td>
+<td><p>Returns centroids of faces in graph</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all face-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_areas</span></code>()</p></td>
+<td><p>Returns signed areas of l-cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycle_centroids</span></code>()</p></td>
+<td><p>Returns centroids of l_cycles in graph</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_l_cycles</span></code>([to_list])</p></td>
+<td><p>Returns for all l-cycles the nodes it traverses in order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_components</span></code>()</p></td>
+<td><p>Returns number of connected components of graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_planar_embedding</span></code>()</p></td>
+<td><p>Returns if graph is planar embedding, which is true if edges only intersect at their endpoints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_count</span></code>()</p></td>
+<td><p>Returns number of l-cycles in graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">l_cycle_matrix</span></code>()</p></td>
+<td><p>Returns cycle matrix build with l_cycles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_faces</span></code>(x, y)</p></td>
+<td><p>Get faces whose centroids are closest to queried coordinate.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">node_count</span></code>()</p></td>
+<td><p>Returns number of nodes in graph (abbreviated by N).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_faces</span></code>(permutation)</p></td>
+<td><p>Permute face order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">permute_nodes</span></code>(permutation)</p></td>
+<td><p>Permute node order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges</span></code>(node1, node2[, ...])</p></td>
+<td><p>Remove edges from graph with node endpoints as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges_by_ids</span></code>(edge_ids[, ...])</p></td>
+<td><p>Remove edges from graph with edge ids as input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes</span></code>(node_ids[, ...])</p></td>
+<td><p>Remove nodes from graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_components</span></code>()</p></td>
+<td><p>Returns list of individual components of graph as separate EmbeddedGraph objects.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 66%" />
+<col style="width: 34%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>face_dual_graph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>plot</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="josephson_circuit.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">josephson_circuit module</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="static_problem.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">static_problem module</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, MartijnLankhorst.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.3.2.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

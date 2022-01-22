@@ -1,0 +1,1036 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>time_evolution module &#8212; pyjjasim 2.2.7 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="circuit_visualize module" href="circuit_visualize.html" />
+    <link rel="prev" title="static_problem module" href="static_problem.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">pyjjasim</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="pyjjasim.html">
+  pyjjasim API
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyjjasim.html">pyjjasim API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="josephson_circuit.html">josephson_circuit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="embedded_graph.html">embedded_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="static_problem.html">static_problem module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">time_evolution module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="circuit_visualize.html">circuit_visualize module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="static_problem.html"
+                        title="previous chapter">static_problem module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="circuit_visualize.html"
+                        title="next chapter">circuit_visualize module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/time_evolution.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="time-evolution-module">
+<h1>time_evolution module<a class="headerlink" href="#time-evolution-module" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">time_evolution.</span></span><span class="sig-name descname"><span class="pre">TimeEvolutionProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit:</span> <span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step=0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step_count=1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_phase_relation=&lt;pyjjasim.static_problem.DefaultCPR</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frustration=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_sources=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage_sources=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_time_steps=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_theta=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_voltage=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_current=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_at_minus_1:</span> <span class="pre">Optional[numpy.ndarray]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_at_minus_2:</span> <span class="pre">Optional[numpy.ndarray]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define multiple time evolution problems with varying parameters in a Josephson circuit.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>All problems are computed in one call (ofter faster than computing one by one).</p></li>
+<li><p>The problem count is abbreviated with the symbol W.</p></li>
+<li><p>Use self.compute() to obtain a TimeEvolutionResult object containing the
+resulting time evolution.</p></li>
+<li><p>Be careful input arrays for Is, f, etc. have the correct shape. See numpy
+broadcasting for details <a class="reference external" href="https://numpy.org/doc/stable/user/basics.broadcasting.html">https://numpy.org/doc/stable/user/basics.broadcasting.html</a>
+Remember Nj is number of junctions, Nn is number of nodes and Nf is number of faces.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>circuit</strong><span class="classifier">Circuit</span></dt><dd><p>Josephson circuit on which the problem is based.</p>
+</dd>
+<dt><strong>time_step=0.05 :</strong></dt><dd><p>Time between consecutive steps (abbreviated dt).</p>
+</dd>
+<dt><strong>time_step_count=1000</strong><span class="classifier">Nt</span></dt><dd><p>Total number of time steps in evolution (abbreviated Nt).</p>
+</dd>
+<dt><strong>current_phase_relation= DefaultCPR()</strong></dt><dd><p>Current-phase relation (abbreviated cp).</p>
+</dd>
+<dt><strong>frustration=0.0</strong><span class="classifier">array broadcastable to (Nf, W, Nt).</span></dt><dd><p>Normalized external flux per site, called frustration (abbreviated f)</p>
+</dd>
+<dt><strong>frustration (alternative)</strong><span class="classifier">f(i) -&gt; array broadcastable to (Nf, W) for i in range(Nt)</span></dt><dd><p>Alternative input type for frustration using a function.</p>
+</dd>
+<dt><strong>current_sources</strong><span class="classifier">array broadcastable to (Nj, W, Nt)</span></dt><dd><p>Current source strength at each junction in circuit (abbreviated Is).</p>
+</dd>
+<dt><strong>current_sources (alternative)</strong><span class="classifier">Is(i) -&gt; array broadcastable to (Nj, W) for i in range(Nt)</span></dt><dd><p>Alternative input type for current_sources using a function.</p>
+</dd>
+<dt><strong>voltage_sources=0.0</strong><span class="classifier">array broadcastable to (Nj, W, Nt)</span></dt><dd><p>Voltage source value at each junction in circuit (abbreviated Vs).</p>
+</dd>
+<dt><strong>voltage_sources (alternative)</strong><span class="classifier">Vs(i) -&gt; array broadcastable to (Nj, W) for i in range(Nt)</span></dt><dd><p>Alternative input type for voltage_sources using a function.</p>
+</dd>
+<dt><strong>temperature=0.0</strong><span class="classifier">array broadcastable to (Nj, W, Nt)</span></dt><dd><p>Temperature at each junction in circuit (abbreviated T).</p>
+</dd>
+<dt><strong>temperature (alternative)</strong><span class="classifier">T(i) -&gt; array broadcastable to (Nj, W) for i in range(Nt)</span></dt><dd><p>Alternative input type for temperature using a function.</p>
+</dd>
+<dt><strong>store_time_steps=None</strong><span class="classifier">array in range(Nt), mask of shape (Nt,) or None</span></dt><dd><p>Indicate at which timesteps data is stored in the output array(s).</p>
+</dd>
+<dt><strong>store_theta=True</strong><span class="classifier">bool</span></dt><dd><p>If true, theta (the gauge invarian t phase difference) is stored during
+a time evolution (at timesteps specified with store_time_steps) and
+returned when simulation is done.</p>
+</dd>
+<dt><strong>store_voltage=True</strong><span class="classifier">bool</span></dt><dd><p>If true, voltage is stored during a time evolution (at timesteps specified
+with store_time_steps) and returned when simulation is done.</p>
+</dd>
+<dt><strong>store_current=True</strong><span class="classifier">bool</span></dt><dd><p>If true, voltage is stored during a time evolution (at timesteps specified
+with store_time_steps) and returned when simulation is done.</p>
+</dd>
+<dt><strong>config_at_minus_1=None</strong><span class="classifier">(Nj, W) array or StaticConfiguration or None</span></dt><dd><p>initial condition at timestep=-1. set to self.get_static_problem(t=0,n=z).compute()</p>
+</dd>
+<dt><strong>config_at_minus_2=None</strong><span class="classifier">(Nj, W) array or StaticConfiguration or None</span></dt><dd><p>initial condition at timestep=-2</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>All physical quantities are dimensionless. See the UserManual (on github)
+for how all quantities are normalized.</p></li>
+<li><p>It is assumed each junction has a current source and voltage source see
+user manual (on github) for diagram of junction. To omit the sources in
+particular junctions set the respective values to zero.</p></li>
+<li><p>To use a node-based source current (represented as an (Nn,) array Is_node
+with current in/e-jected at each node), convert it to a junction-based
+source with Is = static_problem.node_to_junction_current(circuit, Is_node)
+and use Is as input for a time evolution.</p></li>
+<li><p>The store parameters allow one to control what quantities are stored at what timesteps.
+Only the base quantities theta, voltage and current can be stored in the resulting
+TimeEvolutionResult; other quantities like energy or magnetic_flux are computed based
+on these. See documentation of <cite>TimeEvolutionResult</cite> to see per  quantity which
+base quantities are required.</p></li>
+</ul>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.compute" title="time_evolution.TimeEvolutionProblem.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a>()</p></td>
+<td><p>Compute time evolution on an Josephson Circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_circuit" title="time_evolution.TimeEvolutionProblem.get_circuit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_circuit</span></code></a>()</p></td>
+<td><p>Returns the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_current_phase_relation" title="time_evolution.TimeEvolutionProblem.get_current_phase_relation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_phase_relation</span></code></a>()</p></td>
+<td><p>Returns the current-phase relation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_current_sources" title="time_evolution.TimeEvolutionProblem.get_current_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_sources</span></code></a>()</p></td>
+<td><p>Returns the current sources (abbreviated Is).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_frustration" title="time_evolution.TimeEvolutionProblem.get_frustration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_frustration</span></code></a>()</p></td>
+<td><p>Returns the frustration (abbreviated f).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_net_sourced_current" title="time_evolution.TimeEvolutionProblem.get_net_sourced_current"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_net_sourced_current</span></code></a>(time_step)</p></td>
+<td><p>Gets the sum of all (positive) current injected at nodes to create Is.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_node_current_sources" title="time_evolution.TimeEvolutionProblem.get_node_current_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_current_sources</span></code></a>(time_step)</p></td>
+<td><p>Returns (Nn,) array of currents injected at nodes to create Is.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_phase_zone" title="time_evolution.TimeEvolutionProblem.get_phase_zone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_phase_zone</span></code></a>()</p></td>
+<td><p>Returns the phase zone (In all of pyJJAsim phase_zone=0).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_problem_count" title="time_evolution.TimeEvolutionProblem.get_problem_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_problem_count</span></code></a>()</p></td>
+<td><p>Return number of problems (abbreviated W).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_static_problem" title="time_evolution.TimeEvolutionProblem.get_static_problem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_static_problem</span></code></a>(vortex_configuration[, ...])</p></td>
+<td><p>Return a static problem with properties copied from this time evolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_store_current" title="time_evolution.TimeEvolutionProblem.get_store_current"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_store_current</span></code></a>()</p></td>
+<td><p>Return if current is stored during a time evolution.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_store_theta" title="time_evolution.TimeEvolutionProblem.get_store_theta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_store_theta</span></code></a>()</p></td>
+<td><p>Return if theta is stored during a time evolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_store_time_steps" title="time_evolution.TimeEvolutionProblem.get_store_time_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_store_time_steps</span></code></a>()</p></td>
+<td><p>Return at which timesteps data is stored in the output array(s).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_store_voltage" title="time_evolution.TimeEvolutionProblem.get_store_voltage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_store_voltage</span></code></a>()</p></td>
+<td><p>Return if voltage is stored during a time evolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_temperature" title="time_evolution.TimeEvolutionProblem.get_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_temperature</span></code></a>()</p></td>
+<td><p>Return temperature at each junction (abbreviated T)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_time" title="time_evolution.TimeEvolutionProblem.get_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time</span></code></a>()</p></td>
+<td><p>Return (Nt,) array with time value at each step of evolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_time_step" title="time_evolution.TimeEvolutionProblem.get_time_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_step</span></code></a>()</p></td>
+<td><p>Return the timestep (abbreviated dt).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_time_step_count" title="time_evolution.TimeEvolutionProblem.get_time_step_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_step_count</span></code></a>()</p></td>
+<td><p>Return the number of timesteps (abbreviated Nt).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionProblem.get_voltage_sources" title="time_evolution.TimeEvolutionProblem.get_voltage_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_voltage_sources</span></code></a>()</p></td>
+<td><p>Return voltage sources at each junction (abbreviated Vs)</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute time evolution on an Josephson Circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_circuit">
+<span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_circuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_current_phase_relation">
+<span class="sig-name descname"><span class="pre">get_current_phase_relation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_current_phase_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_current_phase_relation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current-phase relation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_current_sources">
+<span class="sig-name descname"><span class="pre">get_current_sources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_current_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_current_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current sources (abbreviated Is).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_frustration">
+<span class="sig-name descname"><span class="pre">get_frustration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_frustration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_frustration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the frustration (abbreviated f).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_net_sourced_current">
+<span class="sig-name descname"><span class="pre">get_net_sourced_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_net_sourced_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_net_sourced_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the sum of all (positive) current injected at nodes to create Is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time_step</strong><span class="classifier">int</span></dt><dd><p>Time step at which to return net sourced current.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>net_sourced_current</strong><span class="classifier">(W,) array</span></dt><dd><p>Net sourced current through array for each problem at specified timestep.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_node_current_sources">
+<span class="sig-name descname"><span class="pre">get_node_current_sources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_node_current_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_node_current_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (Nn,) array of currents injected at nodes to create Is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time_step</strong><span class="classifier">int</span></dt><dd><p>Time step at which to return node currents.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>node_current</strong><span class="classifier">(Nn, W) array</span></dt><dd><p>Node currents for each problem at specified timestep.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_phase_zone">
+<span class="sig-name descname"><span class="pre">get_phase_zone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_phase_zone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_phase_zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the phase zone (In all of pyJJAsim phase_zone=0).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_problem_count">
+<span class="sig-name descname"><span class="pre">get_problem_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_problem_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_problem_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of problems (abbreviated W).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_static_problem">
+<span class="sig-name descname"><span class="pre">get_static_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vortex_configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_nr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyjjasim.static_problem.StaticProblem</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_static_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_static_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a static problem with properties copied from this time evolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vortex_configuration</strong><span class="classifier">(Nf,) array or None</span></dt><dd><p>Vortex configuration of returned static problem.</p>
+</dd>
+<dt><strong>problem_nr=0</strong><span class="classifier">int in range(W)</span></dt><dd><p>Selected problem number to copy properties of.</p>
+</dd>
+<dt><strong>time_step=0</strong><span class="classifier">int in range(Nt)</span></dt><dd><p>Selected timestep to copy properties of.</p>
+</dd>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd></dd>
+<dt><strong>static_problem</strong><span class="classifier">StaticProblem</span></dt><dd><p>Static problem where the parameters are copied from this time evolution.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_store_current">
+<span class="sig-name descname"><span class="pre">get_store_current</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_store_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_store_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return if current is stored during a time evolution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_store_theta">
+<span class="sig-name descname"><span class="pre">get_store_theta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_store_theta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_store_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return if theta is stored during a time evolution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_store_time_steps">
+<span class="sig-name descname"><span class="pre">get_store_time_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_store_time_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_store_time_steps" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Return at which timesteps data is stored in the output array(s).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>config_at_minus_1=None<span class="classifier">(Nj, W) array or StaticConfiguration or None</span></dt><dd><p>initial condition at timestep=-1. set to self.get_static_problem(t=0,n=z).compute()</p>
+</dd>
+<dt>config_at_minus_2=None<span class="classifier">(Nj, W) array or StaticConfiguration or None</span></dt><dd><p>initial condition at timestep=-2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_store_voltage">
+<span class="sig-name descname"><span class="pre">get_store_voltage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_store_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_store_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return if voltage is stored during a time evolution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return temperature at each junction (abbreviated T)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_time">
+<span class="sig-name descname"><span class="pre">get_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return (Nt,) array with time value at each step of evolution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_time_step">
+<span class="sig-name descname"><span class="pre">get_time_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_time_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the timestep (abbreviated dt).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_time_step_count">
+<span class="sig-name descname"><span class="pre">get_time_step_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_time_step_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_time_step_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of timesteps (abbreviated Nt).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionProblem.get_voltage_sources">
+<span class="sig-name descname"><span class="pre">get_voltage_sources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionProblem.get_voltage_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionProblem.get_voltage_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return voltage sources at each junction (abbreviated Vs)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">time_evolution.</span></span><span class="sig-name descname"><span class="pre">TimeEvolutionResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#time_evolution.TimeEvolutionProblem" title="time_evolution.TimeEvolutionProblem"><span class="pre">time_evolution.TimeEvolutionProblem</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents data of simulated time evolution(s) on a Josephson circuit.</p>
+<p>One can query several properties of the circuit configurations, like currents
+and voltages. TimeEvolutionResult only store theta, current and voltage data
+from which all quantities are computed. However, one can choose not to store
+all three to save memory. An error is raised if one attempts to compute a property
+for which the required data is not stored.</p>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.animate" title="time_evolution.TimeEvolutionResult.animate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">animate</span></code></a>([problem_nr, time_points, fig, ...])</p></td>
+<td><p>Animate time evolution of a problem as a movie.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_EC" title="time_evolution.TimeEvolutionResult.get_EC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_EC</span></code></a>([select_time_points])</p></td>
+<td><p>Return energy stored in capacitors at each junction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_EJ" title="time_evolution.TimeEvolutionResult.get_EJ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_EJ</span></code></a>([select_time_points])</p></td>
+<td><p>Return Josephson energy of junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_EM" title="time_evolution.TimeEvolutionResult.get_EM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_EM</span></code></a>([select_time_points])</p></td>
+<td><p>Return magnetic energy associated with wires.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_Etot" title="time_evolution.TimeEvolutionResult.get_Etot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_Etot</span></code></a>([select_time_points])</p></td>
+<td><p>Return total energy associated with each junction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_I" title="time_evolution.TimeEvolutionResult.get_I"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_I</span></code></a>([select_time_points])</p></td>
+<td><p>Return current through junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_Isup" title="time_evolution.TimeEvolutionResult.get_Isup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_Isup</span></code></a>([select_time_points])</p></td>
+<td><p>Return supercurrent through junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_J" title="time_evolution.TimeEvolutionResult.get_J"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_J</span></code></a>([select_time_points])</p></td>
+<td><p>Return cycle-current around faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_U" title="time_evolution.TimeEvolutionResult.get_U"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_U</span></code></a>([select_time_points])</p></td>
+<td><p>Return voltage potential at nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_V" title="time_evolution.TimeEvolutionResult.get_V"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_V</span></code></a>([select_time_points])</p></td>
+<td><p>Return voltage over junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_circuit" title="time_evolution.TimeEvolutionResult.get_circuit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_circuit</span></code></a>()</p></td>
+<td><p>Return Josephson circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_flux" title="time_evolution.TimeEvolutionResult.get_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_flux</span></code></a>([select_time_points])</p></td>
+<td><p>Return magnetic flux through faces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_n" title="time_evolution.TimeEvolutionResult.get_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_n</span></code></a>([select_time_points])</p></td>
+<td><p>Return vorticity at faces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_phi" title="time_evolution.TimeEvolutionResult.get_phi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_phi</span></code></a>([select_time_points])</p></td>
+<td><p>Return node phases.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_problem_count" title="time_evolution.TimeEvolutionResult.get_problem_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_problem_count</span></code></a>()</p></td>
+<td><p>Return number of problems (abbreviated W).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.get_theta" title="time_evolution.TimeEvolutionResult.get_theta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theta</span></code></a>([select_time_points])</p></td>
+<td><p>Return gauge invariant phase differences.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.plot" title="time_evolution.TimeEvolutionResult.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([problem_nr, time_point, fig, ...])</p></td>
+<td><p>Visualize a problem at a specified timestep.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.TimeEvolutionResult.select_static_configuration" title="time_evolution.TimeEvolutionResult.select_static_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_static_configuration</span></code></a>(prob_nr, time_step)</p></td>
+<td><p>Return a StaticConfiguration object with the data copied from this result for a given problem number at a given timestep.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.animate">
+<span class="sig-name descname"><span class="pre">animate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_nr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junction_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.animate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Animate time evolution of a problem as a movie.</p>
+<p>See <a class="reference internal" href="circuit_visualize.html#circuit_visualize.TimeEvolutionMovie" title="circuit_visualize.TimeEvolutionMovie"><code class="xref py py-attr docutils literal notranslate"><span class="pre">circuit_visualize.TimeEvolutionMovie</span></code></a> for documentation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_EC">
+<span class="sig-name descname"><span class="pre">get_EC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_EC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_EC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return energy stored in capacitors at each junction. Requires voltage
+to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>EC</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Energy stored in capacitors</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_EJ">
+<span class="sig-name descname"><span class="pre">get_EJ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_EJ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_EJ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Josephson energy of junctions. Requires theta to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>EJ</strong><span class="classifier">(Nf, W, nr_of_selected_timepoints) array</span></dt><dd><p>Josephson energy.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_EM">
+<span class="sig-name descname"><span class="pre">get_EM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_EM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_EM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return magnetic energy associated with wires. Requires current to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>EM</strong><span class="classifier">(Nf, W, nr_of_selected_timepoints) array</span></dt><dd><p>Magnetic energy associated with wires.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_Etot">
+<span class="sig-name descname"><span class="pre">get_Etot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_Etot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_Etot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return total energy associated with each junction. Requires theta,
+current and voltage to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Etot</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Total energy associated with each junction.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_I">
+<span class="sig-name descname"><span class="pre">get_I</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_I"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_I" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return current through junctions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>I</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Current.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_Isup">
+<span class="sig-name descname"><span class="pre">get_Isup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_Isup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_Isup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return supercurrent through junctions. Requires theta to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Isup</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Supercurrent.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_J">
+<span class="sig-name descname"><span class="pre">get_J</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_J"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_J" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return cycle-current around faces. Requires current to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>J</strong><span class="classifier">(Nf, W, nr_of_selected_timepoints) array</span></dt><dd><p>Cycle-current around faces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_U">
+<span class="sig-name descname"><span class="pre">get_U</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_U"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_U" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return voltage potential at nodes. Last node is groudend.Requires
+voltage to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>U</strong><span class="classifier">(Nn, W, nr_of_selected_timepoints) array</span></dt><dd><p>Voltage potential at nodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_V">
+<span class="sig-name descname"><span class="pre">get_V</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_V"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_V" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return voltage over junctions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>V</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Voltage.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_circuit">
+<span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_circuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Josephson circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_flux">
+<span class="sig-name descname"><span class="pre">get_flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return magnetic flux through faces. Requires current to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>flux</strong><span class="classifier">(Nf, W, nr_of_selected_timepoints) array</span></dt><dd><p>Magnetic flux through faces</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_n">
+<span class="sig-name descname"><span class="pre">get_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return vorticity at faces. Requires theta to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">(Nf, W, nr_of_selected_timepoints) int array</span></dt><dd><p>Vorticity.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_phi">
+<span class="sig-name descname"><span class="pre">get_phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_phi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node phases. Last node is grounded. Requires theta to be stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>phi</strong><span class="classifier">(Nn, W, nr_of_selected_timepoints) array</span></dt><dd><p>Node phases.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_problem_count">
+<span class="sig-name descname"><span class="pre">get_problem_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_problem_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_problem_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of problems (abbreviated W).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.get_theta">
+<span class="sig-name descname"><span class="pre">get_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_time_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.get_theta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.get_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return gauge invariant phase differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>select_time_points=None</strong><span class="classifier">array in range(Nt), (Nt,) mask or None</span></dt><dd><p>Selected time_points at which to return data. If None, all stored
+timepoints are returned. Raises error if no data is available at
+requested timepoint.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">(Nj, W, nr_of_selected_timepoints) array</span></dt><dd><p>Gauge invariant phase differences.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_nr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junction_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_quantity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a problem at a specified timestep.</p>
+<p>See <a class="reference internal" href="circuit_visualize.html#circuit_visualize.CircuitPlot" title="circuit_visualize.CircuitPlot"><code class="xref py py-attr docutils literal notranslate"><span class="pre">circuit_visualize.CircuitPlot</span></code></a> for documentation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.TimeEvolutionResult.select_static_configuration">
+<span class="sig-name descname"><span class="pre">select_static_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prob_nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyjjasim.static_problem.StaticConfiguration</span></span></span><a class="reference internal" href="_modules/time_evolution.html#TimeEvolutionResult.select_static_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.TimeEvolutionResult.select_static_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a StaticConfiguration object with the data copied from this result for
+a given problem number at a given timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prob_nr</strong><span class="classifier">int</span></dt><dd><p>Selected problem.</p>
+</dd>
+<dt><strong>time_step</strong><span class="classifier">int</span></dt><dd><p>Selected timestep.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>static_conf</strong><span class="classifier">StaticConfiguration</span></dt><dd><p>A StaticConfiguration object with the data copied from this result</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="time_evolution.AnnealingProblem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">time_evolution.</span></span><span class="sig-name descname"><span class="pre">AnnealingProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frustration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_sources</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_mobility</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.03</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#AnnealingProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.AnnealingProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Anneals a circuit by gradually lowering the temperature, with the goal for finding a stationairy
+state with reasonably low energy. The temperature profile is computed automatically based on the
+measured vortex mobility during the run. Annealing is executed with the .compute() method.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Does interval_count iterations of interval_steps timeseteps.</p></li>
+<li><p>The first iteration is done at T=start_T</p></li>
+<li><p>During each iteration it measures the average vortex mobility. If the target mobility is exceeded,
+the temperature is divided by T_factor, otherwise it is multiplied by it.</p></li>
+<li><p>The target vortex mobility v_t at iter i  is v_t(i) = v * ((N - i)/N) ** 1.5, so goes from v to 0.</p></li>
+<li><p>At the end it does some steps at T=0 to ensure it is settled in a stationairy state.</p></li>
+<li><p>vortex mobility is defined as abs(n(i+1) - n(i))) / dt averaged over space and time.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>circuit</strong><span class="classifier">Circuit</span></dt><dd><p>Circuit used for annealing</p>
+</dd>
+<dt><strong>time_step=0.5</strong><span class="classifier">float</span></dt><dd><p>time step used in time evolution. Can be set quite large as the simulation does not
+need to be accurate.</p>
+</dd>
+<dt><strong>frustration=0.0</strong><span class="classifier">float or (Nf,) array</span></dt><dd><p>Frustration at each face. If scalar; same frustration is assumed for each face.</p>
+</dd>
+<dt><strong>current_sources=0</strong><span class="classifier">float or (Nj,) array</span></dt><dd><p>Current sources. Note that if this is set too high, a static configuration
+may not exist, so likely the temperature will go to zero.</p>
+</dd>
+<dt><strong>problem_count=1</strong><span class="classifier">int</span></dt><dd><p>Number of problems computed simultaneously. The problems are identical,
+but will likely end up in different state.</p>
+</dd>
+<dt><strong>interval_steps=10</strong><span class="classifier">int</span></dt><dd><p>Number of timesteps for every iteration.</p>
+</dd>
+<dt><strong>interval_count=1000</strong><span class="classifier">int</span></dt><dd><p>Number of iterations. After each iteration the temperature is recomputed.</p>
+</dd>
+<dt><strong>vortex_mobility=0.001</strong><span class="classifier">float</span></dt><dd><p>Target vortex mobility is vortex_mobility at iteration and lowered to
+zero by the last iteration. Temperature is adjusted such that this
+target mobility is achieved.</p>
+</dd>
+<dt><strong>start_T=1.0</strong><span class="classifier">float</span></dt><dd><p>Temperature at first iteration.</p>
+</dd>
+<dt><strong>T_factor=1.03</strong><span class="classifier">float</span></dt><dd><p>Factor with which temperature is multiplied or divided by every iteration.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#time_evolution.AnnealingProblem.compute" title="time_evolution.AnnealingProblem.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a>()</p></td>
+<td><p>Executes the annealing procedure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#time_evolution.AnnealingProblem.get_vortex_mobility" title="time_evolution.AnnealingProblem.get_vortex_mobility"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_mobility</span></code></a>(n)</p></td>
+<td><p>Computes vortex mobility on a set of consecutive vortex configurations.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.AnnealingProblem.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#AnnealingProblem.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.AnnealingProblem.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the annealing procedure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>status</strong><span class="classifier">(problem_count,) int array</span></dt><dd><p>The value 0 means converged, 1 means diverged, 2 means indeterminate status.</p>
+</dd>
+<dt><strong>configurations</strong><span class="classifier">(problem_count,) list</span></dt><dd><p>A list of StaticConfiguration objects containing the resulting configurations.</p>
+</dd>
+<dt><strong>temperature_profiles</strong><span class="classifier">(interval_count, problem_count) array</span></dt><dd><p>For each problem the temperature profile used for the annealing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="time_evolution.AnnealingProblem.get_vortex_mobility">
+<span class="sig-name descname"><span class="pre">get_vortex_mobility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/time_evolution.html#AnnealingProblem.get_vortex_mobility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#time_evolution.AnnealingProblem.get_vortex_mobility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes vortex mobility on a set of consecutive vortex configurations.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="static_problem.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">static_problem module</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="circuit_visualize.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">circuit_visualize module</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, MartijnLankhorst.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.3.2.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

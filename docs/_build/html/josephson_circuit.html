@@ -1,0 +1,763 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>josephson_circuit module &#8212; pyjjasim 2.2.7 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="embedded_graph module" href="embedded_graph.html" />
+    <link rel="prev" title="pyjjasim API" href="pyjjasim.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">pyjjasim</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="pyjjasim.html">
+  pyjjasim API
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyjjasim.html">pyjjasim API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">josephson_circuit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="embedded_graph.html">embedded_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="static_problem.html">static_problem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_evolution.html">time_evolution module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="circuit_visualize.html">circuit_visualize module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyjjasim.html"
+                        title="previous chapter">pyjjasim API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="embedded_graph.html"
+                        title="next chapter">embedded_graph module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/josephson_circuit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="josephson-circuit-module">
+<h1>josephson_circuit module<a class="headerlink" href="#josephson-circuit-module" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">josephson_circuit.</span></span><span class="sig-name descname"><span class="pre">Circuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.embedded_graph.EmbeddedGraph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical_current_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resistance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capacitance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inductance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a Josephson Circuit, also called a Josephson Junction Array (JJA).</p>
+<p>A JJA is an electric circuit that can include Josephson junctions, passive components,
+current sources and voltage sources. The network is required to be a planar embedding
+and single component, so junctions cannot intersect.</p>
+<p>Defined with a graph of nodes and edges where each edge contains a junction.
+A junction is the basic 2-terminal element which contains one of each component,
+see the included user manual for the precise definition. To omit a component;
+set it’s value to zero.</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>All physical quantities are normalized in pyjjasim, see the user manual for details.
+For example the critical current of each junction in Ampere is
+<span class="math notranslate nohighlight">\(\mathtt{critical\_current\_factors} * I_0\)</span>, where <span class="math notranslate nohighlight">\(I_0\)</span> is the
+normalizing scalar for all current values.</p></li>
+<li><p>Sources are specified at problems, not explicitly as part of the circuit.</p></li>
+</ul>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>graph</strong><span class="classifier"><a class="reference internal" href="embedded_graph.html#embedded_graph.EmbeddedGraph" title="embedded_graph.EmbeddedGraph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">embedded_graph.EmbeddedGraph</span></code></a></span></dt><dd><p>EmbeddedGraph instance with Nn nodes, Nj edges and Nf faces.</p>
+</dd>
+<dt><strong>critical_current_factors=1.0</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>Critical current factors of junctions. Same value for all junctions if scalar.</p>
+</dd>
+<dt><strong>resistance_factors=1.0</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>Resistance factors of junctions. Same value for all junctions if scalar.</p>
+</dd>
+<dt><strong>capacitance_factors=0.0</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>Capacitance factors of junctions. Same value for all junctions if scalar.</p>
+</dd>
+<dt><strong>inductance_factors=0.0</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>Self-inductance factors of junctions. Same value for all junctions if scalar.</p>
+</dd>
+<dt><strong>or inductance_factors=0.0</strong><span class="classifier">(Nj, Nj) matrix (dense or sparse)</span></dt><dd><p>L_ij coupling between junction i and j. L_ii self inductance. Must be symmetric
+positive definite.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.add_nodes_and_junctions" title="josephson_circuit.Circuit.add_nodes_and_junctions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_and_junctions</span></code></a>(x, y, node1, node2)</p></td>
+<td><p>Add nodes to array and junctions to array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.approximate_inductance" title="josephson_circuit.Circuit.approximate_inductance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">approximate_inductance</span></code></a>(factor[, junc_L, ...])</p></td>
+<td><p>Approximate inductance in circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.copy" title="josephson_circuit.Circuit.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Return copy of circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.face_count" title="josephson_circuit.Circuit.face_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_count</span></code></a>()</p></td>
+<td><p>Returns number of faces in the circuit (abbreviated Nf).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_capacitance_factors" title="josephson_circuit.Circuit.get_capacitance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_capacitance_factors</span></code></a>()</p></td>
+<td><p>Returns capacitance factors assigned to each junction in the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_critical_current_factors" title="josephson_circuit.Circuit.get_critical_current_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_critical_current_factors</span></code></a>()</p></td>
+<td><p>Returns critical current factors of each junction in the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_cut_matrix" title="josephson_circuit.Circuit.get_cut_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cut_matrix</span></code></a>()</p></td>
+<td><p>Returns cut matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_cycle_matrix" title="josephson_circuit.Circuit.get_cycle_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cycle_matrix</span></code></a>()</p></td>
+<td><p>Returns cycle matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_face_areas" title="josephson_circuit.Circuit.get_face_areas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_areas</span></code></a>()</p></td>
+<td><p>Returns area of all faces in the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_face_centroids" title="josephson_circuit.Circuit.get_face_centroids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_face_centroids</span></code></a>()</p></td>
+<td><p>Returns coordinates of centroids of all faces in the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_faces" title="josephson_circuit.Circuit.get_faces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_faces</span></code></a>()</p></td>
+<td><p>Returns a list of all faces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_inductance_factors" title="josephson_circuit.Circuit.get_inductance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_inductance_factors</span></code></a>()</p></td>
+<td><p>Returns the inductance factors between each pair of junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_juncion_coordinates" title="josephson_circuit.Circuit.get_juncion_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_juncion_coordinates</span></code></a>()</p></td>
+<td><p>Get coordinates of nodes at endpoints of all junctions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_junction_nodes" title="josephson_circuit.Circuit.get_junction_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_junction_nodes</span></code></a>()</p></td>
+<td><p>Get indices of nodes at endpoints of all junctions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_node_coordinates" title="josephson_circuit.Circuit.get_node_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_coordinates</span></code></a>()</p></td>
+<td><p>Returns coordinates of nodes in circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.get_resistance_factors" title="josephson_circuit.Circuit.get_resistance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_resistance_factors</span></code></a>()</p></td>
+<td><p>Returns resistance factors assigned to each junction in the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.junction_count" title="josephson_circuit.Circuit.junction_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">junction_count</span></code></a>()</p></td>
+<td><p>Returns number of junctions in the circuit (abbreviated Nj).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.locate_faces" title="josephson_circuit.Circuit.locate_faces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_faces</span></code></a>(x, y)</p></td>
+<td><p>Get faces whose centroids are closest to queried coordinate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.node_count" title="josephson_circuit.Circuit.node_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">node_count</span></code></a>()</p></td>
+<td><p>Returns number of nodes in the circuit (abbreviated Nn).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.plot" title="josephson_circuit.Circuit.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([show_node_ids, show_junction_ids, ...])</p></td>
+<td><p>Visualize array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.remove_junctions" title="josephson_circuit.Circuit.remove_junctions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_junctions</span></code></a>(junctions_to_remove)</p></td>
+<td><p>Remove junctions from circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.remove_nodes" title="josephson_circuit.Circuit.remove_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes</span></code></a>(nodes_to_remove)</p></td>
+<td><p>Remove nodes from circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.set_capacitance_factors" title="josephson_circuit.Circuit.set_capacitance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_capacitance_factors</span></code></a>(C)</p></td>
+<td><p>Modify capacitance factors of all junctions in the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.set_critical_current_factors" title="josephson_circuit.Circuit.set_critical_current_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_critical_current_factors</span></code></a>(Ic)</p></td>
+<td><p>Modify critical current factors of all junctions in the circuit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.set_inductance_factors" title="josephson_circuit.Circuit.set_inductance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_inductance_factors</span></code></a>(inductance_factors)</p></td>
+<td><p>Modify the inductances factors of all junctions in the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#josephson_circuit.Circuit.set_resistance_factors" title="josephson_circuit.Circuit.set_resistance_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_resistance_factors</span></code></a>(R)</p></td>
+<td><p>Modify resistance factors of all junctions in the circuit.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.add_nodes_and_junctions">
+<span class="sig-name descname"><span class="pre">add_nodes_and_junctions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical_current_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resistance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capacitance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inductance_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.add_nodes_and_junctions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.add_nodes_and_junctions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add nodes to array and junctions to array.</p>
+<dl class="field-list">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl>
+<dt><strong>new_circuit</strong><span class="classifier"><a class="reference internal" href="#josephson_circuit.Circuit" title="josephson_circuit.Circuit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Circuit</span></code></a></span></dt><dd><p>New Circuit object with nodes and junctions added.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(Nn_new,) arrays</span></dt><dd><p>Coordinates of added nodes.</p>
+</dd>
+<dt><strong>node1, node2</strong><span class="classifier">(Nj_new,) int arrays</span></dt><dd><p>Nodes at endpoints of added junctions.</p>
+</dd>
+<dt><strong>critical_current_factors</strong><span class="classifier">scalar or (Nj_new,) array</span></dt><dd><p>Critical current factors of added junctions. Same value for
+all new junctions if scalar.</p>
+</dd>
+<dt><strong>resistance_factors</strong><span class="classifier">scalar or (Nj_new,) array</span></dt><dd><p>Resistance factors of added junctions. Same value for
+all new junctions if scalar.</p>
+</dd>
+<dt><strong>capacitance_factors</strong><span class="classifier">scalar or (Nj_new,) array</span></dt><dd><p>Capacitance factors of added junctions. Same value for
+all new junctions if scalar.</p>
+</dd>
+<dt><strong>inductance_factors</strong><span class="classifier">scalar or (Nj_new,) array</span></dt><dd><p>Self-inductance factors of added junctions. Same value for
+all new junctions if scalar.</p>
+</dd>
+<dt><strong>or inductance_factors</strong><span class="classifier">(Nj_new, Nj_new) array</span></dt><dd><p>Mutual inductance factors between new junctions.</p>
+</dd>
+<dt><strong>or inductance_factors</strong><span class="classifier">(Nj_new, Nj) array</span></dt><dd><p>Mutual inductance factors between new junctions and all junctions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.approximate_inductance">
+<span class="sig-name descname"><span class="pre">approximate_inductance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junc_L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junc_M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.approximate_inductance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.approximate_inductance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Approximate inductance in circuit.</p>
+<p>Computes a matrix L as an approximation for the inductance factors and
+does self.set_inductance_factors(L).</p>
+<p>L is computed using a crude approximation of Neumann’s formula for two wire segments.</p>
+<p class="rubric">Notes</p>
+<p>The self and mutual inductance are respectively (in units of <span class="math notranslate nohighlight">\(\mu_0 a_0\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[L_i = \mathtt{junc\_L} * l_i\]</div>
+<div class="math notranslate nohighlight">
+\[M_{ij} = \mathtt{junc\_M} * l_i * l_j * cos( \gamma_{ij}) / d_{ij}\]</div>
+<p>Where <span class="math notranslate nohighlight">\(l_i\)</span> is junction length in units of <span class="math notranslate nohighlight">\(a_0\)</span>,
+<span class="math notranslate nohighlight">\(\gamma_{ij}\)</span> is angle between junctions and
+<span class="math notranslate nohighlight">\(d_{ij}\)</span> is distance between centres of junctions in units of <span class="math notranslate nohighlight">\(a_0\)</span>
+and afterwards they are multiplied by the conversion factor <span class="math notranslate nohighlight">\(\mathtt{factor}=\mu_0 a_0 / L_0\)</span>
+to obain the required units of <span class="math notranslate nohighlight">\(L_0\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>factor</strong><span class="classifier">scalar float</span></dt><dd><p>mu0 * a0 in units of L0.</p>
+</dd>
+<dt><strong>junc_L</strong><span class="classifier">scalar float</span></dt><dd><p>Self-inductance prefactor.</p>
+</dd>
+<dt><strong>junc_M</strong><span class="classifier">scalar float</span></dt><dd><p>Mutual-inductance prefactor.</p>
+</dd>
+<dt><strong>max_dist</strong><span class="classifier">scalar float</span></dt><dd><p>Cut-off distance between junctions included in L.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return copy of circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.face_count">
+<span class="sig-name descname"><span class="pre">face_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.face_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.face_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of faces in the circuit (abbreviated Nf).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_capacitance_factors">
+<span class="sig-name descname"><span class="pre">get_capacitance_factors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_capacitance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_capacitance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns capacitance factors assigned to each junction in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_critical_current_factors">
+<span class="sig-name descname"><span class="pre">get_critical_current_factors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_critical_current_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_critical_current_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns critical current factors of each junction in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_cut_matrix">
+<span class="sig-name descname"><span class="pre">get_cut_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_cut_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_cut_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cut matrix.</p>
+<p>The cut matrix is a sparse matrix (shape (Nn, Nj), abbreviated M), which represents
+Kirchhoffs current law M &#64; I = 0.</p>
+<p>It is +1 if node is node_2 of junction and -1 otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_cycle_matrix">
+<span class="sig-name descname"><span class="pre">get_cycle_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_cycle_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_cycle_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cycle matrix.</p>
+<p>The cycle matrix is a sparse matrix (shape (Nf, Nj) abbreviated A), which represents
+Kirchhoffs voltage law A &#64; V = 0.</p>
+<p>It is +1 if traversing a face counter-clockwise passes through a junction in its direction, and -1
+otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_face_areas">
+<span class="sig-name descname"><span class="pre">get_face_areas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_face_areas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_face_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns area of all faces in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_face_centroids">
+<span class="sig-name descname"><span class="pre">get_face_centroids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_face_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_face_centroids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns coordinates of centroids of all faces in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_faces">
+<span class="sig-name descname"><span class="pre">get_faces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all faces.</p>
+<p>A face is defined as an array containing indices of nodes encountered when
+traversing the boundary of a face counter-clockwise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>faces</strong><span class="classifier">List</span></dt><dd><p>List of faces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_inductance_factors">
+<span class="sig-name descname"><span class="pre">get_inductance_factors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_inductance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_inductance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the inductance factors between each pair of junctions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>inductance_factors</strong><span class="classifier">(Nj, Nj) array</span></dt><dd><p>Diagonal entries are self-inductance factors, off-diagonal entries are mutual.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_juncion_coordinates">
+<span class="sig-name descname"><span class="pre">get_juncion_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_juncion_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_juncion_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get coordinates of nodes at endpoints of all junctions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x1, y1, x2, y2</strong><span class="classifier">(Nj,) arrays</span></dt><dd><p>Coordinates of node1 and node2 respectively.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For all junctions node1 &lt; node2, even if it was defined in reverse order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_junction_nodes">
+<span class="sig-name descname"><span class="pre">get_junction_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_junction_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_junction_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get indices of nodes at endpoints of all junctions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node1, node2</strong><span class="classifier">(Nj,) arrays</span></dt><dd><p>Endpoint node indices of all junctions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For all junctions node1 &lt; node2, even if it was defined in reverse order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_node_coordinates">
+<span class="sig-name descname"><span class="pre">get_node_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_node_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_node_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns coordinates of nodes in circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">(Nn,) arrays</span></dt><dd><p>Coordinates of nodes in circuit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.get_resistance_factors">
+<span class="sig-name descname"><span class="pre">get_resistance_factors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.get_resistance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.get_resistance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns resistance factors assigned to each junction in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.junction_count">
+<span class="sig-name descname"><span class="pre">junction_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.junction_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.junction_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of junctions in the circuit (abbreviated Nj).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.locate_faces">
+<span class="sig-name descname"><span class="pre">locate_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.locate_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.locate_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get faces whose centroids are closest to queried coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>face_ids</strong><span class="classifier">int array with same size as x in range(Nf)</span></dt><dd><p>Indices of located faces.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x, y</strong><span class="classifier">arrays:</span></dt><dd><p>Coordinates at which one wants to locate faces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.node_count">
+<span class="sig-name descname"><span class="pre">node_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.node_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.node_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of nodes in the circuit (abbreviated Nn).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_node_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_junction_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_face_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markersize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize array.</p>
+<p>Can show nodes, junctions and faces; and their respective indices.</p>
+<p>For documentation see <code class="xref py py-attr docutils literal notranslate"><span class="pre">embedded_graph.EmbeddedGraph.plot</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.remove_junctions">
+<span class="sig-name descname"><span class="pre">remove_junctions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">junctions_to_remove</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.remove_junctions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.remove_junctions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove junctions from circuit.</p>
+<dl class="field-list">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl>
+<dt><strong>new_circuit</strong><span class="classifier"><a class="reference internal" href="#josephson_circuit.Circuit" title="josephson_circuit.Circuit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Circuit</span></code></a></span></dt><dd><p>New Circuit object with removed junctions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>junctions_to_remove</strong><span class="classifier">int array in range(Nj)</span></dt><dd><p>Indices of junctions to remove from circuit.</p>
+</dd>
+<dt><strong>or junctions_to_remove</strong><span class="classifier">(Nj,) mask</span></dt><dd><p>Mask selecting junctions to remove from circuit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.remove_nodes">
+<span class="sig-name descname"><span class="pre">remove_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes_to_remove</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.remove_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.remove_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove nodes from circuit.</p>
+<dl class="field-list">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl>
+<dt><strong>new_circuit</strong><span class="classifier"><a class="reference internal" href="#josephson_circuit.Circuit" title="josephson_circuit.Circuit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Circuit</span></code></a></span></dt><dd><p>New Circuit object with removed nodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Junctions whose endpoints are removed are also removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nodes_to_remove</strong><span class="classifier">int array in range(Nn)</span></dt><dd><p>Indices of nodes to remove from circuit.</p>
+</dd>
+<dt><strong>or nodes_to_remove</strong><span class="classifier">(Nn,) mask</span></dt><dd><p>Mask selecting nodes to remove from circuit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.set_capacitance_factors">
+<span class="sig-name descname"><span class="pre">set_capacitance_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.set_capacitance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.set_capacitance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify capacitance factors of all junctions in the circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>C</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>New capacitance factors. Same for all junctions if scalar.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.set_critical_current_factors">
+<span class="sig-name descname"><span class="pre">set_critical_current_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ic</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.set_critical_current_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.set_critical_current_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify critical current factors of all junctions in the circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Ic</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>New critical current factors. Same for all junctions if scalar.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.set_inductance_factors">
+<span class="sig-name descname"><span class="pre">set_inductance_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inductance_factors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.set_inductance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.set_inductance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the inductances factors of all junctions in the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="josephson_circuit.Circuit.set_resistance_factors">
+<span class="sig-name descname"><span class="pre">set_resistance_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#Circuit.set_resistance_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.Circuit.set_resistance_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify resistance factors of all junctions in the circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>R</strong><span class="classifier">(Nj,) array or scalar</span></dt><dd><p>New resistance factors. Same for all junctions if scalar.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="josephson_circuit.SquareArray">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">josephson_circuit.</span></span><span class="sig-name descname"><span class="pre">SquareArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#SquareArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.SquareArray" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="table">
+<colgroup>
+<col style="width: 71%" />
+<col style="width: 29%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>horizontal_junctions</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>vertical_junctions</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="josephson_circuit.HoneycombArray">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">josephson_circuit.</span></span><span class="sig-name descname"><span class="pre">HoneycombArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#HoneycombArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.HoneycombArray" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="table">
+<colgroup>
+<col style="width: 71%" />
+<col style="width: 29%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>horizontal_junctions</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>vertical_junctions</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="josephson_circuit.TriangularArray">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">josephson_circuit.</span></span><span class="sig-name descname"><span class="pre">TriangularArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/josephson_circuit.html#TriangularArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.TriangularArray" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="table">
+<colgroup>
+<col style="width: 71%" />
+<col style="width: 29%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>horizontal_junctions</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>vertical_junctions</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="josephson_circuit.SQUID">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">josephson_circuit.</span></span><span class="sig-name descname"><span class="pre">SQUID</span></span><a class="reference internal" href="_modules/josephson_circuit.html#SQUID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#josephson_circuit.SQUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>A SQUID is modeled as a square where the vertical junctions have Ic=1000
+and the horizontal Ic=1.</p>
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="pyjjasim.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">pyjjasim API</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="embedded_graph.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">embedded_graph module</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, MartijnLankhorst.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.3.2.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

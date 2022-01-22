@@ -1,0 +1,45 @@
+pyjjasim.tests package
+======================
+
+Submodules
+----------
+
+pyjjasim.tests.basdas module
+----------------------------
+
+.. automodule:: pyjjasim.tests.basdas
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyjjasim.tests.bla module
+-------------------------
+
+.. automodule:: pyjjasim.tests.bla
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyjjasim.tests.test\_embedded\_graph module
+-------------------------------------------
+
+.. automodule:: pyjjasim.tests.test_embedded_graph
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyjjasim.tests.test\_josephson\_junction\_array module
+------------------------------------------------------
+
+.. automodule:: pyjjasim.tests.test_josephson_junction_array
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyjjasim.tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

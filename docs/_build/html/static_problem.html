@@ -1,0 +1,972 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>static_problem module &#8212; pyjjasim 2.2.7 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="time_evolution module" href="time_evolution.html" />
+    <link rel="prev" title="embedded_graph module" href="embedded_graph.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">pyjjasim</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="pyjjasim.html">
+  pyjjasim API
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyjjasim.html">pyjjasim API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="josephson_circuit.html">josephson_circuit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="embedded_graph.html">embedded_graph module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">static_problem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_evolution.html">time_evolution module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="circuit_visualize.html">circuit_visualize module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="embedded_graph.html"
+                        title="previous chapter">embedded_graph module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="time_evolution.html"
+                        title="next chapter">time_evolution module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/static_problem.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="static-problem-module">
+<h1>static_problem module<a class="headerlink" href="#static-problem-module" title="Permalink to this headline">¶</a></h1>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="static_problem.DEF_TOL">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DEF_TOL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#static_problem.DEF_TOL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="static_problem.DEF_NEWTON_MAXITER">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DEF_NEWTON_MAXITER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30</span></em><a class="headerlink" href="#static_problem.DEF_NEWTON_MAXITER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="static_problem.DEF_STAB_MAXITER">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DEF_STAB_MAXITER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">500</span></em><a class="headerlink" href="#static_problem.DEF_STAB_MAXITER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="static_problem.DEF_MAX_PAR_TOL">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DEF_MAX_PAR_TOL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0001</span></em><a class="headerlink" href="#static_problem.DEF_MAX_PAR_TOL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="static_problem.DEF_MAX_PAR_REDUCE_FACT">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DEF_MAX_PAR_REDUCE_FACT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.42</span></em><a class="headerlink" href="#static_problem.DEF_MAX_PAR_REDUCE_FACT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="static_problem.StaticProblem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">StaticProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit:</span> <span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_sources=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frustration=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_configuration=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_phase_relation=&lt;static_problem.DefaultCPR</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define a static josephson junction array problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>circuit</strong><span class="classifier">Circuit</span></dt><dd><p>Circuit on which the problem is based.</p>
+</dd>
+<dt><strong>current_sources=0.0</strong><span class="classifier">(Nj,) ndarray or scalar</span></dt><dd><p>Current sources at each junction in circuit (abbreviated Is). If scalar the same
+value is used for all junctions.</p>
+</dd>
+<dt><strong>frustration=0.0</strong><span class="classifier">(Nf,) ndarray or scalar</span></dt><dd><p>frustration, or normalized external magnetic flux, through each face in circuit
+(abbreviated f). If scalar the same value is used for all faces.</p>
+</dd>
+<dt><strong>vortex_configuration=0</strong><span class="classifier">(Nf,) ndarray or scalar</span></dt><dd><p>Target vorticity at each face in circuit (abbreviated n).  If scalar the same value is
+used for all faces.</p>
+</dd>
+<dt><strong>current_phase_relation=DefaultCPR()</strong><span class="classifier">CurrentPhaseRelation</span></dt><dd><p>Current-phase relation used to do computations on problem.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>All physical quantities are dimensionless. See the UserManual (on github)
+for how all quantities are normalized.</p></li>
+<li><p>It is assumed each junction has a current source, see user manual
+(on github) for diagram of junction. To omit the sources in particular
+junctions set the respective values to zero.</p></li>
+<li><p>To use a node-based souce current (represented as an (Nn,) array Is_node
+with current in/e-jected at each node), convert it to a junction-based
+source with Is = node_to_junction_current(circuit, Is_node) and
+us Is as input for a static problem.</p></li>
+</ul>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.approximate" title="static_problem.StaticProblem.approximate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">approximate</span></code></a>([algorithm])</p></td>
+<td><p>Computes approximate solutions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.approximate_placed_vortices" title="static_problem.StaticProblem.approximate_placed_vortices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">approximate_placed_vortices</span></code></a>(n, x_n, y_n)</p></td>
+<td><p>Compute arctan approximation with manual placement of vortices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.compute" title="static_problem.StaticProblem.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a>([initial_guess, tol, maxiter, ...])</p></td>
+<td><p>Compute solution to static_problem using Newton iteration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.compute_frustration_bounds" title="static_problem.StaticProblem.compute_frustration_bounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_frustration_bounds</span></code></a>([initial_guess, ...])</p></td>
+<td><p>Computes smallest and largest uniform frustration for which a (stable) solution exists at the specified target vortex configuration and source current.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.compute_maximal_current" title="static_problem.StaticProblem.compute_maximal_current"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_maximal_current</span></code></a>([initial_guess, ...])</p></td>
+<td><p>Computes largest source current for which a stable solution exists at the specified target vortex configuration and frustration, where the  source current is assumed to be max_current_factor * self.get_current_sources().</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.compute_stable_region" title="static_problem.StaticProblem.compute_stable_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_stable_region</span></code></a>([angles, ...])</p></td>
+<td><p>Finds edge of stable region in (f, Is) space for vortex configuration n.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_circuit" title="static_problem.StaticProblem.get_circuit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_circuit</span></code></a>()</p></td>
+<td><p>Returns the circuit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_current_phase_relation" title="static_problem.StaticProblem.get_current_phase_relation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_phase_relation</span></code></a>()</p></td>
+<td><p>Returns the current-phase relation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_current_sources" title="static_problem.StaticProblem.get_current_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_sources</span></code></a>()</p></td>
+<td><p>Returns the current sources (abbreviated Is).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_frustration" title="static_problem.StaticProblem.get_frustration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_frustration</span></code></a>()</p></td>
+<td><p>Returns the frustration (abbreviated f).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_net_sourced_current" title="static_problem.StaticProblem.get_net_sourced_current"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_net_sourced_current</span></code></a>()</p></td>
+<td><p>Gets the sum of all (positive) current injected at nodes to create Is.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_node_current_sources" title="static_problem.StaticProblem.get_node_current_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_node_current_sources</span></code></a>()</p></td>
+<td><p>Returns (Nn,) array of currents injected at nodes to create Is.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_phase_zone" title="static_problem.StaticProblem.get_phase_zone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_phase_zone</span></code></a>()</p></td>
+<td><p>Returns the phase zone (In all of pyJJAsim phase_zone=0).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.StaticProblem.get_vortex_configuration" title="static_problem.StaticProblem.get_vortex_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vortex_configuration</span></code></a>()</p></td>
+<td><p>Returns the vortex configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.StaticProblem.new_problem" title="static_problem.StaticProblem.new_problem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">new_problem</span></code></a>([current_sources, frustration, ...])</p></td>
+<td><p>Makes copy of self with specified modifications.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.approximate">
+<span class="sig-name descname"><span class="pre">approximate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.approximate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.approximate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes approximate solutions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>algorithm=1:</strong></dt><dd><dl class="simple">
+<dt>Algorithm used in approximation. Can have values:</dt><dd><ul class="simple">
+<li><p>0: Does arctan approximation. This assigns phases that “wind” 2*pi around
+vortices in z=0 phase zone, phi(x,y) = sum_i 2 * pi * n_i *
+atan2(y-y_n_i,x-x_n_i) where vortices are located at centres of their
+respective faces.</p></li>
+<li><p>1: London approximation. Find theta in cycle space (theta = A.T &#64; …)
+that obeys winding rule.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.approximate_placed_vortices">
+<span class="sig-name descname"><span class="pre">approximate_placed_vortices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.approximate_placed_vortices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.approximate_placed_vortices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute arctan approximation with manual placement of vortices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">(N,) int array</span></dt><dd><p>Vorticity at location (x_n, y_n).</p>
+</dd>
+<dt><strong>x_n, y_n</strong><span class="classifier">(N,) float arrays</span></dt><dd><p>The x,y-coordinates of vortices.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_as_residual_increases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_if_not_target_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute solution to static_problem using Newton iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>initial_guess=None</strong><span class="classifier">(Nj,) array, StaticConfiguration or None</span></dt><dd><p>Guess for initial state. If None; uses London approximation. If input                 None (London approximation is used)
+is array; it must contain values of theta to represent state.</p>
+</dd>
+<dt><strong>tol=DEF_TOL</strong><span class="classifier">scalar</span></dt><dd><p>Tolerance; is solution if <a href="#id1"><span class="problematic" id="id2">|residual|</span></a> &lt; tol.</p>
+</dd>
+<dt><strong>maxiter=DEF_NEWTON_MAXITER</strong><span class="classifier">int</span></dt><dd><p>Maximum number of newton iterations.</p>
+</dd>
+<dt><strong>stop_if_not_target_n=False</strong><span class="classifier">bool</span></dt><dd><p>Iteration stops  if n(iter) != n (diverged)</p>
+</dd>
+<dt><strong>stop_as_residual_increases=True</strong><span class="classifier">bool</span></dt><dd><p>Iteration stops if error(iter) &gt; error(iter - 3) (diverged).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">StaticConfiguration</span></dt><dd><p>Object containing solution.</p>
+</dd>
+<dt><strong>status</strong><span class="classifier">int</span></dt><dd><ul class="simple">
+<li><p>0: converged</p></li>
+<li><p>1: diverged if error(iter)&gt;0.5 or above reasons.</p></li>
+<li><p>2: max_iter reached without converging or diverging.</p></li>
+</ul>
+</dd>
+<dt><strong>iter_info</strong><span class="classifier">NewtonIterInfo</span></dt><dd><p>Handle containing information about newton iteration.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.compute_frustration_bounds">
+<span class="sig-name descname"><span class="pre">compute_frustration_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frustration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_stability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_vortex_configuration_equals_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stability_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.compute_frustration_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.compute_frustration_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes smallest and largest uniform frustration for which a (stable) solution
+exists at the specified target vortex configuration and source current.</p>
+<p>For unlisted parameters see documentation of compute_maximal_parameter()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start_frustration=None</strong><span class="classifier">valid frustration input for StaticProblem  or None.</span></dt><dd><p>Frustration factor somewhere in the middle of range. If None; this is
+estimated based on vortex configuration.</p>
+</dd>
+<dt><strong>initial_guess=None</strong><span class="classifier">valid initial_guess input for StaticProblem.compute()</span></dt><dd><p>Initial guess for the algorithm to start at frustration=start_frustration.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>(smallest_f_factor, largest_f_factor)</strong><span class="classifier">(float, float)</span></dt><dd><p>Resulting frustration range.</p>
+</dd>
+<dt><strong>(smallest_f_config, largest_f_config)</strong><span class="classifier">(StaticConfiguration, StaticConfiguration)</span></dt><dd><p>StaticConfigurations at bounds of range.</p>
+</dd>
+<dt><strong>(smallest_f_info, largest_f_info)</strong><span class="classifier">(ParameterOptimizeInfo, ParameterOptimizeInfo)</span></dt><dd><p>ParameterOptimizeInfo objects containing information about the iterations.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.compute_maximal_current">
+<span class="sig-name descname"><span class="pre">compute_maximal_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_stability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_vortex_configuration_equals_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stability_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.compute_maximal_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.compute_maximal_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes largest source current for which a stable solution exists at the
+specified target vortex configuration and frustration, where the  source
+current is assumed to be max_current_factor * self.get_current_sources().</p>
+<p>For parameters see documentation of compute_maximal_parameter()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_current_factor</strong><span class="classifier">float</span></dt><dd><p>Maximal current factor for which a problem with max_current_factor * Is
+has a (stable) solution.</p>
+</dd>
+<dt><strong>net_sources_current</strong><span class="classifier">float</span></dt><dd><p>Net sourced current at max_current_factor.</p>
+</dd>
+<dt><strong>out_config</strong><span class="classifier">StaticConfiguration</span></dt><dd><p>StaticConfiguration of state with maximal current.</p>
+</dd>
+<dt><strong>info</strong><span class="classifier">ParameterOptimizeInfo</span></dt><dd><p>ParameterOptimizeInfo objects containing information about the iterations.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.compute_stable_region">
+<span class="sig-name descname"><span class="pre">compute_stable_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([0.,</span> <span class="pre">0.10471976,</span> <span class="pre">0.20943951,</span> <span class="pre">0.31415927,</span> <span class="pre">0.41887902,</span> <span class="pre">0.52359878,</span> <span class="pre">0.62831853,</span> <span class="pre">0.73303829,</span> <span class="pre">0.83775804,</span> <span class="pre">0.9424778,</span> <span class="pre">1.04719755,</span> <span class="pre">1.15191731,</span> <span class="pre">1.25663706,</span> <span class="pre">1.36135682,</span> <span class="pre">1.46607657,</span> <span class="pre">1.57079633,</span> <span class="pre">1.67551608,</span> <span class="pre">1.78023584,</span> <span class="pre">1.88495559,</span> <span class="pre">1.98967535,</span> <span class="pre">2.0943951,</span> <span class="pre">2.19911486,</span> <span class="pre">2.30383461,</span> <span class="pre">2.40855437,</span> <span class="pre">2.51327412,</span> <span class="pre">2.61799388,</span> <span class="pre">2.72271363,</span> <span class="pre">2.82743339,</span> <span class="pre">2.93215314,</span> <span class="pre">3.0368729,</span> <span class="pre">3.14159265,</span> <span class="pre">3.24631241,</span> <span class="pre">3.35103216,</span> <span class="pre">3.45575192,</span> <span class="pre">3.56047167,</span> <span class="pre">3.66519143,</span> <span class="pre">3.76991118,</span> <span class="pre">3.87463094,</span> <span class="pre">3.97935069,</span> <span class="pre">4.08407045,</span> <span class="pre">4.1887902,</span> <span class="pre">4.29350996,</span> <span class="pre">4.39822972,</span> <span class="pre">4.50294947,</span> <span class="pre">4.60766923,</span> <span class="pre">4.71238898,</span> <span class="pre">4.81710874,</span> <span class="pre">4.92182849,</span> <span class="pre">5.02654825,</span> <span class="pre">5.131268,</span> <span class="pre">5.23598776,</span> <span class="pre">5.34070751,</span> <span class="pre">5.44542727,</span> <span class="pre">5.55014702,</span> <span class="pre">5.65486678,</span> <span class="pre">5.75958653,</span> <span class="pre">5.86430629,</span> <span class="pre">5.96902604,</span> <span class="pre">6.0737458,</span> <span class="pre">6.17846555,</span> <span class="pre">6.28318531])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_frustration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_initial_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_stability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_vortex_configuration_equals_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stability_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.compute_stable_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.compute_stable_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds edge of stable region in (f, Is) space for vortex configuration n.</p>
+<p>The frustration is assumed to be uniform. Ignores self.frustration and
+works with constant * self.current_sources.</p>
+<p>For unlisted parameters see documentation of compute_maximal_parameter()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>angles=np.linspace(0, 2*np.pi, 61)</strong><span class="classifier">array</span></dt><dd><p>Angles at which an extremum in (f, Is) space is searched for.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>frustration</strong><span class="classifier">(num_angles,) array</span></dt><dd><p>Net extermum frustration at each angle.</p>
+</dd>
+<dt><strong>net_current</strong><span class="classifier">(num_angles,) array</span></dt><dd><p>Net extremum sourced current at each angle.</p>
+</dd>
+<dt><strong>all_configs</strong><span class="classifier">list containing StaticConfiguration</span></dt><dd><p>Configurations at extreme value for each angle.</p>
+</dd>
+<dt><strong>all_infos</strong><span class="classifier">list containing ParameterOptimizeInfo</span></dt><dd><p>Objects containing information about the iterations at each angle.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_circuit">
+<span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_circuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the circuit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_current_phase_relation">
+<span class="sig-name descname"><span class="pre">get_current_phase_relation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_current_phase_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_current_phase_relation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current-phase relation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_current_sources">
+<span class="sig-name descname"><span class="pre">get_current_sources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_current_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_current_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current sources (abbreviated Is).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_frustration">
+<span class="sig-name descname"><span class="pre">get_frustration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_frustration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_frustration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the frustration (abbreviated f).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_net_sourced_current">
+<span class="sig-name descname"><span class="pre">get_net_sourced_current</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_net_sourced_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_net_sourced_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the sum of all (positive) current injected at nodes to create Is.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_node_current_sources">
+<span class="sig-name descname"><span class="pre">get_node_current_sources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_node_current_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_node_current_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (Nn,) array of currents injected at nodes to create Is.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_phase_zone">
+<span class="sig-name descname"><span class="pre">get_phase_zone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_phase_zone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_phase_zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the phase zone (In all of pyJJAsim phase_zone=0).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.get_vortex_configuration">
+<span class="sig-name descname"><span class="pre">get_vortex_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.get_vortex_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.get_vortex_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the vortex configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.StaticProblem.new_problem">
+<span class="sig-name descname"><span class="pre">new_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_sources</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frustration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vortex_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_phase_relation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#StaticProblem.new_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.StaticProblem.new_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes copy of self with specified modifications.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="static_problem.compute_maximal_parameter">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">compute_maximal_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_upper_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize_reduction_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_stability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_vortex_configuration_equals_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stability_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#compute_maximal_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.compute_maximal_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the largest value of lambda for which problem_function(lambda)
+has a stable stationary state.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Must be able to find a stable configuration at lambda=0.</p></li>
+<li><p>One can manually specify an initial_guess for lambda=0.</p></li>
+<li><p>returns a lower- and upperbound for lambda. Stops when the difference &lt; lambda_tol * lower_bound</p></li>
+<li><p>furthermore returns config containing the solutions at the lower_bound. Also its
+accompanied problem has f and Is of lower_bound.</p></li>
+<li><p>Also returns ParameterOptimizeInfo object containing information about the iteration.</p></li>
+<li><p>Algorithm stops if lambda_tol is reached or when newton_iteration failed to converge or diverge.</p></li>
+<li><p>Algorithm needs an estimate of the upperbound for lambda to work.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>problem_function</strong><span class="classifier">func(lambda) -&gt; StaticProblem</span></dt><dd><p>Function with argument the optimization parameter lambda returning a valid
+StaticProblem object.</p>
+</dd>
+<dt><strong>initial_guess=None</strong><span class="classifier">valid initial_guess input for StaticProblem.compute()</span></dt><dd><p>Initial guess for problem_function(0) used as starting point for iteration.</p>
+</dd>
+<dt><strong>lambda_tol=DEF_MAX_PAR_TOL</strong><span class="classifier">float</span></dt><dd><p>Target precision for parameter lambda. Stops iterating if
+upperbound - lowerbound &lt; lambda_tol * lower_bound.</p>
+</dd>
+<dt><strong>estimated_upper_bound=1.0</strong><span class="classifier">float</span></dt><dd><p>Estimate for the upperbound for lambda.</p>
+</dd>
+<dt><strong>maxiter=DEF_MAX_PAR_MAXITER</strong><span class="classifier">int</span></dt><dd><p>Maximum number of iterations.</p>
+</dd>
+<dt><strong>stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT</strong><span class="classifier">float</span></dt><dd><p>Lambda is multiplied by this factor every time an upper_bound is found.</p>
+</dd>
+<dt><strong>require_stability=True</strong><span class="classifier">bool</span></dt><dd><p>If True, convergence to a state that is dynamically unstable is
+considered diverged. (see StaticConfiguration.is_stable())</p>
+</dd>
+<dt><strong>require_vortex_configuration_equals_target=True</strong><span class="classifier">bool</span></dt><dd><p>If True, A result of .compute() is only considered a solution if its
+vortex configuration matches its set “target” vortex configuration
+in the source static_problem.</p>
+</dd>
+<dt><strong>compute_parameters: dict or func(lambda) -&gt; dict</strong></dt><dd><p>Keyword-argument parameters passed to problem_function(lambda).compute()
+defined as a dictionary or as a function with lambda as input that
+generates a dictionary.</p>
+</dd>
+<dt><strong>stability_parameters: dict or func(lambda) -&gt; dict</strong></dt><dd><p>Keyword-argument parameters passed to config.is_stable() defined as a
+dictionary or as a function with lambda as input that generates a dictionary.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lambda_lowerbound</strong><span class="classifier">float</span></dt><dd><p>Lowerbound of lambda.</p>
+</dd>
+<dt><strong>lambda_upperbound</strong><span class="classifier">float</span></dt><dd><p>Upperbound of lambda.</p>
+</dd>
+<dt><strong>config</strong><span class="classifier">StaticConfiguration</span></dt><dd><p>Containing solutions at lambda=lambda_lowerbound</p>
+</dd>
+<dt><strong>iteration_info</strong><span class="classifier">ParameterOptimizeInfo</span></dt><dd><p>Object containing information about the iteration.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="static_problem.CurrentPhaseRelation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">CurrentPhaseRelation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#CurrentPhaseRelation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.CurrentPhaseRelation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current-Phase relation Icp(Ic, theta). The default value is Icp = Ic * sin(theta).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>func</strong><span class="classifier">func(Ic, theta)</span></dt><dd><p>Current-phase relation.</p>
+</dd>
+<dt><strong>d_func</strong><span class="classifier">func(Ic, theta)</span></dt><dd><p>Derivative of current-phase relation to theta.</p>
+</dd>
+<dt><strong>i_func</strong><span class="classifier">func(Ic, theta)</span></dt><dd><p>Integral of current-phase relation over theta (starting at 0).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>func, d_func and i_func must be numpy ufunc, so their output must be broadcast
+of input Ic and theta.</p></li>
+</ul>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.CurrentPhaseRelation.d_eval" title="static_problem.CurrentPhaseRelation.d_eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_eval</span></code></a>(Ic, theta)</p></td>
+<td><p>Evaluate derivative of current phase relation; returns d_func(Ic, theta).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.CurrentPhaseRelation.eval" title="static_problem.CurrentPhaseRelation.eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code></a>(Ic, theta)</p></td>
+<td><p>Evaluate current phase relation; returns func(Ic, theta).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.CurrentPhaseRelation.i_eval" title="static_problem.CurrentPhaseRelation.i_eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">i_eval</span></code></a>(Ic, theta)</p></td>
+<td><p>Evaluate integral of current phase relation; returns i_func(Ic, theta).</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.CurrentPhaseRelation.d_eval">
+<span class="sig-name descname"><span class="pre">d_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#CurrentPhaseRelation.d_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.CurrentPhaseRelation.d_eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate derivative of current phase relation; returns d_func(Ic, theta).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.CurrentPhaseRelation.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#CurrentPhaseRelation.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.CurrentPhaseRelation.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate current phase relation; returns func(Ic, theta).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.CurrentPhaseRelation.i_eval">
+<span class="sig-name descname"><span class="pre">i_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#CurrentPhaseRelation.i_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.CurrentPhaseRelation.i_eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate integral of current phase relation; returns i_func(Ic, theta).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="static_problem.DefaultCPR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">DefaultCPR</span></span><a class="reference internal" href="_modules/static_problem.html#DefaultCPR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.DefaultCPR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default current-phase relation Icp = Ic * sin(theta).</p>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_eval</span></code>(Ic, theta)</p></td>
+<td><p>Evaluate derivative of current phase relation; returns d_func(Ic, theta).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>(Ic, theta)</p></td>
+<td><p>Evaluate current phase relation; returns func(Ic, theta).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">i_eval</span></code>(Ic, theta)</p></td>
+<td><p>Evaluate integral of current phase relation; returns i_func(Ic, theta).</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="static_problem.node_to_junction_current">
+<span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">node_to_junction_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyjjasim.josephson_circuit.Circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_current</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#node_to_junction_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.node_to_junction_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversion from node_current to junction_current.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node_current</strong><span class="classifier">(Nn,) array</span></dt><dd><p>At each node how much current is injected or ejected  (+ if injected)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>junction_current: (Nj,) array</dt><dd><p>Returns a configuration of currents at each junction such that at any node
+the net injected current through all its neighbouring edges matches the specified
+node_current.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">NewtonIterInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about the newton iteration used to find static configurations.
+Use print(newton_iter_info) to display the information.</p>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.found_target_solution" title="static_problem.NewtonIterInfo.found_target_solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">found_target_solution</span></code></a>()</p></td>
+<td><p>Returns True if has_converged() and final iter obeys target vortex config.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_is_target_vortex_configuration" title="static_problem.NewtonIterInfo.get_is_target_vortex_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_is_target_vortex_configuration</span></code></a>()</p></td>
+<td><p>Returns (nr_of_iters,) bool array if vortex configuration at iter agrees with vortex configuration specified in problem.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_max_iter" title="static_problem.NewtonIterInfo.get_max_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_max_iter</span></code></a>()</p></td>
+<td><p>Returns number of iterations after which iteration is aborted.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_number_of_iterations" title="static_problem.NewtonIterInfo.get_number_of_iterations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_number_of_iterations</span></code></a>()</p></td>
+<td><p>Returns number of newton iterations done.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_residual" title="static_problem.NewtonIterInfo.get_residual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_residual</span></code></a>()</p></td>
+<td><p>Returns (nr_of_iters,) array containing residual at each iteration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_runtime" title="static_problem.NewtonIterInfo.get_runtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_runtime</span></code></a>()</p></td>
+<td><p>Returns runtime in seconds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_status" title="static_problem.NewtonIterInfo.get_status"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_status</span></code></a>()</p></td>
+<td><p>Returns status of newton iteration result; returns value:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.get_tol" title="static_problem.NewtonIterInfo.get_tol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tol</span></code></a>()</p></td>
+<td><p>Returns tolerance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.has_converged" title="static_problem.NewtonIterInfo.has_converged"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_converged</span></code></a>()</p></td>
+<td><p>Returns if iteration has converged.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.NewtonIterInfo.plot_residuals" title="static_problem.NewtonIterInfo.plot_residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_residuals</span></code></a>()</p></td>
+<td><p>Plots residual vs iteration number.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.found_target_solution">
+<span class="sig-name descname"><span class="pre">found_target_solution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.found_target_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.found_target_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if has_converged() and final iter obeys target vortex config.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_is_target_vortex_configuration">
+<span class="sig-name descname"><span class="pre">get_is_target_vortex_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_is_target_vortex_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_is_target_vortex_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_iters,) bool array if vortex configuration at iter
+agrees with vortex configuration specified in problem.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_max_iter">
+<span class="sig-name descname"><span class="pre">get_max_iter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_max_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of iterations after which iteration is aborted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_number_of_iterations">
+<span class="sig-name descname"><span class="pre">get_number_of_iterations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_number_of_iterations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_number_of_iterations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of newton iterations done.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_residual">
+<span class="sig-name descname"><span class="pre">get_residual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_iters,) array containing residual at each iteration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_runtime">
+<span class="sig-name descname"><span class="pre">get_runtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_runtime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns runtime in seconds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_status">
+<span class="sig-name descname"><span class="pre">get_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_status" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Returns status of newton iteration result; returns value:</dt><dd><ul class="simple">
+<li><p>0: converged. residual &lt; tolerance</p></li>
+<li><p>1: diverged before reaching maxiter.</p></li>
+<li><p>2: reached max_iter without converging or diverging.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.get_tol">
+<span class="sig-name descname"><span class="pre">get_tol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.get_tol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.get_tol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns tolerance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.has_converged">
+<span class="sig-name descname"><span class="pre">has_converged</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.has_converged"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.has_converged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns if iteration has converged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.NewtonIterInfo.plot_residuals">
+<span class="sig-name descname"><span class="pre">plot_residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#NewtonIterInfo.plot_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.NewtonIterInfo.plot_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots residual vs iteration number.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">static_problem.</span></span><span class="sig-name descname"><span class="pre">ParameterOptimizeInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_tol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_stability</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_target_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about the parameter optimization process.
+Use print(parameter_optimize_info) to display a summary of
+the information.</p>
+<p class="rubric">Methods</p>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_found_solution" title="static_problem.ParameterOptimizeInfo.get_found_solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_found_solution</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array if a stable target solution is found at step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_has_solution_at_zero" title="static_problem.ParameterOptimizeInfo.get_has_solution_at_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_has_solution_at_zero</span></code></a>()</p></td>
+<td><p>Returns if a stable target solution is found at lambda=0.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_is_stable" title="static_problem.ParameterOptimizeInfo.get_is_stable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_is_stable</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array if a stable target solution is found at step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_is_target_vortex_configuration" title="static_problem.ParameterOptimizeInfo.get_is_target_vortex_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_is_target_vortex_configuration</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array if a solution has target vortex configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_lambda" title="static_problem.ParameterOptimizeInfo.get_lambda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lambda</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array with lambda at each step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_lambda_error" title="static_problem.ParameterOptimizeInfo.get_lambda_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lambda_error</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array with error in lambda.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_lambda_lower_bound" title="static_problem.ParameterOptimizeInfo.get_lambda_lower_bound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lambda_lower_bound</span></code></a>()</p></td>
+<td><p>Returns lower bound for lambda.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_lambda_upper_bound" title="static_problem.ParameterOptimizeInfo.get_lambda_upper_bound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lambda_upper_bound</span></code></a>()</p></td>
+<td><p>Returns upper bound for lambda.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_newton_iter_all_info" title="static_problem.ParameterOptimizeInfo.get_newton_iter_all_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_newton_iter_all_info</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) list containing newton_iter_infos.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_newton_steps" title="static_problem.ParameterOptimizeInfo.get_newton_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_newton_steps</span></code></a>()</p></td>
+<td><p>Returns (nr_of_steps,) array with nr of newton iterations at step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.get_runtime" title="static_problem.ParameterOptimizeInfo.get_runtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_runtime</span></code></a>()</p></td>
+<td><p>Returns runtime in seconds.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#static_problem.ParameterOptimizeInfo.plot_residuals" title="static_problem.ParameterOptimizeInfo.plot_residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_residuals</span></code></a>()</p></td>
+<td><p>Plots residual vs iteration number.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>animate_solutions</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_found_solution">
+<span class="sig-name descname"><span class="pre">get_found_solution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_found_solution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_found_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array if a stable target solution is found at step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_has_solution_at_zero">
+<span class="sig-name descname"><span class="pre">get_has_solution_at_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_has_solution_at_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_has_solution_at_zero" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns if a stable target solution is found at lambda=0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_is_stable">
+<span class="sig-name descname"><span class="pre">get_is_stable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_is_stable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_is_stable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array if a stable target solution is found at step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_is_target_vortex_configuration">
+<span class="sig-name descname"><span class="pre">get_is_target_vortex_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_is_target_vortex_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_is_target_vortex_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array if a solution has target vortex configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_lambda">
+<span class="sig-name descname"><span class="pre">get_lambda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_lambda"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_lambda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array with lambda at each step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_lambda_error">
+<span class="sig-name descname"><span class="pre">get_lambda_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_lambda_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_lambda_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array with error in lambda.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_lambda_lower_bound">
+<span class="sig-name descname"><span class="pre">get_lambda_lower_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_lambda_lower_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_lambda_lower_bound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns lower bound for lambda.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_lambda_upper_bound">
+<span class="sig-name descname"><span class="pre">get_lambda_upper_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_lambda_upper_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_lambda_upper_bound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns upper bound for lambda.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_newton_iter_all_info">
+<span class="sig-name descname"><span class="pre">get_newton_iter_all_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_newton_iter_all_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_newton_iter_all_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) list containing newton_iter_infos.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_newton_steps">
+<span class="sig-name descname"><span class="pre">get_newton_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_newton_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_newton_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (nr_of_steps,) array with nr of newton iterations at step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.get_runtime">
+<span class="sig-name descname"><span class="pre">get_runtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.get_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.get_runtime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns runtime in seconds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="static_problem.ParameterOptimizeInfo.plot_residuals">
+<span class="sig-name descname"><span class="pre">plot_residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/static_problem.html#ParameterOptimizeInfo.plot_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#static_problem.ParameterOptimizeInfo.plot_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots residual vs iteration number.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="embedded_graph.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">embedded_graph module</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="time_evolution.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">time_evolution module</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, MartijnLankhorst.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.3.2.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
