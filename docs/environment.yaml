@@ -4,3 +4,4 @@ dependencies:
   - sphinx==4.3.2
   - pip:
     - numpydoc==1.1.0
+    - pyjjasim==2.2.9
