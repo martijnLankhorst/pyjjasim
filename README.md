@@ -51,7 +51,7 @@ config.plot(node_quantity="phi")
 
 Program output:
 
-![alt text](pyjjasim/examples/readme_example_0.png?raw=true)
+![alt text](./examples/readme_example_0.png?raw=true)
 
 ````python
 n = np.zeros(sq_array.face_count())
@@ -63,7 +63,6 @@ plt.show()
 
 Program output:
 
-![alt text](./pyjjasim/examples/readme_example_1.png?raw=true)
 ![alt text](./examples/readme_example_1.png?raw=true)
 
 If you have any questions, comments, complaints, 
