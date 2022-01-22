@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../pyjjasim/'))
+sys.path.insert(0, os.path.abspath('./pyjjasim/'))
 
 print(sys.path)
 # -- Project information -----------------------------------------------------
