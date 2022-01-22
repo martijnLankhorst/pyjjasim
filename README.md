@@ -43,16 +43,28 @@ hierarchical structure is supported.
 ````python
 from pyjjasim import *
 
-array = SquareArray(3, 3)
-problem = StaticProblem(array, frustration=0.1)
+sq_array = SquareArray(10, 10)
+problem = StaticProblem(sq_array, frustration=0.1)
 config, status, info = problem.compute()
-print(config.get_I())
+config.plot(node_quantity="phi")
 ````
 
 Program output:
-<pre>
-[-0.30917 -0.30917 0 0 0.30917 0.30917 0.30917 0 -0.30917 0.30917 0 -0.30917]
-</pre>
+
+![alt text](pyjjasim/examples/readme_example_0.png?raw=true)
+
+````python
+n = np.zeros(sq_array.face_count())
+n[sq_array.locate_faces(x=[2.5,6.5], y=[2.5,6.5])] = 1
+config, status, info = problem.new_problem(vortex_configuration=n).compute()
+config.plot(node_quantity="phi")
+plt.show()
+````
+
+Program output:
+
+![alt text](./pyjjasim/examples/readme_example_1.png?raw=true)
+![alt text](./examples/readme_example_1.png?raw=true)
 
 If you have any questions, comments, complaints, 
 bug reports, feature requests, etc.
