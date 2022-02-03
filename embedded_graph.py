@@ -506,12 +506,13 @@ class EmbeddedGraph:
         the endpoint node of the edge with lowest id. If not, -1 is assigned.
         """
         self._assign_faces()
-        return self._cycle_matrix(self.face_edges, self.face_lengths, self.edge_permute)
+        return self._cycle_matrix(self.face_edges, self.face_lengths, self.edge_permute, self.edge_flip)
 
-    def _cycle_matrix(self, face_edges, face_lengths, permute):
+    def _cycle_matrix(self, face_edges, face_lengths, permute, edge_flip):
         E, F = self.edge_count(), len(face_lengths)
         indptr = np.append([0], np.cumsum(face_lengths))
         indices, data = permute[face_edges % E], 1 - 2 * (face_edges // E)
+        data = np.where(edge_flip[indices], -data, data)
         return scipy.sparse.csr_matrix((data, indices, indptr), shape=(F, E)).tocsc()
 
     def face_cycle_matrix(self):
@@ -528,7 +529,7 @@ class EmbeddedGraph:
         self._assign_boundary_faces()
         nb_face_edges = self.face_edges[self.faces_v_array.get_item(rows=self._non_boundary_mask())]
         nb_face_lengths = self.face_lengths[self._non_boundary_mask()]
-        return self._cycle_matrix(nb_face_edges, nb_face_lengths, self.edge_permute)
+        return self._cycle_matrix(nb_face_edges, nb_face_lengths, self.edge_permute, self.edge_flip)
 
     def cut_space_matrix(self):
         """
@@ -542,6 +543,7 @@ class EmbeddedGraph:
         row = np.concatenate((self.node1, self.node2))
         col = self.edge_permute[np.concatenate((np.arange(E), np.arange(E)))]
         data = np.concatenate((-np.ones(E), np.ones(E)))
+        data = np.where(self.edge_flip[col], -data, data)
         return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
 
     def adjacency_matrix(self):

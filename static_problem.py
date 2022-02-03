@@ -24,7 +24,7 @@ DEF_TOL = 1E-10
 
 DEF_NEWTON_MAXITER = 30
 
-DEF_STAB_MAXITER = 500
+DEF_STAB_MAXITER = 2000
 
 DEF_MAX_PAR_TOL = 1E-4
 DEF_MAX_PAR_REDUCE_FACT = 0.42
@@ -574,6 +574,8 @@ class StaticProblem:
         if isinstance(initial_guess, StaticConfiguration):
             initial_guess = initial_guess._th()
 
+        initial_guess = np.array(initial_guess, dtype=np.double)
+
         theta, status, iter_info = static_compute(self.get_circuit(), initial_guess, Is=self._Is(),
                                                   f=self._f(), n=self._nt(), z=0,
                                                   cp=self.current_phase_relation, tol=tol,
@@ -927,7 +929,7 @@ class StaticConfiguration:
         """
         return np.all(self.get_n() == self.problem.get_vortex_configuration())
 
-    def is_stable(self, maxiter=DEF_STAB_MAXITER, scheme=0, algorithm=0,
+    def is_stable(self, maxiter=DEF_STAB_MAXITER, scheme=0, algorithm=2,
                   accept_ratio=10, preconditioner=None) -> int:
         """
         Determines if a configuration is dynamically stable.
@@ -1462,7 +1464,7 @@ STABILITY ALGORITHMS
 """
 
 def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
-                      scheme=0, algorithm=0, accept_ratio=10, preconditioner=None):
+                      scheme=0, algorithm=2, accept_ratio=10, preconditioner=None):
     """
     Core implementation to determine if a configuration on a circuit is stable in the sense that
     the Jacobian is negative definite. Does not explicitly check if configuration is a stationairy point.
@@ -1496,6 +1498,8 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
     if scheme == 1:
         J = stability_scheme_1(circuit, theta, cp)
 
+
+
     if algorithm == 0:
         status, largest_eigenvalue = eigsh_test_negative_definite(J, maxiter=maxiter)
         return status
@@ -1505,8 +1509,16 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
         out = lobpcg_test_negative_definite(J, preconditioner=preconditioner, accept_ratio=accept_ratio,
                                             maxiter=maxiter)
         status, eigenvalue_list, residual_list = out
-        print(status, len(residual_list), residual_list[-1])
+        # print(status, len(residual_list), residual_list[-1])
         return status
+    if algorithm == 2:
+        eps = 2 * np.finfo(float).eps
+        f = scipy.sparse.linalg.splu(J, diag_pivot_thresh=0)
+        Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
+        if not np.allclose((Up - f.U).data, 0):
+            print("warning: choleski factorization failed")
+            return 2
+        return int(~np.all(f.U.diagonal() < eps))
     raise ValueError("invalid algorithm. Must be 0 (eigsh) or 1 (lobpcg)")
 
 def stability_get_preconditioner(circuit: Circuit, cp, scheme):

@@ -17,6 +17,9 @@ __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID
 # - handle time evolution proper errors if required quantities are not computed.
 # - time evolution config_at_minus1 list of configs
 # - put references in documentation
+# - fix whitepaper mistakes
+# - A_solve algo use guassian elimination
+
 
 # nice to haves
 # - lattices
@@ -617,21 +620,27 @@ class Circuit:
             raise ValueError("L must be scalar, (Nj,) array or (Nj, Nj) matrix")
 
     def __str__(self):
-        return "x: \n" + str(self.graph.x) +"y: \n" + str(self.graph.y) + \
-               "\nnode1: \n" + str(self.graph.node1) + "\nnode2: \n" + str(self.graph.node2)
+        return "(x, y): \n" + str(np.stack(self.get_node_coordinates())) + \
+               "\n(node1_id, node2_id): \n" + str(np.stack(self.get_junction_nodes()))
 
     def _get_A_norm(self):
         # return ||A||_2 = sqrt(max(eig(A.T @ A))). (however computes sqrt(max(eig(A @ A.T))) which seems to be the same and is quicker)
         if self._Anorm is None:
             A = self.get_cycle_matrix()
-            self._Anorm = np.sqrt(scipy.sparse.linalg.eigsh((A @ A.T).astype(np.double), 1, maxiter=1000, which="LA")[0][0])
+            if A.shape[0] == 1:
+                self._Anorm = np.sqrt((A @ A.T).todense()[0, 0])
+            else:
+                self._Anorm = np.sqrt(scipy.sparse.linalg.eigsh((A @ A.T).astype(np.double), 1, maxiter=1000, which="LA")[0][0])
         return self._Anorm
 
     def _get_M_norm(self):
         # return ||M||_2 = sqrt(max(eig(M.T @ M))). (however computes sqrt(max(eig(M @ M.T))) which seems to be the same and is quicker)
         if self._Mnorm is None:
             M = self.get_cut_matrix()
-            self._Mnorm = np.sqrt(scipy.sparse.linalg.eigsh((M @ M.T).astype(np.double), 1, maxiter=1000, which="LA")[0][0])
+            if M.shape[0] == 1:
+                self._Mnorm = np.sqrt((M @ M.T).todense()[0, 0])
+            else:
+                self._Mnorm = np.sqrt(scipy.sparse.linalg.eigsh((M @ M.T).astype(np.double), 1, maxiter=1000, which="LA")[0][0])
         return self._Mnorm
 
     def _A_solve(self, b):
@@ -730,44 +739,122 @@ class Circuit:
         lobpcg_out = scipy.sparse.linalg.lobpcg(A, x0, B=None, M=preconditioner, maxiter=maxiter, tol=tol)
         return np.sqrt(lobpcg_out[0])
 
+    # def get_junctions_at_angle(self, angle):
+    #     x1, y1, x2, y2 = self.get_juncion_coordinates()
+    #     return np.isclose(np.arctan2(y2 - y1, x2 - x1), angle)
+    #
+    # def horizontal_junctions(self):
+    #     return self.get_junctions_at_angle(0) | self.get_junctions_at_angle(np.pi) | \
+    #            self.get_junctions_at_angle(-np.pi)
+    #
+    # def vertical_junctions(self):
+    #     return self.get_junctions_at_angle(np.pi/2) | self.get_junctions_at_angle(-np.pi/2)
 
-class SquareArray(Circuit):
-
-    def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
-        super().__init__(EmbeddedSquareGraph(count_x, count_y, x_scale, y_scale))
-
-    def horizontal_junctions(self):
-        x1, y1, x2, y2 = self.get_juncion_coordinates()
-        return y1 == y2
-
-    def vertical_junctions(self):
-        return ~self.horizontal_junctions()
-
-
-class HoneycombArray(Circuit):
+class Lattice:
 
     def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
-        super().__init__(EmbeddedHoneycombGraph(count_x, count_y, x_scale, y_scale))
+        self.count_x = count_x
+        self.count_y = count_y
+        self.x_scale = x_scale
+        self.y_scale = y_scale
 
-    def horizontal_junctions(self):
-        x1, y1, x2, y2 = self.get_juncion_coordinates()
-        return (y1 == y2).astype(int) * np.sign(x2 - x1)
+    def get_count_x(self):
+        return self.count_x
 
-    def vertical_junctions(self):
-        return ~self.horizontal_junctions()
+    def get_count_y(self):
+        return self.count_y
+
+    def get_x_scale(self):
+        return self.x_scale
+
+    def get_y_scale(self):
+        return self.y_scale
+
+    def current_base(self, angle, type="junction"):
+        """
+        Returns uniform current sources at angle
+
+        If type="junction"; returns current_sources at each junction in the correct ratio to
+        produce uniform current at angle. If type="node", returns amount of current injected at
+        each node in the ratio to produce a uniform current at an angle.
+
+        If x_scale=y_scale=1, the magnitude is such that per unit coordinate a current of 1 is sourced.
+        The horizontal component scales linearly with x_scale and the vertical with y_scale.
+
+        Parameters
+        ----------
+        angle : float
+            Angle of the uniform current (in radians)
+        type : "junction" or "node"
+            If "junction", returns junction-based current sources. If "node"; returns
+            node-based current sources.
 
 
-class TriangularArray(Circuit):
+        Returns
+        -------
+        current_sources : (Nj,) array (type = "junction")
+            Junction-based current sources representing uniform current at angle.
+        or current_sources : (Nn,) array (type = "node")
+            Node-based current sources representing uniform current at angle.
+        """
+        if type == "junction":
+            from pyjjasim import node_to_junction_current
+            return node_to_junction_current(self, self.current_base(angle, type="node"))
+        if type == "node":
+            return self._I_node_h() * np.cos(angle) + self._I_node_v() * np.sin(angle)
+
+    def _I_node_h(self) -> np.ndarray:
+        pass
+
+    def _I_node_v(self) -> np.ndarray:
+        pass
+
+class SquareArray(Circuit, Lattice):
 
     def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
-        super().__init__(EmbeddedTriangularGraph(count_x, count_y, x_scale, y_scale))
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Circuit.__init__(self, EmbeddedSquareGraph(count_x, count_y, x_scale, y_scale))
 
-    def horizontal_junctions(self):
-        x1, y1, x2, y2 = self.get_juncion_coordinates()
-        return y1 == y2
+    def _I_node_h(self):
+        x, y = self.get_node_coordinates()
+        return (x == 0).astype(int) - np.isclose(x, (self.count_x - 1) * self.x_scale).astype(int)
 
-    def vertical_junctions(self):
-        return ~self.horizontal_junctions()
+    def _I_node_v(self):
+        x, y = self.get_node_coordinates()
+        return (y == 0).astype(int) - np.isclose(y, (self.count_y - 1) * self.y_scale).astype(int)
+
+
+class HoneycombArray(Circuit, Lattice):
+
+    def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Circuit.__init__(self, EmbeddedHoneycombGraph(count_x, count_y, x_scale, y_scale))
+
+    def _I_node_h(self):
+        x, y = self.get_node_coordinates()
+        n = self.count_y / (self.count_y - 0.5)
+        return ((x == 0).astype(int) - np.isclose(x, (3 * self.count_x - 1) * self.x_scale).astype(int)) * n
+
+    def _I_node_v(self):
+        x, y = self.get_node_coordinates()
+        return ((y < 0.1 * np.sqrt(3) * self.y_scale).astype(int) -
+                (y > (self.count_y - 0.6) * np.sqrt(3) * self.y_scale).astype(int)) * 1.5
+
+class TriangularArray(Circuit, Lattice):
+
+    def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Circuit.__init__(self, EmbeddedTriangularGraph(count_x, count_y, x_scale, y_scale))
+
+    def _I_node_h(self):
+        x, y = self.get_node_coordinates()
+        return ((x < 0.1 * self.x_scale).astype(int) -
+                (x > (self.count_x - 0.6) * self.x_scale).astype(int))*np.sqrt(3)
+
+    def _I_node_v(self):
+        x, y = self.get_node_coordinates()
+        return (y == 0).astype(int) - np.isclose(y, (self.count_y - 0.5) * np.sqrt(3) * self.y_scale).astype(int)
 
 
 class SQUID(Circuit):

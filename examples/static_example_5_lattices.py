@@ -18,17 +18,17 @@ if __name__ == "__main__":
     triangular_array = TriangularArray(12, 8)
 
     # frustration factor
-    f = 0.01
+    f = 0.02
 
     # define physical problems
-    prob_sq = StaticProblem(square_array, frustration=f, current_sources=square_array.horizontal_junctions())
-    prob_hc = StaticProblem(honeycomb_array, frustration=f, current_sources=honeycomb_array.horizontal_junctions())
-    prob_tr = StaticProblem(triangular_array, frustration=f, current_sources=triangular_array.horizontal_junctions())
+    prob_sq = StaticProblem(square_array, frustration=f, current_sources=square_array.current_base(angle=0))
+    prob_hc = StaticProblem(honeycomb_array, frustration=f, current_sources=honeycomb_array.current_base(angle=0))
+    prob_tr = StaticProblem(triangular_array, frustration=f, current_sources=triangular_array.current_base(angle=0))
 
     square_array.plot()
     honeycomb_array.plot()
     triangular_array.plot()
-    plt.show()
+    # plt.show()
 
     # compute maximal current
     _, _, config_sq, _ = prob_sq.compute_maximal_current()
