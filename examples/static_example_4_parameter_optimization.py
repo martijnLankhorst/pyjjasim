@@ -44,7 +44,7 @@ if __name__ == "__main__":
     tic = time.perf_counter()
     for i, angle in enumerate(angles):
         prob_func = lambda x: prob.new_problem(current_sources=x * array.current_base(angle=angle))
-        I_factor[i], _, _, _ = compute_maximal_parameter(prob_func, stability_parameters={"algorithm": 2})
+        I_factor[i], _, _, _ = compute_maximal_parameter(prob_func)
     print(time.perf_counter() - tic)
     plt.subplots()
     plt.plot(np.cos(angles) * I_factor, np.sin(angles) * I_factor, marker="o")

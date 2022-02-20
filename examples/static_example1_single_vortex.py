@@ -37,8 +37,8 @@ if __name__ == "__main__":
     approx_arctan.plot(node_quantity="phi", title="arctan approximation")
     approx_london.plot(node_quantity="phi", title="london approximation")
 
-    config1, status1, info1 = problem.compute(initial_guess=approx_arctan)
-    config2, status2, info2 = problem.compute(initial_guess=approx_london)
+    config1, status1, info1 = problem.compute(initial_guess=approx_arctan, algorithm=1)
+    config2, status2, info2 = problem.compute(initial_guess=approx_london, algorithm=1)
 
     print(f"config1 error: {config1.get_error_kirchhoff_rules()} and {config1.get_error_winding_rules()}")
     print(f"config2 error: {config2.get_error_kirchhoff_rules()} and {config2.get_error_winding_rules()}")

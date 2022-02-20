@@ -17,7 +17,7 @@ def func(L):
     N = 10
     sq_array = SquareArray(N, N)
     sq_array.set_inductance_factors(L)
-    prob = StaticProblem(sq_array, current_sources=sq_array.horizontal_junctions())
+    prob = StaticProblem(sq_array, current_sources=sq_array.current_base(angle=0))
     f, I, _, _ = prob.compute_stable_region(angles=np.linspace(0, 2*np.pi, 61))
     return f, I
 

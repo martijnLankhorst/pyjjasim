@@ -1,3 +1,5 @@
+import dataclasses
+
 import numpy as np
 import scipy.sparse
 import matplotlib.pyplot as plt
@@ -120,7 +122,7 @@ class EmbeddedGraph:
         """
         return self._de_sort_edges()
 
-    def get_edge_ids(self, node1, node2):
+    def get_edge_ids(self, node1, node2, return_direction=False):
         """
         Return indices of edges with given endpoint nodes.
 
@@ -128,11 +130,15 @@ class EmbeddedGraph:
         ----------
         node1, node2 : arrays in range(N)
             Endpoints of edges.
+        return_direction=False : bool
+
 
         Returns
         -------
         edge_ids : array with same size as node1 in range(E)
             Returns indices of edges.
+        edge_directions : bool array with same size as node1
+            True if aligned with edge direction
 
         Raises
         ------
@@ -154,7 +160,11 @@ class EmbeddedGraph:
                 raise EdgeNotExistError("queried edge that does not exist")
         if not np.all((self.node1[starts] == node1) & (self.node2[starts] == node2)):
             raise EdgeNotExistError("queried edge that does not exist")
-        return self.edge_permute[starts]
+        if not return_direction:
+            return self.edge_permute[starts]
+        else:
+            e = self.edge_permute[starts]
+            return e, self.edge_flip[e] != mask
 
     def add_nodes(self, x, y):
         """
@@ -531,6 +541,21 @@ class EmbeddedGraph:
         nb_face_lengths = self.face_lengths[self._non_boundary_mask()]
         return self._cycle_matrix(nb_face_edges, nb_face_lengths, self.edge_permute, self.edge_flip)
 
+    # def cut_space_matrix_old(self):
+    #     """
+    #     Returns cut-space matrix.
+    #
+    #     Cut-space matrix is an (N, E) sparse matrix where the i-th row corresponds to the
+    #     i-th node. The entry is +1 or -1 if the node is an endpoint of that edge. It is +1
+    #     if the node is the endpoint with highest idx, -1 otherwise.
+    #     """
+    #     E, N = self.edge_count(), self.node_count()
+    #     row = np.concatenate((self.node1, self.node2))
+    #     col = self.edge_permute[np.concatenate((np.arange(E), np.arange(E)))]
+    #     data = np.concatenate((-np.ones(E), np.ones(E)))
+    #     data = np.where(self.edge_flip[col], -data, data)
+    #     return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
+
     def cut_space_matrix(self):
         """
         Returns cut-space matrix.
@@ -540,11 +565,12 @@ class EmbeddedGraph:
         if the node is the endpoint with highest idx, -1 otherwise.
         """
         E, N = self.edge_count(), self.node_count()
-        row = np.concatenate((self.node1, self.node2))
-        col = self.edge_permute[np.concatenate((np.arange(E), np.arange(E)))]
+        n1, n2 = self.get_edges()
+        row = np.concatenate((n1, n2))
+        col = np.concatenate((np.arange(E), np.arange(E)))
         data = np.concatenate((-np.ones(E), np.ones(E)))
-        data = np.where(self.edge_flip[col], -data, data)
         return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
+
 
     def adjacency_matrix(self):
         """
@@ -728,6 +754,52 @@ class EmbeddedGraph:
             lc1 = LineCollection(lines, colors=[1, 0.5, 0.2], linewidths=linewidth)
             self.ax.add_collection(lc1)
         return self.fig, self.ax
+
+    def shortest_path(self, node1, node2, to_list=True):
+        """
+        Returns nodes encountered along a shortest path from node1 to node2 through graph.
+
+        - paths include node1 and node2.
+        - If node1, node2 are (P,) arrays, returns P paths where path i goes from node1[i] to node2[i].
+
+        Parameters
+        ----------
+        node1, node2 : (P,) array
+            Start- and end-nodes of paths.
+        to_list=False :
+            If true, output is in form of list-of-lists, otherwise concatenated array.
+
+        Returns
+        -------
+        paths :  list-of-lists or array
+             All nodes that are traversed in path
+        lengths : (FR,) int array
+            Length of every l-cycle.
+        """
+        node1, node2 = np.atleast_1d(node1), np.atleast_1d(node2)
+        P = len(node2)
+        up1, idx = np.unique(node2, return_inverse=True)
+        _, pred = scipy.sparse.csgraph.shortest_path(self.adjacency_matrix(), return_predecessors=True, indices=up1)
+        K = pred.shape[1]
+        pred[pred < 0] = K
+        pred = np.concatenate((pred, K * np.ones((pred.shape[0], 1), dtype=int)), axis=1)
+        p = np.array(node1).copy()
+        out = np.zeros((5, P), dtype=int)
+        out[0, :] = node1
+        k = 1
+        while not np.all(p == K):
+            if k >= (out.shape[0] - 1):
+                out = np.concatenate((out, 0 * out), axis=0)
+            p = pred[(idx, p)]
+            out[k, :] = p
+            k += 1
+        out = out[:k, :]
+        path_lengths = np.argmax(out == K, axis=0)
+        out = out.T
+        paths = out[out < K].ravel()
+        if to_list:
+            return VarRowArray(path_lengths).to_list(paths), path_lengths
+        return paths, path_lengths
 
     def _assert_edges_correct_shape(self):
         if len(self.node1) != len(self.node2):
@@ -992,6 +1064,255 @@ class EmbeddedGraph:
         # return x
         return x.reshape(tuple(b_shape))
 
+
+class EmbeddedPeriodicGraph:
+
+    """
+
+    Parameters
+    ----------
+    boundary1=None : None or (Eb1, 2) array
+        Edges crossing boundary 1
+    boundary2=None : None or (Eb2, 2) array
+        Edges crossing boundary 2
+
+
+    """
+
+    def __init__(self, g: EmbeddedGraph, boundary1=None, boundary2=None):
+        self.g = g
+        self.boundary1 = boundary1
+        self.boundary2 = boundary2
+        # TODO: check if boundary junctions are sorted by physical coordinate.
+
+    def coo(self):
+        return self.g.coo()
+
+    def _get_cross_boundary_cycle(self, boundary, start_edge):
+        """
+        example: nodes = [n1, n2, n3, n4]
+                 cross = [0,  0,  0,  -1, 0]
+        """
+        nodes, _ = self.g.shortest_path(boundary[0, 1], boundary[0, 0], to_list=False)
+        edges, edge_dir = self.g.get_edge_ids(nodes[:-1], nodes[1:], return_direction=True)
+        return nodes, np.append(edges, [start_edge]), np.append(edge_dir, [True])
+
+    def _get_in_boundary_cycles(self, boundary, start_edge, reverse=False):
+        """
+        example: nodes = [n1, n2, n3, n4]
+                 cross = [0,  0,  0,  -1, 0]
+        """
+        if reverse:
+            p1, l1 = self.g.shortest_path(boundary[:-1, 0], boundary[1:, 0], to_list=False)
+            p2, l2 = self.g.shortest_path(boundary[1:, 1], boundary[:-1, 1], to_list=False)
+        else:
+            p1, l1 = self.g.shortest_path(boundary[1:, 0], boundary[:-1, 0], to_list=False)
+            p2, l2 = self.g.shortest_path(boundary[:-1, 1], boundary[1:, 1], to_list=False)
+
+        lengths = l1 + l2
+        c1, c2 = np.cumsum(l1) - 1, np.cumsum(l2) - 1
+        p1r, p2r = np.roll(p1, -1), np.roll(p2, -1)
+        p1r[c1], p2r[c2] = p1[c1 - 1], p2[c2 - 1]
+
+        edges1, edge_dir1 = self.g.get_edge_ids(p1, p1r, return_direction=True)
+        edges2, edge_dir2 = self.g.get_edge_ids(p2, p2r, return_direction=True)
+
+        edges1[c1] = start_edge + np.arange(boundary.shape[0] - 1) + reverse
+        edge_dir1[c1] = np.ones(boundary.shape[0] - 1, dtype=bool)
+        edges2[c2] = start_edge + np.arange(boundary.shape[0] - 1) + 1 - reverse
+        edge_dir2[c2] = np.zeros(boundary.shape[0] - 1, dtype=bool)
+        merger = VarRowArray(l1).merge(VarRowArray(l2))
+        nodes = np.zeros(len(p1) + len(p2), dtype=int)
+        edges = np.zeros(len(edges1) + len(edges2), dtype=int)
+        edge_dir = np.zeros(len(edges1) + len(edges2), dtype=int)
+        nodes[merger] = np.append(p1, p2)
+        edges[merger] = np.append(edges1, edges2)
+        edge_dir[merger] = np.append(edge_dir1, edge_dir2)
+
+        return nodes, edges, edge_dir, lengths
+
+    def get_in_boundary_cycles(self):
+        return self._get_in_boundary_cycles(self.boundary1), self._get_in_boundary_cycles(self.boundary2, True)
+
+    def get_edges(self):
+        N = self.node_count()
+        n1, n2 = self.g.get_edges()
+        n1b, n2b = self._boundary_edges()
+        return np.append(n1, n1b % N), np.append(n2, n2b % N)
+
+    def _boundary_edges(self):
+        n1, n2 = np.zeros(0, dtype=int), np.zeros(0, dtype=int)
+        if self.boundary1 is not None:
+            n1 = np.append(n1, self.boundary1[:, 0])
+            n2 = np.append(n2, self.boundary1[:, 1] + self.node_count())
+        if self.boundary2 is not None:
+            n1 = np.append(n1, self.boundary2[:, 0])
+            n2 = np.append(n2, self.boundary2[:, 1] + self.node_count())
+        return n1, n2
+
+    def get_edge_ids(self, node1, node2):
+        node1, node2 = np.atleast_1d(node1), np.atleast_1d(node2)
+        out = np.zeros(node1.shape, dtype=int)
+        N = self.node_count()
+        if np.any(node1 >= 2 * N) or np.any(node2 >= 2 * N):
+            raise EdgeNotExistError("queried edge that does not exist")
+        mask = (node1 // N) + (node2 // N) == 0
+        out[mask] = self.g.get_edge_ids(node1[mask], node2[mask])
+        N1, N2 = node1[~mask], node2[~mask]
+        pmask = N1 < N2
+        N1b, N2b = np.where(pmask, N1, N2), np.where(pmask, N2, N1)
+        n1b, n2b = self._boundary_edges()
+        n2b, N2b = n2b - N, N2b - N
+        if np.any(N1b >= N):
+            raise EdgeNotExistError("queried edge that does not exist")
+        map1, map2 = -np.ones(N, dtype=int), -np.ones(N, dtype=int)
+        map1[n1b], map2[n2b] = np.arange(len(n1b)), np.arange(len(n2b))
+        hash = map1[n1b] + len(N1b) * map2[n2b]
+        hash_p = map1[N1b] + len(N1b) * map2[N2b]
+        idx = np.argsort(hash)
+        hash_sorted = hash[idx]
+        s = np.searchsorted(hash_sorted, hash_p)
+        try:
+            edge_exist = np.all(hash_sorted[s] == hash_p)
+        except IndexError:
+            raise EdgeNotExistError("queried edge that does not exist")
+        if not edge_exist:
+            raise EdgeNotExistError("queried edge that does not exist")
+        out[~mask] = idx[np.searchsorted(hash[idx], hash_p)] + self.g.edge_count()
+        return out
+
+    def node_count(self):
+        return self.g.node_count()
+
+    def edge_count(self):
+        out = self.g.edge_count()
+        if self.boundary1 is not None:
+            out += self.boundary1.shape[0]
+        if self.boundary2 is not None:
+            out += self.boundary2.shape[0]
+        return out
+
+    def face_count(self):
+        out = self.g.face_count()
+        if self.boundary1 is not None:
+            out += self.boundary1.shape[0]
+        if self.boundary2 is not None:
+            out += self.boundary2.shape[0]
+        return out
+
+    def adjacency_matrix(self):
+        pass
+
+    def cut_space_matrix(self):
+        E, N = self.edge_count(), self.node_count()
+        n1, n2 = self.get_edges()
+        row = np.concatenate((n1, n2))
+        col = np.concatenate((np.arange(E), np.arange(E)))
+        data = np.concatenate((-np.ones(E), np.ones(E)))
+        return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
+
+    def face_cycle_matrix(self):
+        e, d, l = self.get_face_cycle_edges(to_list=False)
+        indptr = np.append([0], np.cumsum(l))
+        A = scipy.sparse.csr_matrix((2 * d - 1, e, indptr), (self.face_count(), self.edge_count()))
+        return A.tocsc()
+
+    def _get_face_cycles(self):
+        E = self.g.edge_count()
+        n1, e1, d1 = self._get_cross_boundary_cycle(self.boundary1, E)
+        n2, e2, d2 = self._get_cross_boundary_cycle(self.boundary2, E + self.boundary1.shape[0])
+        n3, e3, d3, l3 = self._get_in_boundary_cycles(self.boundary1, E)
+        n4, e4, d4, l4 = self._get_in_boundary_cycles(self.boundary2, E + self.boundary1.shape[0], reverse=True)
+        n = np.concatenate((n3, n4, n1, n2))
+        e = np.concatenate((e3, e4, e1, e2))
+        d = np.concatenate((d3, d4, d1, d2))
+        l = np.concatenate((l3, l4, [len(n1)], [len(n2)]))
+        return n, e, d, l
+
+    def get_face_cycles(self, to_list=True):
+        n, l = self.g.get_face_cycles(to_list=False)
+        N, _, _, L = self._get_face_cycles()
+        nodes = np.append(n, N)
+        lengths = np.append(l, L)
+        if to_list:
+            return VarRowArray(lengths).to_list(nodes), lengths
+        return nodes, lengths
+
+    def get_face_cycle_edges(self, to_list=True):
+        m = self.g._non_boundary_mask()
+        M = np.repeat(m, self.g.face_lengths)
+        l = self.g.face_lengths[m]
+        e = self.g.edge_permute[self.g.face_edges[M] % self.g.E]
+        d = 1-(self.g.face_edges[M] // self.g.E)
+        N, E, D, L = self._get_face_cycles()
+        edges = np.append(e, E)
+        dirs = np.append(d, D)
+        lengths = np.append(l, L)
+        if to_list:
+            return VarRowArray(lengths).to_list(edges), VarRowArray(lengths).to_list(dirs), lengths
+        return edges, dirs, lengths
+
+    def plot(self):
+        pass
+
+    # disable
+    # add_nodes, add_edges, add_nodes_and_edges, remove_nodes, remove_edges_by_ids, remove_edges
+    # get_l_cycles, get_l_cycle_areas, get_l_cycle_centroids, get_boundary_faces, permute_nodes
+    # permute_faces, face_dual_graph, locate_faces
+
+    def add_nodes(self, x, y):
+        raise ValueError("Not implemented")
+
+    def add_edges(self, node1, node2, require_single_component=False, require_planar_embedding=False):
+        raise ValueError("Not implemented")
+
+    def add_nodes_and_edges(self, x, y, node1, node2, require_single_component=False,
+                            require_planar_embedding=False):
+        raise ValueError("Not implemented")
+
+    def remove_nodes(self, node_ids, require_single_component=False, require_planar_embedding=False):
+        raise ValueError("Not implemented")
+
+    def remove_edges_by_ids(self,  edge_ids, require_single_component=False, require_planar_embedding=False):
+        raise ValueError("Not implemented")
+
+    def remove_edges(self, node1, node2, require_single_component=False, require_planar_embedding=False):
+        raise ValueError("Not implemented")
+
+    def get_l_cycles(self, to_list=True):
+        raise ValueError("L-cycles meaningless in periodic graphs")
+
+    def get_l_cycle_areas(self):
+        raise ValueError("L-cycles meaningless in periodic graphs")
+
+    def get_l_cycle_centroids(self):
+        raise ValueError("L-cycles meaningless in periodic graphs")
+
+    def get_boundary_faces(self):
+        return []
+
+    def permute_nodes(self, permutation):
+        raise ValueError("Not implemented")
+
+    def permute_faces(self, permutation):
+        raise ValueError("Not implemented")
+
+    def face_dual_graph(self):
+        raise ValueError("Not implemented")
+
+    def locate_faces(self, x, y):
+        raise ValueError("Not implemented")
+
+    def _assert_planar_embedding(self):
+        self.g._assert_planar_embedding()
+
+    def _assert_single_component(self):
+        self.g._assert_single_component()
+
+    def _cycle_space_solve_for_integral_x(self):
+        raise ValueError("periodic graph cannot change phase zone")
+
+
 class EmbeddedSquareGraph(EmbeddedGraph):
 
     """
@@ -1066,3 +1387,25 @@ class EmbeddedTriangularGraph(EmbeddedGraph):
         nodes1 = np.concatenate(tuple([n1.flatten() for n1 in nodes1]))
         nodes2 = np.concatenate(tuple([n2.flatten() for n2 in nodes2]))
         super().__init__(nodes_x * x_scale, nodes_y * y_scale, nodes1, nodes2)
+
+
+class EmbeddedPeriodicSquareGraph(EmbeddedPeriodicGraph):
+
+    """
+    Generate Embedded graph for a periodic square lattice.
+
+    Parameters
+    ----------
+    count_x, count_y : int scalar
+        Node count of square lattice in x- and y-direction respectively.
+    x_scale, y_scale=1.0 : float scalar
+        Stretch factors for square lattice in x- and y-direction respectively.
+        Bottom-left node is at origin.
+    """
+    def __init__(self, count_x, count_y,  x_scale=1.0, y_scale=1.0):
+        g = EmbeddedSquareGraph(count_x, count_y,  x_scale=x_scale, y_scale=y_scale)
+        nx, ny = np.arange(count_x), np.arange(count_y)
+        b1 = np.stack((ny * count_x + (count_x - 1), ny * count_x), axis=1)
+        b2 = np.stack((nx + count_x * (count_y - 1), nx), axis=1)
+        super().__init__(g, boundary1=b1, boundary2=b2)
+

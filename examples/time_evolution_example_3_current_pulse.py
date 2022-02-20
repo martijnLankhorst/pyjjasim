@@ -20,7 +20,7 @@ if __name__ == "__main__":
     dt = 0.05
     Nt = 2000
     ts = np.arange(0, Nt, 3)
-    Ih = sq_array.horizontal_junctions()
+    Ih = sq_array.current_base(angle=0)
     amp = 2
     Is = amp * Ih[:, None, None] * norm(loc=30, scale=1.0).pdf(np.arange(Nt) * dt)
 

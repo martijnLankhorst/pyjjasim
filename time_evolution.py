@@ -125,11 +125,13 @@ class TimeEvolutionProblem:
 
         self.config_at_minus_1 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_1 is None else config_at_minus_1
         if hasattr(self.config_at_minus_1, "get_theta"):
-            self.config_at_minus_1.get_theta()[:, None]
+            self.config_at_minus_1 = self.config_at_minus_1.get_theta()
+        self.config_at_minus_1 = self.config_at_minus_1.reshape((Nj, W))   # always (Nj, W) shaped
+
         self.config_at_minus_2 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_2 is None else config_at_minus_2
         if hasattr(self.config_at_minus_2, "get_theta"):
-            self.config_at_minus_2.get_theta()[:, None]
-        self.prepared_theta_s = np.zeros((Nj, W), dtype=np.double)
+            self.config_at_minus_2 = self.config_at_minus_2.get_theta()
+        self.config_at_minus_2 = self.config_at_minus_2.reshape((Nj, W))    # always (Nj, W) shaped
 
     def get_static_problem(self, vortex_configuration, problem_nr=0, time_step=0) -> StaticProblem:
         """
@@ -392,11 +394,17 @@ def time_evolution_algo_0(problem: TimeEvolutionProblem):
 
     if circuit._has_inductance():
         L = problem.circuit._L()
-        L_sw_fact = scipy.sparse.linalg.factorized(A @ L @ AT)
-    Asq_fact = scipy.sparse.linalg.factorized(A @ scipy.sparse.diags(1.0 / Cnext[:, 0], 0) @ AT)
+
+    circ_const_Cp = circuit._has_identical_resistance() and \
+                    (not circuit._has_capacitance() or circuit._has_identical_capacitance())
+
+    if not circ_const_Cp:
+        Asq_fact = scipy.sparse.linalg.factorized(A @ scipy.sparse.diags(1.0 / Cnext[:, 0], 0) @ AT)
 
     theta_next = problem.config_at_minus_1
     theta = problem.config_at_minus_2
+    problem._theta_s(-1)
+
 
     for i in range(problem._Nt()):
         Is, T, theta_s, f = problem._Is(i), problem._T(i), problem._theta_s(i), problem._f(i)
@@ -407,12 +415,15 @@ def time_evolution_algo_0(problem: TimeEvolutionProblem):
         theta_prev = theta.copy()
         theta = theta_next.copy()
         if circuit._has_inductance():
-            y = AT @ L_sw_fact(A @ (theta + theta_s + L @ Is) + 2 * np.pi * f)
+            y = AT @ circuit._ALA_solve(A @ (theta + theta_s + L @ Is) + 2 * np.pi * f)
             theta_next = -(problem._cp(theta) + fluctuations - Is + C0 * theta + Cprev * theta_prev + y) / Cnext
             I = Is - y if store_I else None
         else:
             x = (problem._cp(theta) + fluctuations - Is + C0 * theta + Cprev * theta_prev) / Cnext
-            theta_next = -x + (AT @ Asq_fact(A @ (x - theta_s) - 2 * np.pi * f)) / Cnext
+            if circ_const_Cp:
+                theta_next = -x + (AT @ circuit.Asq_solve(A @ (x - theta_s) - 2 * np.pi * f))
+            else:
+                theta_next = -x + (AT @ Asq_fact(A @ (x - theta_s) - 2 * np.pi * f)) / Cnext
             I = (x + theta_next) * Cnext + Is if store_I else None
         V = (theta_next - theta) / dt if store_V else None
         if problem.store_time_steps[i]:
@@ -597,13 +608,13 @@ class TimeEvolutionResult:
         phi : (Nn, W, nr_of_selected_timepoints) array
              Node phases.
         """
-        M = self.get_circuit()._Mr()
-        Mrsq = M @ M.T
-        Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
-        def stretch(x):
-            return x if x.ndim == 2 else x[:, None]
-        solver = scipy.sparse.linalg.factorized(Mrsq)
-        func = lambda tp: np.concatenate((stretch(solver(M @ self._th(tp))), Z), axis=0)
+        c = self.get_circuit()
+        M, Nj = c.get_cut_matrix(), c._Nj()
+        # Mrsq = M @ M.T
+        # Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
+        # solver = scipy.sparse.linalg.factorized(Mrsq)
+        # func = lambda tp: np.concatenate((solver(M @ self._th(tp).reshape(Nj, -1)), Z), axis=0)
+        func = lambda tp: c.Msq_solve(M @ self._th(tp).reshape(Nj, -1))
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_theta(self, select_time_points=None) -> np.ndarray:
@@ -641,7 +652,7 @@ class TimeEvolutionResult:
              Vorticity.
         """
         A = self.get_circuit().get_cycle_matrix()
-        func = lambda tp:  -A @ np.round(self._th(tp) / (2.0 * np.pi))
+        func = lambda tp: -A @ np.round(self._th(tp) / (2.0 * np.pi))
         return self._select(select_time_points, self.get_circuit()._Nf(), func).astype(int)
 
     def get_EJ(self, select_time_points=None) -> np.ndarray:
@@ -717,8 +728,8 @@ class TimeEvolutionResult:
              Cycle-current around faces.
         """
         A = self.get_circuit().get_cycle_matrix()
-        solver = scipy.sparse.linalg.factorized(A @ A.T)
-        func = lambda tp: solver(A @ self._I(tp))
+        # solver = scipy.sparse.linalg.factorized(A @ A.T)
+        func = lambda tp: self.get_circuit().Asq_solve(A @ self._I(tp))
         return self._select(select_time_points, self.get_circuit()._Nf(), func)
 
     def get_flux(self, select_time_points=None) -> np.ndarray:
@@ -797,11 +808,12 @@ class TimeEvolutionResult:
         U : (Nn, W, nr_of_selected_timepoints) array
              Voltage potential at nodes.
         """
-        M = self.get_circuit()._Mr()
-        Mrsq = M @ M.T
-        Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
-        solver = scipy.sparse.linalg.factorized(Mrsq)
-        func = lambda tp: np.concatenate((solver(M @ self._V(tp)), Z), axis=0)
+        M, Nj = self.get_circuit()._Mr(), self.get_circuit()._Nj()
+        # Mrsq = M @ M.T
+        # Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
+        # solver = scipy.sparse.linalg.factorized(Mrsq)
+        # func = lambda tp: np.concatenate((solver(M @ self._V(tp)), Z), axis=0)
+        func = lambda tp: self.get_circuit().Msq_solve(M @ self._V(tp).reshape(Nj, -1))
         return self._select(select_time_points, self.get_circuit()._Nn(), func)
 
     def get_EC(self, select_time_points=None):

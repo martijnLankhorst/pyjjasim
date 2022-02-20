@@ -13,7 +13,7 @@ TIME EVOLUTION EXAMPLE 2: IV curve
 if __name__ == "__main__":
 
     sq_array = SquareArray(20, 20)
-    hor_junc = sq_array.horizontal_junctions()
+    hor_junc = sq_array.current_base(angle=0)
     f = 0.05
     I = np.linspace(0, 2, 21)
     Is = hor_junc[:, None] * I
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     th = out.get_theta()
     V = (th[:, :, 1] - th[:, :, 0]) / (dt * (ts[1]-ts[0]))
-    V_mean = np.mean(V[hor_junc, :], axis=0)
+    V_mean = np.mean(V[hor_junc!=0, :], axis=0)
     plt.plot(20 * I, 20 * V_mean, label="square array")
     plt.xlabel("net array current")
     plt.ylabel("net array voltage")

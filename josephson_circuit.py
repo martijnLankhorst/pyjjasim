@@ -1,10 +1,12 @@
-from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
+from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph, \
+    EmbeddedPeriodicSquareGraph
 
 import numpy as np
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
 import scipy.spatial
+import scipy.fftpack
 
 __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID"]
 
@@ -82,18 +84,19 @@ class Circuit:
                  capacitance_factors=0.0, inductance_factors=0.0):
 
         self.graph = graph
-        self.graph._assign_faces()
+        # self.graph._assign_faces()
         self.graph._assert_planar_embedding()
         self.graph._assert_single_component()
-        n, _ = self.graph.get_l_cycles(to_list=False)
-        self.graph.permute_faces(np.argsort(n[self.graph.faces_v_array.cum_counts]))
-        self.graph._assert_planar_embedding()
-        self.graph._assert_single_component()
+        # n, _ = self.graph.get_l_cycles(to_list=False)
+        # self.graph.permute_faces(np.argsort(n[self.graph.faces_v_array.cum_counts]))
+        # self.graph._assert_planar_embedding()
+        # self.graph._assert_single_component()
 
         self.resistance_factors = None
         self.capacitance_factors = None
         self.critical_current_factors=None
         self.inductance_factors = None
+        self._has_inductance_v = False
         self.set_resistance_factors(resistance_factors)
         self.set_critical_current_factors(critical_current_factors)
         self.set_capacitance_factors(capacitance_factors)
@@ -103,16 +106,142 @@ class Circuit:
 
         self.cut_matrix = self.graph.cut_space_matrix()
         self.cycle_matrix = self.graph.face_cycle_matrix()
-        self.cut_reduced_square = None
         self.cut_matrix_reduced = None
-        self.cut_square = None
-        self.cut_matrix_reduced_transposed = None
-        self.cut_matrix_transposed = None
-        self.cycle_matrix_transposed = None
-        self.cycle_square = None
+
         self._Mnorm = None
         self._Anorm = None
-        self._has_inductance_v = False
+        self._Msq_factorized = None
+        self._Asq_factorized = None
+        self._AIpLIcA_factorized = None
+        self._IpLIc_factorized = None
+        self._ALA_factorized = None
+        self._Msq_S_factorized = None
+        self._Asq_S_factorized = None
+
+    def Msq_solve(self, b):
+        """
+        Solves M @ M.T @ x = b (where M is self.get_cut_matrix()).
+
+        Parameters
+        ----------
+        b : (Nn,) or (Nn, W) array
+            Right-hand side of system
+
+        Returns
+        -------
+        x : shape of b
+            solution of system
+        """
+        if self._Msq_factorized is None:
+            self._Msq_factorized = scipy.sparse.linalg.factorized(self._Mr() @ self._Mr().T)
+        return np.append(self._Msq_factorized(b[:-1, ...]), np.zeros(b[-1:, ...].shape), axis=0)
+
+    def Asq_solve(self, b):
+        """
+        Solves A @ A.T @ x = b (where A is self.get_cycle_matrix()).
+
+        Parameters
+        ----------
+        b : (Nf,) or (Nf, W) array
+            Right-hand side of system
+
+        Returns
+        -------
+        x : shape of b
+            solution of system
+        """
+        if self._Asq_factorized is None:
+            self._Asq_factorized = scipy.sparse.linalg.factorized(self.cycle_matrix @ self.cycle_matrix.T)
+        return self._Asq_factorized(b)
+
+    def Msq_solve_sandwich(self, b, S):
+        """
+        Solves M @ S @ M.T @ x = b (where M is self.get_cut_matrix()).
+
+        Parameters
+        ----------
+        b : (Nn,) or (Nn, W) array
+            Right-hand side of system.
+        S : (Nj, Nj) sparse array
+            Sandwich matrix.
+
+        Returns
+        -------
+        x : shape of b
+            Solution of system.
+        """
+        Sd = S.diagonal()
+        if S.nnz == np.count_nonzero(Sd):
+            if np.allclose(Sd[0], Sd):
+                return self.Msq_solve(b) / Sd[0]
+        MsqF = scipy.sparse.linalg.factorized(self._Mr() @ S @ self._Mr().T)
+        return np.append(MsqF(b[:-1, ...]), np.zeros(b[-1:, ...].shape), axis=0)
+
+    def Asq_solve_sandwich(self, b, S, use_pyamg=False):
+        """
+        Solves A @ S @ A.T @ x = b (where A is self.get_cycle_matrix()).
+
+        Parameters
+        ----------
+        b : (Nf,) or (Nf, W) array
+            Right-hand side of system.
+        S : (Nj, Nj) sparse array
+            Sandwich matrix.
+
+        Returns
+        -------
+        x : shape of b
+            Solution of system.
+        """
+        Sd = S.diagonal()
+        if S.nnz == np.count_nonzero(Sd):
+            if np.allclose(Sd[0], Sd):
+                return self.Asq_solve(b) / Sd[0]
+        if use_pyamg:
+            import pyamg
+            import pyamg.util.linalg
+            A = self.cycle_matrix @ S @ self.cycle_matrix.T
+            pyamg_cb = PyamgCallback(A, b)
+            ml = pyamg.ruge_stuben_solver(A, strength=('classical', {'theta': 0.2}))
+            try:
+                mg_out = ml.solve(b, tol=1e-8, maxiter=3, callback=pyamg_cb.cb)
+            except DivergenceError:
+                mg_out = pyamg_cb.x
+            if not pyamg_cb.has_diverged:
+                return mg_out
+            else:
+                return self.Asq_solve_sandwich(b, S, use_pyamg=False)
+        else:
+            AsqF = scipy.sparse.linalg.factorized(self.cycle_matrix @ S @ self.cycle_matrix.T)
+            return AsqF(b)
+
+    def _AIpLIcA_solve(self, b):
+        if self._has_only_identical_self_inductance() and self._has_identical_critical_current():
+            const = 1 + self.inductance_factors.diagonal()[0] * self.critical_current_factors[0]
+            return self.Asq_solve(b) / const
+        if self._AIpLIcA_factorized is None:
+            Nj, A = self._Nj(), self.get_cycle_matrix()
+            L, Ic = self._L(), scipy.sparse.diags(self._Ic())
+            self._AIpLIcA_factorized = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
+        return self._AIpLIcA_factorized(b)
+
+    def _ALA_solve(self, b):
+        if self._has_only_identical_self_inductance():
+            const = self.inductance_factors.diagonal()[0]
+            return self.Asq_solve(b) / const
+        if self._ALA_factorized is None:
+            A, L = self.get_cycle_matrix(), self._L()
+            self._ALA_factorized = scipy.sparse.linalg.factorized(A @ L @ A.T)
+        return self._ALA_factorized(b)
+
+    def _IpLIc_solve(self, b):
+        if self._has_only_identical_self_inductance() and self._has_identical_critical_current():
+            const = 1 + self.inductance_factors.diagonal()[0] * self.critical_current_factors[0]
+            return b / const
+        if self._IpLIc_factorized is None:
+            L, Ic, Nj = self._L(), scipy.sparse.diags(self._Ic()), self._Nj()
+            self._IpLIc_factorized = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
+        return self._IpLIc_factorized(b)
 
     def get_junction_nodes(self):
         """Get indices of nodes at endpoints of all junctions.
@@ -315,7 +444,7 @@ class Circuit:
         x, y : (Nn,) arrays
             Coordinates of nodes in circuit.
         """
-        return self.graph.x, self.graph.y
+        return self.graph.coo()
 
     def node_count(self):
         """
@@ -339,6 +468,8 @@ class Circuit:
             New critical current factors. Same for all junctions if scalar.
         """
         self.critical_current_factors = self._prepare_junction_quantity(Ic, self._Nj(), x_name="Ic")
+        self._AIpLIcA_factorized = None
+        self._IpLIc_factorized = None
         return self
 
     def get_resistance_factors(self):
@@ -521,6 +652,9 @@ class Circuit:
             Circuit._prepare_inducance_matrix(inductance_factors, self._Nj())
         if not is_positive_definite:
             raise ValueError("Inductance matrix not positive definite")
+        self._AIpLIcA_factorized = None
+        self._IpLIc_factorized = None
+        self._ALA_factorized = None
         return self
 
     def get_cut_matrix(self):
@@ -558,6 +692,50 @@ class Circuit:
                              show_face_ids=show_face_ids, markersize=markersize,
                              linewidth=linewidth, face_shrink_factor=face_shrink_factor)
         return cr
+
+    def save(self, filename):
+        with open(filename, "wb") as ffile:
+            x, y = self.graph.coo()
+            n1, n2 = self.graph.get_edges()
+            np.save(ffile, x)
+            np.save(ffile, y)
+            np.save(ffile, n1)
+            np.save(ffile, n2)
+            np.save(ffile, self.critical_current_factors)
+            np.save(ffile, self.resistance_factors)
+            np.save(ffile, self.capacitance_factors)
+            L_is_sparse = scipy.sparse.issparse(self.inductance_factors)
+            np.save(ffile, L_is_sparse)
+            if L_is_sparse:
+                np.save(ffile, self.inductance_factors.indptr)
+                np.save(ffile, self.inductance_factors.indices)
+                np.save(ffile, self.inductance_factors.data)
+            else:
+                np.save(ffile, self.inductance_factors)
+
+    @staticmethod
+    def load(filename):
+        with open(filename, "rb") as ffile:
+            x = np.load(ffile)
+            y = np.load(ffile)
+            node1 = np.load(ffile)
+            node2 = np.load(ffile)
+            g = EmbeddedGraph(x, y, node1, node2)
+            Ic = np.load(ffile)
+            R = np.load(ffile)
+            C = np.load(ffile)
+            L_is_sparse = np.load(ffile)
+            if L_is_sparse:
+                indptr = np.load(ffile)
+                indices = np.load(ffile)
+                data = np.load(ffile)
+                Nj = len(node1)
+                L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
+            else:
+                L = np.load(ffile)
+            return Circuit(g, critical_current_factors=Ic, resistance_factors=R,
+                           capacitance_factors=C, inductance_factors=L)
+
 
     # abbreviations and aliases
     def _Nn(self):   # alias for node_count
@@ -604,10 +782,11 @@ class Circuit:
             A = np.array(A)
         if A.ndim <= 1:
             x = Circuit._prepare_junction_quantity(A, N, "L")
-            return scipy.sparse.diags(x, 0), np.all(x >= 0), np.any(x != 0.0)
+            return scipy.sparse.diags(x, 0).tocsc(), np.all(x >= 0), np.any(x != 0.0)
         if A.shape == (N, N):
             if not Circuit._is_symmetric(A):
                 raise ValueError("inductance matrix must be symmetric")
+            # TODO: change positive definite criterion
             eigv = scipy.sparse.linalg.eigsh(-A, 1, maxiter=1000, which="LA")[0][0]
             is_positive_definite = eigv < 100 * np.finfo(float).eps
             if scipy.sparse.issparse(A):
@@ -672,6 +851,14 @@ class Circuit:
         # returns False if self.inductance_factors is zero, True otherwise
         return self._has_inductance_v
 
+    def _has_only_self_inductance(self):
+        L = self.get_inductance_factors()
+        Ls = L.diagonal()
+        if scipy.sparse.issparse(L):
+            return L.nnz == np.count_nonzero(Ls)
+        else:
+            return np.allclose(L - np.diag(Ls), 0)
+
     def _has_mixed_inductance(self):
         mask = self._get_mixed_inductance_mask()
         return np.any(mask) and not np.all(mask)
@@ -682,10 +869,25 @@ class Circuit:
         ALA = A @ L @ A.T
         return np.isclose(np.array(np.sum(np.abs(ALA), axis=1))[:, 0], 0)
 
+    def _has_identical_critical_current(self):
+        Ic = self.get_critical_current_factors()
+        return np.allclose(Ic, Ic[0])
+
+    def _has_identical_resistance(self):
+        R = self.get_resistance_factors()
+        return np.allclose(R, R[0])
+
+    def _has_identical_capacitance(self):
+        C = self.get_capacitance_factors()
+        return np.allclose(C, C[0])
+
+    def _has_only_identical_self_inductance(self):
+        if self._has_only_self_inductance():
+            L = self.get_inductance_factors().diagonal()
+            return np.allclose(L, L[0])
+        return False
+
     def _assign_cut_matrix(self):
-        self.cut_square = None
-        self.cut_matrix_reduced_transposed = None
-        self.cut_matrix_transposed = None
         if self.cut_matrix_reduced is None or self.cut_matrix is None:
             cut_matrix = -self.graph.cut_space_matrix()
             self.cut_matrix = cut_matrix.asformat("csc")
@@ -824,6 +1026,43 @@ class SquareArray(Circuit, Lattice):
         x, y = self.get_node_coordinates()
         return (y == 0).astype(int) - np.isclose(y, (self.count_y - 1) * self.y_scale).astype(int)
 
+    def Asq_solve(self, b, type="fast"):
+        """
+        Solves A @ A.T @ x = b (where A is self.get_cycle_matrix()).
+
+        Parameters
+        ----------
+        b : (Nf,) or (Nf, W) array
+            Right-hand side of system
+
+        Returns
+        -------
+        x : shape of b
+            solution of system
+        """
+
+        if not type == "fast":
+            return super().Asq_solve(b)
+        Nx, Ny = self.count_x, self.count_y
+        squeeze = False
+        if self._Asq_factorized is None:
+            k1 = np.cos(np.pi * (np.arange(Nx-1) + 1) / Nx)
+            k2 = np.cos(np.pi * (np.arange(Ny-1) + 1) / Ny)
+            self._Asq_factorized = 4 - 2 * k1 - 2 * k2[:, None]
+        if b.ndim == 2:
+            if b.shape[1] != 1:
+                W = b.shape[1]
+                B = scipy.fftpack.dstn(b.T.reshape(W, Ny-1, Nx-1), type=1, norm="ortho", axes=[1, 2])
+                out = scipy.fftpack.idstn(B / self._Asq_factorized, type=1, norm="ortho", axes=[1, 2])
+                return out.reshape(W, -1).T
+            squeeze = True
+            b = b[:, 0]
+        if b.ndim == 1:
+            out = scipy.fftpack.idstn(scipy.fftpack.dstn(b.reshape(Ny-1, Nx-1), type=1, norm="ortho") / self._Asq_factorized, type=1, norm="ortho")
+            return out.ravel() if not squeeze else out.ravel()[:, None]
+
+
+
 
 class HoneycombArray(Circuit, Lattice):
 
@@ -857,6 +1096,15 @@ class TriangularArray(Circuit, Lattice):
         return (y == 0).astype(int) - np.isclose(y, (self.count_y - 0.5) * np.sqrt(3) * self.y_scale).astype(int)
 
 
+
+class SquarePeriodicArray(Circuit, Lattice):
+
+    def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
+        Circuit.__init__(self, EmbeddedPeriodicSquareGraph(count_x, count_y, x_scale, y_scale))
+
+
 class SQUID(Circuit):
 
     """
@@ -878,5 +1126,33 @@ class SQUID(Circuit):
     def vertical_junctions(self):
         return  np.array([0, 1, 0, 1])
 
-def test_function(x):
-    return x
+
+
+class DivergenceError(Exception):
+    pass
+
+class PyamgCallback:
+
+    def __init__(self, A, b):
+        self.A = A
+        self.b = b
+        self.iter = 0
+        self.resid = np.zeros((0,))
+        self.x = None
+        self.has_diverged = False
+
+    def cb(self, x):
+        self.x = x
+        dx = np.ravel(self.b) - self.A * np.ravel(x)
+        r = np.sqrt(np.inner(dx.conj(), dx).real)
+        self.resid = np.append(self.resid, [np.abs(r)])
+        self.iter += 1
+        if np.any(np.isnan(x)) or np.any(np.isinf(x)):
+            self._diverge()
+        if self.iter > 1:
+            if self.resid[-1] > self.resid[-2]:
+                self._diverge()
+
+    def _diverge(self):
+        self.has_diverged = True
+        raise DivergenceError("diverged")

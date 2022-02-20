@@ -35,7 +35,7 @@ if __name__ == "__main__":
     array.set_critical_current_factors(Ic)
 
     # define problem parameters
-    problem_no_scr = StaticProblem(array, current_sources=array.horizontal_junctions())
+    problem_no_scr = StaticProblem(array, current_sources=array.current_base(angle=0))
     I_factor, net_I, config, _ = problem_no_scr.compute_maximal_current()
 
     print(f"max net current: {net_I}. For uniform Ic, it would be 12.")

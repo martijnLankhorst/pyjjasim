@@ -39,7 +39,7 @@ if __name__ == "__main__":
     ts = np.arange(0, 2 * Nt, t_gap)
     Imin = 0.4
     Imax = 1.6
-    Ih = sq_array_no_scr_no_cap.horizontal_junctions()
+    Ih = sq_array_no_scr_no_cap.current_base(angle=0)
     It = np.append(np.linspace(Imin, Imax, Nt), np.linspace(Imax, Imin, Nt))
     Is = Ih[:, None, None] * It
     prob_no_scr_no_cap = TimeEvolutionProblem(sq_array_no_scr_no_cap, time_step=dt, time_step_count=2*Nt, current_sources=Is, temperature=T, store_time_steps=ts)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     out_scr_cap = prob_scr_cap.compute()
 
     def get_V(th):
-        return np.append([0], np.mean(np.diff(th[Ih, 0, :], axis=-1) / (dt * t_gap), axis=0))
+        return np.append([0], np.mean(np.diff(th[Ih!=0, 0, :], axis=-1) / (dt * t_gap), axis=0))
 
 
     # compute array voltage

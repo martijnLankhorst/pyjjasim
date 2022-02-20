@@ -7,6 +7,7 @@ import scipy.sparse.linalg
 import scipy.optimize
 from scipy.sparse.linalg import ArpackNoConvergence
 
+from pyjjasim.embedded_graph import EmbeddedGraph
 from pyjjasim.josephson_circuit import Circuit
 
 __all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem",
@@ -430,10 +431,67 @@ class StaticProblem:
         self.vortex_configuration = np.atleast_1d(vortex_configuration)
         self.current_phase_relation = current_phase_relation
         self.current_sources_norm = None
-        self.Asq_factorization = None
-        self.AIpLIcA_factorization = None
-        self.IpLIc_factorization = None
-        self.Msq_factorization = None
+        # self.Asq_factorization = None
+        # self.AIpLIcA_factorization = None
+        # self.IpLIc_factorization = None
+        # self.Msq_factorization = None
+
+    def save(self, filename):
+        """
+        Store problem in .npy file. Note that the current-phase-relation is not stored!
+        """
+        with open(filename, "wb") as ffile:
+            x, y = self.circuit.graph.coo()
+            n1, n2 = self.circuit.graph.get_edges()
+            np.save(ffile, x)
+            np.save(ffile, y)
+            np.save(ffile, n1)
+            np.save(ffile, n2)
+            np.save(ffile, self.circuit.critical_current_factors)
+            np.save(ffile, self.circuit.resistance_factors)
+            np.save(ffile, self.circuit.capacitance_factors)
+            L_is_sparse = scipy.sparse.issparse(self.circuit.inductance_factors)
+            np.save(ffile, L_is_sparse)
+            if L_is_sparse:
+                np.save(ffile, self.circuit.inductance_factors.indptr)
+                np.save(ffile, self.circuit.inductance_factors.indices)
+                np.save(ffile, self.circuit.inductance_factors.data)
+            else:
+                np.save(ffile, self.circuit.inductance_factors)
+            np.save(ffile, self.current_sources)
+            np.save(ffile, self.frustration)
+            np.save(ffile, self.vortex_configuration)
+
+    @staticmethod
+    def load(filename):
+        """
+        Load problems created with the .save(filename) method. Returns StaticProblem.
+        Note that the loaded problem will always have the default current-phase-relation.
+        """
+        with open(filename, "rb") as ffile:
+            x = np.load(ffile)
+            y = np.load(ffile)
+            node1 = np.load(ffile)
+            node2 = np.load(ffile)
+            g = EmbeddedGraph(x, y, node1, node2)
+            Ic = np.load(ffile)
+            R = np.load(ffile)
+            C = np.load(ffile)
+            L_is_sparse = np.load(ffile)
+            if L_is_sparse:
+                indptr = np.load(ffile)
+                indices = np.load(ffile)
+                data = np.load(ffile)
+                Nj = len(node1)
+                L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
+            else:
+                L = np.load(ffile)
+            circuit = Circuit(g, critical_current_factors=Ic, resistance_factors=R,
+                              capacitance_factors=C, inductance_factors=L)
+            Is = np.load(ffile)
+            f = np.load(ffile)
+            n = np.load(ffile)
+            return StaticProblem(circuit, current_sources=Is, frustration=f, vortex_configuration=n)
 
     def get_circuit(self) -> Circuit:
         """
@@ -511,12 +569,9 @@ class StaticProblem:
                that obeys winding rule.
         """
         if algorithm == 0:
-            theta = arctan_approximation(self.circuit, self._f(), self._nt(),
-                                         Asq_solver=self._Asq_factorization(),
-                                         IpLIc_solver=self._IpLIc_factorization())
+            theta = arctan_approximation(self.circuit, self._f(), self._nt())
         elif algorithm == 1:
-            theta = london_approximation(self.circuit, self._f(), self._nt(),
-                                         AIpLIcA_solver=self._AIpLIcA_factorization())
+            theta = london_approximation(self.circuit, self._f(), self._nt())
             theta = change_phase_zone(self.get_circuit(), theta, self._nt(), 0)
         else:
             raise ValueError("invalid algorithm")
@@ -533,12 +588,12 @@ class StaticProblem:
         x_n, y_n : (N,) float arrays
             The x,y-coordinates of vortices.
         """
-        theta = arctan_approximation_placed_vortices(self.circuit,
-            self._f(), n, x_n, y_n, Asq_solver=self._Asq_factorization(), IpLIc_solver=self._IpLIc_factorization())
+        theta = arctan_approximation_placed_vortices(self.circuit, self._f(), n, x_n, y_n)
         return StaticConfiguration(self, theta)
 
     def compute(self, initial_guess = None, tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
-                stop_as_residual_increases=True, stop_if_not_target_n=False):
+                stop_as_residual_increases=True, stop_if_not_target_n=False, algorithm=1,
+                use_pyamg=False):
         """
         Compute solution to static_problem using Newton iteration.
 
@@ -579,9 +634,10 @@ class StaticProblem:
         theta, status, iter_info = static_compute(self.get_circuit(), initial_guess, Is=self._Is(),
                                                   f=self._f(), n=self._nt(), z=0,
                                                   cp=self.current_phase_relation, tol=tol,
-                                                  maxiter=maxiter, Asq_solver=self._Asq_factorization(),
+                                                  maxiter=maxiter,
                                                   stop_as_residual_increases=stop_as_residual_increases,
-                                                  stop_if_not_target_n=stop_if_not_target_n)
+                                                  stop_if_not_target_n=stop_if_not_target_n,
+                                                  algorithm=algorithm, use_pyamg=use_pyamg)
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
@@ -781,31 +837,31 @@ class StaticProblem:
             self.current_sources_norm = scipy.linalg.norm(np.broadcast_to(self.current_sources, (self.circuit._Nj(),)))
         return self.current_sources_norm
 
-    def _Asq_factorization(self):
-        if self.Asq_factorization is None:
-            A = self.get_circuit().get_cycle_matrix()
-            self.Asq_factorization = scipy.sparse.linalg.factorized(A @ A.T)
-        return self.Asq_factorization
-
-    def _AIpLIcA_factorization(self):
-        if self.AIpLIcA_factorization is None:
-            Nj, A = self.get_circuit()._Nj(), self.get_circuit().get_cycle_matrix()
-            L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
-            self.AIpLIcA_factorization = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
-        return self.AIpLIcA_factorization
-
-    def _IpLIc_factorization(self):
-        if self.IpLIc_factorization is None:
-            Nj = self.get_circuit()._Nj()
-            L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
-            self.IpLIc_factorization = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
-        return self.IpLIc_factorization
-
-    def _Msq_factorization(self):
-        if self.Msq_factorization is None:
-            M = self.get_circuit()._Mr()
-            self.Msq_factorization = scipy.sparse.linalg.factorized(M @ M.T)
-        return self.Msq_factorization
+    # def _Asq_factorization(self):
+    #     if self.Asq_factorization is None:
+    #         A = self.get_circuit().get_cycle_matrix()
+    #         self.Asq_factorization = scipy.sparse.linalg.factorized(A @ A.T)
+    #     return self.Asq_factorization
+    #
+    # def _AIpLIcA_factorization(self):
+    #     if self.AIpLIcA_factorization is None:
+    #         Nj, A = self.get_circuit()._Nj(), self.get_circuit().get_cycle_matrix()
+    #         L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
+    #         self.AIpLIcA_factorization = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
+    #     return self.AIpLIcA_factorization
+    #
+    # def _IpLIc_factorization(self):
+    #     if self.IpLIc_factorization is None:
+    #         Nj = self.get_circuit()._Nj()
+    #         L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
+    #         self.IpLIc_factorization = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
+    #     return self.IpLIc_factorization
+    #
+    # def _Msq_factorization(self):
+    #     if self.Msq_factorization is None:
+    #         M = self.get_circuit()._Mr()
+    #         self.Msq_factorization = scipy.sparse.linalg.factorized(M @ M.T)
+    #     return self.Msq_factorization
 
 
 class StaticConfiguration:
@@ -854,8 +910,8 @@ class StaticConfiguration:
         Returns (Nn,) array containing phases at each node
         """
         # by default the last node (node with highest index number) is grounded.
-        M, Msq_solver = self.get_circuit()._Mr(), self.get_problem()._Msq_factorization()
-        return np.append(Msq_solver(M @ self._th()), [0])
+        M = self.get_circuit().get_cut_matrix()
+        return self.get_circuit().Msq_solve(M @ self._th())
 
     def get_theta(self) -> np.ndarray:
         """
@@ -998,9 +1054,8 @@ class StaticConfiguration:
         Returns normalized residual of the winding rules (normalized so cannot exceed 1).
         """
         circuit, problem = self.get_circuit(), self.get_problem()
-        f, Asq_factorized = problem._f(),  problem._Asq_factorization()
-        L = circuit._L()
-        return get_winding_error(circuit, self._th() + L @ self.get_I(), get_g(circuit, f, 0, Asq_solver=Asq_factorized))
+        f, L = problem._f(), circuit._L()
+        return get_winding_error(circuit, self._th() + L @ self.get_I(), get_g(circuit, f, 0))
 
     def get_error(self):
         """
@@ -1029,6 +1084,68 @@ class StaticConfiguration:
         print("Path rules error:         ", self.get_error_winding_rules())
         print("is stable:                ", self.is_stable())
         print("is target vortex solution:", self.satisfies_target_vortices())
+
+
+    def save(self, filename):
+        """
+        Store configuration in .npy file. Note that the current-phase-relation is not stored!
+        """
+        with open(filename, "wb") as ffile:
+            x, y = self.problem.circuit.graph.coo()
+            n1, n2 = self.problem.circuit.graph.get_edges()
+            np.save(ffile, x)
+            np.save(ffile, y)
+            np.save(ffile, n1)
+            np.save(ffile, n2)
+            np.save(ffile, self.problem.circuit.critical_current_factors)
+            np.save(ffile, self.problem.circuit.resistance_factors)
+            np.save(ffile, self.problem.circuit.capacitance_factors)
+            L_is_sparse = scipy.sparse.issparse(self.problem.circuit.inductance_factors)
+            np.save(ffile, L_is_sparse)
+            if L_is_sparse:
+                np.save(ffile, self.problem.circuit.inductance_factors.indptr)
+                np.save(ffile, self.problem.circuit.inductance_factors.indices)
+                np.save(ffile, self.problem.circuit.inductance_factors.data)
+            else:
+                np.save(ffile, self.problem.circuit.inductance_factors)
+            np.save(ffile, self.problem.current_sources)
+            np.save(ffile, self.problem.frustration)
+            np.save(ffile, self.problem.vortex_configuration)
+            np.save(ffile, self.theta)
+
+    @staticmethod
+    def load(filename):
+        """
+        Load configuration created with the .save(filename) method. Returns StaticConfiguration.
+        Note that the loaded problem will always have the default current-phase-relation.
+        """
+
+        with open(filename, "rb") as ffile:
+            x = np.load(ffile)
+            y = np.load(ffile)
+            node1 = np.load(ffile)
+            node2 = np.load(ffile)
+            g = EmbeddedGraph(x, y, node1, node2)
+            Ic = np.load(ffile)
+            R = np.load(ffile)
+            C = np.load(ffile)
+            L_is_sparse = np.load(ffile)
+            if L_is_sparse:
+                indptr = np.load(ffile)
+                indices = np.load(ffile)
+                data = np.load(ffile)
+                Nj = len(node1)
+                L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
+            else:
+                L = np.load(ffile)
+            circuit = Circuit(g, critical_current_factors=Ic, resistance_factors=R,
+                              capacitance_factors=C, inductance_factors=L)
+            Is = np.load(ffile)
+            f = np.load(ffile)
+            n = np.load(ffile)
+            prob = StaticProblem(circuit, current_sources=Is, frustration=f, vortex_configuration=n)
+            th = np.load(ffile)
+            return StaticConfiguration(problem=prob, theta=th)
 
     def _th(self):
         return self.theta
@@ -1065,14 +1182,12 @@ def principle_value(theta):
     """
     return theta - 2 * np.pi * np.round(theta / (2 * np.pi))
 
-def get_g(circuit: Circuit, f=0, z=0, Asq_solver=None):
+def get_g(circuit: Circuit, f=0, z=0):
     """
     g vector obeying A @ g = 2 * pi * (z - f)
     """
     A, Nf = circuit.get_cycle_matrix(), circuit._Nf()
-    if Asq_solver is None:
-        Asq_solver = scipy.sparse.linalg.factorized(A @ A.T)
-    return 2 * np.pi * A.T @ Asq_solver(np.broadcast_to(z - f, (Nf,)))
+    return 2 * np.pi * A.T @ circuit.Asq_solve(np.broadcast_to(z - f, (Nf,)))
 
 def change_phase_zone(circuit: Circuit, theta, z_old, z_new):
     """
@@ -1099,7 +1214,8 @@ def change_phase_zone(circuit: Circuit, theta, z_old, z_new):
     theta_new : (Nj,) array
         Theta expressed in new phase zone.
     """
-
+    if np.all(z_new == z_old):
+        return theta
     return theta + circuit._A_solve(np.broadcast_to(z_new - z_old, (circuit._Nf(),)).copy()) * 2.0 * np.pi
 
 def node_to_junction_current(circuit: Circuit, node_current):
@@ -1118,8 +1234,9 @@ def node_to_junction_current(circuit: Circuit, node_current):
         the net injected current through all its neighbouring edges matches the specified
         node_current.
     """
-    Mr = circuit._Mr()
-    return -Mr.T @ scipy.sparse.linalg.spsolve(Mr @ Mr.T, node_current[:-1])
+    # Mr = circuit._Mr()
+    # return -Mr.T @ scipy.sparse.linalg.spsolve(Mr @ Mr.T, node_current[:-1])
+    return - circuit.get_cut_matrix().T @ circuit.Msq_solve(node_current)
 
 """
 PARAMETER MAXIMIZATION ALGORITHMS
@@ -1301,26 +1418,26 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
 APPROXIMATE STATE FINDING ALGORITHMS
 """
 
-def london_approximation(circuit: Circuit, f, n, AIpLIcA_solver=None):
+def london_approximation(circuit: Circuit, f, n):
     """
     Core algorithm computing london approximation.
     """
     A, Nf = circuit.get_cycle_matrix(),  circuit._Nf()
-    if AIpLIcA_solver is None:
-        Nj = circuit._Nj()
-        L, Ic = circuit._L(), circuit._Ic()
-        AIpLIcA_solver = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
-    return 2 * np.pi * A.T @ AIpLIcA_solver(np.broadcast_to(n - f, (Nf,)))
+    # if AIpLIcA_solver is None:
+    #     Nj = circuit._Nj()
+    #     L, Ic = circuit._L(), circuit._Ic()
+    #     AIpLIcA_solver = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
+    return 2 * np.pi * A.T @ circuit._AIpLIcA_solve(np.broadcast_to(n - f, (Nf,)))
 
-def arctan_approximation(circuit: Circuit, f, n, Asq_solver=None, IpLIc_solver=None):
+
+def arctan_approximation(circuit: Circuit, f, n):
     """
     arctan_approximation implemented in arctan_approximation_placed_vortices()
     """
     centr_x, centr_y = circuit.get_face_centroids()
-    return arctan_approximation_placed_vortices(circuit, f, n[n != 0], centr_x[n != 0], centr_y[n != 0],
-                                                Asq_solver=Asq_solver, IpLIc_solver=IpLIc_solver)
+    return arctan_approximation_placed_vortices(circuit, f, n[n != 0], centr_x[n != 0], centr_y[n != 0])
 
-def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n, Asq_solver=None, IpLIc_solver=None):
+def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n):
     """
     Core algorithm computing arctan approximation.
     """
@@ -1328,14 +1445,14 @@ def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n, Asq_s
     x_n = np.atleast_1d(x_n)
     y_n = np.atleast_1d(y_n)
     MT = circuit.get_cut_matrix().T
-    if IpLIc_solver is None:
-        Nj = circuit._Nj()
-        L, Ic = circuit._L(), circuit._Ic()
-        IpLIc_solver = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
+    # if IpLIc_solver is None:
+    #     Nj = circuit._Nj()
+    #     L, Ic = circuit._L(), circuit._Ic()
+    #     IpLIc_solver = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
     x, y = circuit.get_node_coordinates()
     MTphi = MT @ np.sum(np.arctan2(y - y_n[:, None], x - x_n[:, None]) * n[:, None], axis=0)
-    out = principle_value(MTphi) + get_g(circuit, f=f, z=0, Asq_solver=Asq_solver)
-    return IpLIc_solver(out) + 2 * np.pi * np.round(MTphi / (2 * np.pi))
+    out = principle_value(MTphi) + get_g(circuit, f=f, z=0)
+    return circuit._IpLIc_solve(out) + 2 * np.pi * np.round(MTphi / (2 * np.pi))
 
 
 """
@@ -1344,9 +1461,9 @@ STATIONAIRY STATE FINDING ALGORITHMS
 
 
 def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
-                   cp=DefaultCPR(), tol=DEF_TOL,
-                   maxiter=DEF_NEWTON_MAXITER, Asq_solver=None,
-                   stop_as_residual_increases=True, stop_if_not_target_n=False):
+                   cp=DefaultCPR(), tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
+                   stop_as_residual_increases=True, stop_if_not_target_n=False,
+                   algorithm=1, use_pyamg=False):
     """
     Core algorithm computing stationary state of a Josephson Junction Circuit using Newtons method.
 
@@ -1382,8 +1499,6 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
         Tolerance. is solution if |residual| < tol.
     max_iter=100 :  scalar
         Maximum number of newton iterations.
-    Asq_solver=None :  func: vector->vector
-        Solver for A @ A.T @ x == b. If None, set equal to scipy.sparse.linalg.factorized(A @ A.T)
     stop_as_residual_increases=True : bool
         Iteration stops if error(iter) > error(iter - 3)
     stop_if_not_target_n=False : bool
@@ -1405,7 +1520,8 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
     info = NewtonIterInfo(tol, maxiter)
 
     # get circuit quantities and matrices
-    Nj, Nf, M, A = circuit._Nj(), circuit._Nf(), circuit.get_cut_matrix()[:-1, :], circuit.get_cycle_matrix()
+    Nj, Nf = circuit._Nj(), circuit._Nf()
+    Mr, M, A = circuit._Mr(), circuit.get_cut_matrix(), circuit.get_cycle_matrix()
     L = circuit._L()
     Ic = np.broadcast_to(circuit.get_critical_current_factors(), (Nj,))
 
@@ -1414,9 +1530,7 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
     n = np.ones((Nf,), dtype=int) * n if np.array(n).size == 1 else n
 
     # iteration-0 computations
-    if Asq_solver is None:
-        Asq_solver = scipy.sparse.linalg.factorized(A @ A.T)
-    g = get_g(circuit, f=f, z=z, Asq_solver=Asq_solver)
+    g = get_g(circuit, f=f, z=z)
 
     theta = theta0.copy()
     I = cp.eval(Ic, theta)
@@ -1434,16 +1548,29 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
     prev_error = np.inf
     iteration = 0
 
-
     while not (error < tol or (error > 0.5 and iteration > 5) or (stop_if_not_target_n and is_target_n) or
                (stop_as_residual_increases and error > prev_error) or iteration >= maxiter):
         # iteration computations
 
         q = cp.d_eval(Ic, theta)
-        J = scipy.sparse.vstack([M @ scipy.sparse.diags(q, 0), A @ (scipy.sparse.eye(Nj) + L @ scipy.sparse.diags(q, 0))]).tocsc()
-        J_solver = scipy.sparse.linalg.factorized(J)
-        F = np.concatenate([M @ (I - Is), A @  (theta - g + L @ I)])
-        theta -= J_solver(F)
+        if algorithm == 0:
+            J = scipy.sparse.vstack([Mr @ scipy.sparse.diags(q, 0), A @ (scipy.sparse.eye(Nj) + L @ scipy.sparse.diags(q, 0))])
+
+            J_solver = scipy.sparse.linalg.factorized(J.tocsc())
+            F = np.concatenate([Mr @ (I - Is), A @ (theta - g + L @ I)])
+            theta -= J_solver(F)
+        if algorithm == 1:
+            q[np.abs(q) < 0.1 * tol] = 0.1 * tol
+            S = L + scipy.sparse.diags(1/q, 0)
+            b1 = M @ (Is - I)
+            yb = M.T @ circuit.Msq_solve(b1)
+            b2 = A @ (g - theta - L @ I)
+            s = circuit.Asq_solve_sandwich(b2 - A @ S @ yb, S, use_pyamg=use_pyamg)
+            if np.any(np.isnan(s)) or np.any(np.isinf(s)):
+                theta += 10 ** 10
+            else:
+                theta += (yb + A.T @ s) / q
+
         I = cp.eval(Ic, theta)
 
         # iteration error computations
@@ -1498,8 +1625,6 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
     if scheme == 1:
         J = stability_scheme_1(circuit, theta, cp)
 
-
-
     if algorithm == 0:
         status, largest_eigenvalue = eigsh_test_negative_definite(J, maxiter=maxiter)
         return status
@@ -1509,7 +1634,6 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
         out = lobpcg_test_negative_definite(J, preconditioner=preconditioner, accept_ratio=accept_ratio,
                                             maxiter=maxiter)
         status, eigenvalue_list, residual_list = out
-        # print(status, len(residual_list), residual_list[-1])
         return status
     if algorithm == 2:
         eps = 2 * np.finfo(float).eps
@@ -1531,7 +1655,6 @@ def stability_get_preconditioner(circuit: Circuit, cp, scheme):
     for multiple problems. Generating a preconditioner is slow as it does
     a factorization.
     """
-    print("YO")
     Nj, Nnr = circuit._Nj(), circuit._Nnr()
     q = cp.d_eval(circuit._Ic(), np.zeros(Nj))
     A, M, L = circuit.get_cycle_matrix(), circuit._Mr(), circuit._L()

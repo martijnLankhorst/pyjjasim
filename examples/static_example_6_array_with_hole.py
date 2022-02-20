@@ -1,3 +1,5 @@
+import time
+
 from pyjjasim import *
 
 import matplotlib
@@ -7,9 +9,9 @@ matplotlib.use("TkAgg")
 def make_hole_array(N, L):
     full_array = SquareArray(N, N)
     x, y = full_array.get_node_coordinates()
-    hole_face_ids = (x > (N-1-L)/2) & (x < (N-1+L)/2) & \
-                    (y > (N-1-L)/2) & (y < (N-1+L)/2)
-    hole_array = full_array.remove_nodes(hole_face_ids.flatten())
+    sp, sm = (N-1+L)/2, (N-1-L)/2
+    hole_face_ids = (x > sm) & (x < sp) & (y > sm) & (y < sp)
+    hole_array = full_array.remove_nodes(hole_face_ids)
     return hole_array
 
 def get_vortex_in_hole_configuration(hole_vortex_count):
@@ -34,11 +36,12 @@ if __name__ == "__main__":
     Is = node_to_junction_current(hole_array, Is_node)
 
     plt.subplots()
+
     for i in range(4):
         print(f"computing result with {i} vortices in hole")
         n = get_vortex_in_hole_configuration(i)
         problem = StaticProblem(hole_array, vortex_configuration=n, current_sources=Is)
-        f, I, _, info = problem.compute_stable_region(angles=np.linspace(0, np.pi, 61))
+        f, I, _, info = problem.compute_stable_region(angles=np.linspace(0, np.pi, 31), lambda_tol=1E-3)
         plt.plot(f, I, marker="o", label=f"{i} vortices in hole")
 
     plt.xlabel("frustration")

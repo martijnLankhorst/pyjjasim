@@ -108,6 +108,17 @@ class VarRowArray:
         permutation, data = np.array(permutation, dtype=int), np.array(data)
         return data[self.get_item(rows=permutation)]
 
+    def merge(self, other):
+        # returns sorter;
+        # out = np.zeros(len(self) + len(other))
+        # out[sorter] = np.append(data_self, data_other)
+        t = self.counts + other.counts
+        cum_t = np.cumsum(t) - t
+        i1 = self.columns() + np.repeat(cum_t, self.counts)
+        i2 = other.columns() + np.repeat(cum_t + self.counts, other.counts)
+        return np.append(i1, i2)
+
+
 
 if __name__ == "__main__":
 
