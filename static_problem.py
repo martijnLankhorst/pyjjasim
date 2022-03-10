@@ -1097,7 +1097,7 @@ class StaticConfiguration:
             np.save(ffile, y)
             np.save(ffile, n1)
             np.save(ffile, n2)
-            np.save(ffile, self.problem.circuit.critical_current_factors)
+            np.save(ffile, self.problem.circgiduit.critical_current_factors)
             np.save(ffile, self.problem.circuit.resistance_factors)
             np.save(ffile, self.problem.circuit.capacitance_factors)
             L_is_sparse = scipy.sparse.issparse(self.problem.circuit.inductance_factors)

@@ -1,5 +1,5 @@
-from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph, \
-    EmbeddedPeriodicSquareGraph
+from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
+
 
 import numpy as np
 import scipy
