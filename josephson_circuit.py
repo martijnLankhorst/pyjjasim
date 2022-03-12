@@ -1063,7 +1063,6 @@ class SquareArray(Circuit, Lattice):
 
 
 
-
 class HoneycombArray(Circuit, Lattice):
 
     def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
@@ -1094,15 +1093,6 @@ class TriangularArray(Circuit, Lattice):
     def _I_node_v(self):
         x, y = self.get_node_coordinates()
         return (y == 0).astype(int) - np.isclose(y, (self.count_y - 0.5) * np.sqrt(3) * self.y_scale).astype(int)
-
-
-
-class SquarePeriodicArray(Circuit, Lattice):
-
-    def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
-        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
-        Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
-        Circuit.__init__(self, EmbeddedPeriodicSquareGraph(count_x, count_y, x_scale, y_scale))
 
 
 class SQUID(Circuit):

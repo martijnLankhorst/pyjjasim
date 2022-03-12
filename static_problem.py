@@ -643,30 +643,28 @@ class StaticProblem:
 
 
     def compute_frustration_bounds(self, initial_guess = None,
-                                   start_frustration=None, lambda_tol=DEF_MAX_PAR_TOL,
+                                   middle_of_range_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                                    maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                                    require_vortex_configuration_equals_target=True,
                                    compute_parameters=None, stability_parameters=None):
 
         """
 
-
-        Computes smallest and largest uniform frustration for which a (stable) solution
-        exists at the specified target vortex configuration and source current.
-
-        For unlisted parameters see documentation of compute_maximal_parameter()
+        Finds extremum values of x such that this problem with f = x * self.frustration
+        has a valid solution.
 
         Parameters
         ----------
-        start_frustration=None : valid frustration input for StaticProblem  or None.
-            Frustration factor somewhere in the middle of range. If None; this is
+        middle_of_range_guess=None : scalar  or None.
+            Value of x somewhere in the middle of range. If None; this is
             estimated based on vortex configuration.
         initial_guess=None : valid initial_guess input for StaticProblem.compute()
-            Initial guess for the algorithm to start at frustration=start_frustration.
+            Initial guess for the algorithm to start at
+            frustration=middle_of_range_guess * self.frustration.
 
         Returns
         -------
-        (smallest_f_factor, largest_f_factor) : (float, float)
+        (smallest_x, largest_x) : (float, float)
             Resulting frustration range.
         (smallest_f_config, largest_f_config) : (StaticConfiguration, StaticConfiguration)
             StaticConfigurations at bounds of range.
@@ -678,22 +676,28 @@ class StaticProblem:
                    "stability_parameters": stability_parameters, "require_stability": require_stability,
                    "require_vortex_configuration_equals_target": require_vortex_configuration_equals_target}
 
-
-        if start_frustration is None:
-            start_frustration = np.mean(self._nt())
+        if np.allclose(self._f(), 0):
+            raise ValueError("Problem must contain nonzero frustration.")
+        if middle_of_range_guess is None:
+            if np.all(self._nt() == 0):
+                middle_of_range_guess = 0
+            else:
+                a = self._f() / self.circuit.get_face_areas() ** 0.5
+                b = self._nt().astype(np.double) / self.circuit.get_face_areas() ** 0.5
+                middle_of_range_guess = np.sum(a * b) / np.sum(a ** 2)
         frustration_initial_stepsize = 1.0
-        problem_small_func = lambda x: self.new_problem(frustration=start_frustration - x)
-        problem_large_func = lambda x: self.new_problem(frustration=start_frustration + x)
+        problem_small_func = lambda x: self.new_problem(frustration=(middle_of_range_guess - x) * self._f())
+        problem_large_func = lambda x: self.new_problem(frustration=(middle_of_range_guess + x) * self._f())
         out = compute_maximal_parameter(problem_small_func, initial_guess=initial_guess,
                                         estimated_upper_bound=frustration_initial_stepsize, **options)
         smallest_factor, _, smallest_f_config, smallest_f_info = out
-        smallest_f = start_frustration - smallest_factor if smallest_factor is not None else None
+        smallest_x = middle_of_range_guess - smallest_factor if smallest_factor is not None else None
         out = compute_maximal_parameter(problem_large_func, initial_guess=initial_guess,
                                         estimated_upper_bound=frustration_initial_stepsize, **options)
 
         largest_factor, _, largest_f_config, largest_f_info = out
-        largest_f = start_frustration + largest_factor if largest_factor is not None else None
-        return (smallest_f, largest_f), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
+        largest_x = middle_of_range_guess + largest_factor if largest_factor is not None else None
+        return (smallest_x, largest_x), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
 
     def compute_maximal_current(self, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                                 maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
@@ -712,8 +716,6 @@ class StaticProblem:
         max_current_factor : float
             Maximal current factor for which a problem with max_current_factor * Is
             has a (stable) solution.
-        net_sources_current : float
-            Net sourced current at max_current_factor.
         out_config : StaticConfiguration
             StaticConfiguration of state with maximal current.
         info : ParameterOptimizeInfo
@@ -736,10 +738,9 @@ class StaticProblem:
                                         require_vortex_configuration_equals_target=
                                         require_vortex_configuration_equals_target)
         max_current_factor, upper_bound, out_config, info = out
-        net_I = out_config.get_problem().get_net_sourced_current() if out_config is not None else None
-        return max_current_factor, net_I, out_config, info
+        return max_current_factor, out_config, info
 
-    def compute_stable_region(self, angles=np.linspace(0, 2*np.pi, 61), start_frustration=None,
+    def compute_stable_region(self, angles=np.linspace(0, 2*np.pi, 61), f_middle_of_range_guess=None,
                               start_initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                               maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                               require_vortex_configuration_equals_target=True,
@@ -748,8 +749,8 @@ class StaticProblem:
         """
         Finds edge of stable region in (f, Is) space for vortex configuration n.
 
-        The frustration is assumed to be uniform. Ignores self.frustration and
-        works with constant * self.current_sources.
+        More precisely, returns xf(angle) and xI(angle) such that (xf(angle) * self.f, xI(angle)*self.Is)
+        lies on the boundary of the stable region in  (f, Is) space for all specified angles.
 
         For unlisted parameters see documentation of compute_maximal_parameter()
 
@@ -757,13 +758,16 @@ class StaticProblem:
         ----------
         angles=np.linspace(0, 2*np.pi, 61) : array
             Angles at which an extremum in (f, Is) space is searched for.
+        f_middle_of_range_guess=None : scalar  or None.
+            Value of xf somewhere in the middle of range. If None; this is
+            estimated based on vortex configuration.
 
         Returns
         -------
-        frustration : (num_angles,) array
-            Net extermum frustration at each angle.
-        net_current : (num_angles,) array
-            Net extremum sourced current at each angle.
+        frustration_factors : (num_angles,) array
+            Extermum frustration factor at each angle.
+        current_factors : (num_angles,) array
+            Extremum sourced current factor at each angle.
         all_configs : list containing StaticConfiguration
             Configurations at extreme value for each angle.
         all_infos : list containing ParameterOptimizeInfo
@@ -777,34 +781,37 @@ class StaticProblem:
 
         frust_bnd_prb = self.new_problem(current_sources=0)
         out = frust_bnd_prb.compute_frustration_bounds(initial_guess=start_initial_guess,
-                                                       start_frustration=start_frustration, **options)
+                                                       middle_of_range_guess=f_middle_of_range_guess,
+                                                       **options)
 
-        (smallest_f, largest_f), _, _ = out
-        if smallest_f is None:
+        (smallest_x, largest_x), _, _ = out
+        if smallest_x is None:
             return None, None, None, None
-        dome_center_f = 0.5 * (smallest_f + largest_f)
+        dome_center_x = 0.5 * (smallest_x + largest_x)
+        dome_center_f = dome_center_x * self._f()
         dome_center_problem = self.new_problem(frustration=dome_center_f)
         out = dome_center_problem.compute_maximal_current(initial_guess=start_initial_guess, **options)
-        max_current_factor, _, _, info = out
+        max_current_factor, _, info = out
         if max_current_factor is None:
             return None, None, None, None
 
-        frustration = np.zeros(num_angles, dtype=np.double)
-        net_current = np.zeros(num_angles, dtype=np.double)
+        frustration_factors = np.zeros(num_angles, dtype=np.double)
+        current_factors = np.zeros(num_angles, dtype=np.double)
         all_configs, all_infos = [], []
         for angle_nr in range(num_angles):
             angle = angles[angle_nr]
             Is_func = lambda x: x * self._Is() * np.sin(angle) * max_current_factor
-            f_func = lambda x: dome_center_f + x * np.cos(angle) * (0.5 * (largest_f - smallest_f))
+            x_func = lambda x: (dome_center_x + x * np.cos(angle) * (0.5 * (largest_x - smallest_x)))
+            f_func = lambda x: x_func(x) * self._f()
             problem_func = lambda x: self.new_problem(frustration=f_func(x), current_sources=Is_func(x))
             out = compute_maximal_parameter(problem_func, initial_guess=start_initial_guess, **options)
             lower_bound, upper_bound, out_config, info = out
-            net_current[angle_nr] = out_config.get_problem().get_net_sourced_current() * np.sign(np.sin(angle)) if lower_bound is not None else np.nan
-            frustration[angle_nr] = f_func(lower_bound) if lower_bound is not None else np.nan
+            current_factors[angle_nr] = lower_bound * np.sin(angle) * max_current_factor if lower_bound is not None else np.nan
+            frustration_factors[angle_nr] = x_func(lower_bound) if lower_bound is not None else np.nan
             all_configs += [out_config]
             all_infos += [info]
 
-        return frustration, net_current, all_configs, all_infos
+        return frustration_factors, current_factors, all_configs, all_infos
 
     def __str__(self):
         return "static problem: " + \
@@ -1149,6 +1156,9 @@ class StaticConfiguration:
 
     def _th(self):
         return self.theta
+
+    def __str__(self):
+        return f"Static configuration with theta={self.theta}"
 
 
 """
@@ -1606,8 +1616,8 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
         Current-phase relation.
     maxiter=DEF_STAB_MAXITER : int
         Maximum number of iterations done to determine stability.
-    algorithm=0 : int
-        Algorithm used. 0 uses eigsh to find eigenvalues, 1 uses lobpcg.
+    algorithm=2 : int
+        Algorithm used. 0 uses eigsh to find eigenvalues, 1 uses lobpcg. 2 uses choleski factorization.
     accept_ratio :
         Parameter used by lobpcg_test_negative_definite (if algorithm=1).
     preconditioner : {sparse matrix, dense matrix, LinearOperator, None or "auto"}
@@ -1643,7 +1653,7 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
             print("warning: choleski factorization failed")
             return 2
         return int(~np.all(f.U.diagonal() < eps))
-    raise ValueError("invalid algorithm. Must be 0 (eigsh) or 1 (lobpcg)")
+    raise ValueError("invalid algorithm. Must be 0 (eigsh) or 1 (lobpcg) or 2 (choleski)")
 
 def stability_get_preconditioner(circuit: Circuit, cp, scheme):
     """

@@ -35,13 +35,15 @@ if __name__ == "__main__":
     Is_node = (x==0).astype(int) - (x==(N-1)).astype(int)
     Is = node_to_junction_current(hole_array, Is_node)
 
+    uniform_f = hole_array.get_face_areas()
     plt.subplots()
 
     for i in range(4):
         print(f"computing result with {i} vortices in hole")
         n = get_vortex_in_hole_configuration(i)
-        problem = StaticProblem(hole_array, vortex_configuration=n, current_sources=Is)
-        f, I, _, info = problem.compute_stable_region(angles=np.linspace(0, np.pi, 31), lambda_tol=1E-3)
+        problem = StaticProblem(hole_array, vortex_configuration=n,
+                                current_sources=Is, frustration=uniform_f)
+        f, I, _, info = problem.compute_stable_region(angles=np.linspace(0, 2 * np.pi, 121), lambda_tol=1E-3)
         plt.plot(f, I, marker="o", label=f"{i} vortices in hole")
 
     plt.xlabel("frustration")

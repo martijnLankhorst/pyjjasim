@@ -633,12 +633,12 @@ class EmbeddedGraph:
 
         edge_ids[found_mask] = -1
 
+        ids = self.edge_permute[edge_ids.reshape(input_shape)]
         if return_orientation:
             orientation[found_mask] = False
-            return self.edge_permute[edge_ids.reshape(input_shape)], \
-                   orientation.reshape(input_shape)
+            return ids, orientation.reshape(input_shape) ^ self.edge_flip[ids]
         else:
-            return self.edge_permute[edge_ids.reshape(input_shape)]
+            return ids
 
     def permute_nodes(self, permutation):
         """
@@ -1036,7 +1036,6 @@ class EmbeddedGraph:
         # insert boundary face in b_tally
         b_idx = self.boundary_face_indices[0]
         b_tally = np.concatenate((b_tally[:, :b_idx], np.zeros((b_tally.shape[0], 1)), b_tally[:, b_idx:]), axis=1)
-
         # do depth first search, resulting in cur (current node of tree) and prev (parent node of cur)
         A = self.l_cycle_matrix()
         cur, predecessor = scipy.sparse.csgraph.depth_first_order(A @ A.T, b_idx)
