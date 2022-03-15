@@ -204,6 +204,7 @@ class CircuitPlot:
         self.node_quantity_cmap = node_quantity_cmap
         if self.node_quantity_cmap is None:
             self.node_quantity_cmap = "twilight"
+
         self.node_quantity_clim = node_quantity_clim
         self.node_quantity_alpha = node_quantity_alpha
         self.node_quantity_logarithmic_colors = node_quantity_logarithmic_colors
@@ -1112,9 +1113,13 @@ class ConfigPlot(CircuitPlot):
         face_data, face_label = self._get_face_quantity()
         vortex_data, vortex_label = self._get_vortex_quantity()
 
+
         if node_label == "phi":
             if node_quantity_clim is None:
                 node_quantity_clim = (-np.pi, np.pi)
+        else:
+            if node_quantity_cmap is None:
+                node_quantity_cmap = "magma"
 
         if arrow_label == "th":
             if arrow_scale is None:
@@ -1433,6 +1438,9 @@ class TimeEvolutionMovie(CircuitMovie):
         if self.node_quantity == "phi":
             if node_quantity_clim is None:
                 node_quantity_clim = (-np.pi, np.pi)
+        else:
+            if node_quantity_cmap is None:
+                node_quantity_cmap = "magma"
 
         if self.arrow_quantity == "th":
             if arrow_scale is None:

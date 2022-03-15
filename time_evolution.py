@@ -808,7 +808,7 @@ class TimeEvolutionResult:
         U : (Nn, W, nr_of_selected_timepoints) array
              Voltage potential at nodes.
         """
-        M, Nj = self.get_circuit()._Mr(), self.get_circuit()._Nj()
+        M, Nj = self.get_circuit().get_cut_matrix(), self.get_circuit()._Nj()
         # Mrsq = M @ M.T
         # Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
         # solver = scipy.sparse.linalg.factorized(Mrsq)

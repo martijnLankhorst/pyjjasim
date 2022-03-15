@@ -30,7 +30,7 @@ if __name__ == "__main__":
     IAmp = 1
     Ifreq = 0.25
     IDC = np.linspace(0, 2, 101)
-    Is = lambda i: sq_array.horizontal_junctions()[:, None] * (IDC + np.sin(Ifreq * i * dt))
+    Is = lambda i: sq_array.current_base(angle=0)[:, None] * (IDC + np.sin(Ifreq * i * dt))
 
     prob = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
                                 current_sources=Is, temperature=T, store_time_steps=ts)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     out = prob.compute()
 
     # compute array voltage
-    th = out.get_theta()[sq_array.horizontal_junctions(), :, :]
+    th = out.get_theta()[sq_array.current_base(angle=0), :, :]
     V = np.mean((th[:, :, 1] - th[:, :, 0]) / (dt * (ts[1] - ts[0])), axis=0)
 
     # plot array voltage

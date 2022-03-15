@@ -1089,7 +1089,7 @@ class StaticConfiguration:
     def report(self):
         print("Kirchhoff rules error:    ", self.get_error_kirchhoff_rules())
         print("Path rules error:         ", self.get_error_winding_rules())
-        print("is stable:                ", self.is_stable())
+        print("is stable:                ", self.is_stable() == 0)
         print("is target vortex solution:", self.satisfies_target_vortices())
 
 

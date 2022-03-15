@@ -65,6 +65,10 @@ Program output:
 
 ![alt text](./examples/readme_example_1.png?raw=true)
 
+More examples:
+![alt text](./examples/images/biassed_honeycomb.png?raw=true)
+![alt text](./examples/images/triangular_with_inductance.png?raw=true)
+
 If you have any questions, comments, complaints, 
 bug reports, feature requests, etc.
 please contact me at m.lankhorst89@gmail.com!
