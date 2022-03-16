@@ -69,11 +69,11 @@ if __name__ == "__main__":
         IAmpList = np.load(ffile)
         Vout = np.load(ffile)
 
-    fig, (a1, a2) = plt.subplots(nrows=1, ncols=2, figsize=[12, 6])
-    print(fig, (a1, a2))
-    a2.pcolor(IAmpList, IDC, Vout.T)
-    a2.set_xlabel("AC current")
-    a2.set_ylabel("DC current")
+    # fig, (a1, a2) = plt.subplots(nrows=1, ncols=2, figsize=[12, 6])
+    # print(fig, (a1, a2))
+    # a2.pcolor(IAmpList, IDC, Vout.T)
+    # a2.set_xlabel("AC current")
+    # a2.set_ylabel("DC current")
 
     X, Y = np.meshgrid(IDC, IAmpList)
     print(X.shape, Vout.shape)
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     fig2, (a12, a22) = plt.subplots(nrows=1, ncols=2, figsize=[12, 5.5])
     IDCp = np.linspace(-3, 3, 8 * ND)
     IACp = np.linspace(0, 5, 3 * NA)
-    a22.pcolor(IACp, IDCp, F(IDCp,  IACp).T, cmap="inferno")
+    phandle = a22.pcolor(IACp, IDCp, F(IDCp,  IACp).T, cmap="inferno")
     a22.set_xlabel("amplitude")
     a22.set_ylabel("DC current")
     # fig2.colorbar()
@@ -95,6 +95,7 @@ if __name__ == "__main__":
     a12.set_ylabel("Voltage")
     a12.legend()
     a12.text(1, 3.5, "Giant Shapiro steps with frequency=0.25")
+    a22.text(5.1, 3.25, "voltage")
     a12.set_xlim([-3, 3])
     a12.set_ylim([-3, 3])
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     a12.tick_params(width=lw)
     a22.tick_params(width=lw)
     # plt.title("giant shapiro steps in square array")
-
+    plt.colorbar(phandle)
     fig2.savefig('shapiro_steps.png', bbox_inches=fig2.get_tightbbox(fig2.canvas.get_renderer()))
     plt.show()
 
