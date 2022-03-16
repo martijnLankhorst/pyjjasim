@@ -134,7 +134,6 @@ class Circuit:
         """
         if self._Msq_factorized is None:
             self._Msq_factorized = scipy.sparse.linalg.factorized(self._Mr() @ self._Mr().T)
-        print(b.shape)
         return np.append(self._Msq_factorized(b[:-1, ...]), np.zeros(b[-1:, ...].shape), axis=0)
 
     def Asq_solve(self, b):

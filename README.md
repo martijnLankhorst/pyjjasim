@@ -67,7 +67,7 @@ Program output:
 
 More examples:
 ![alt text](./examples/images/biassed_honeycomb.png?raw=true)
-![alt text](./examples/images/triangular_with_inductance.png?raw=true)
+![alt text](./examples/images/shapiro_steps.png?raw=true)
 
 If you have any questions, comments, complaints, 
 bug reports, feature requests, etc.
