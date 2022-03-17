@@ -17,8 +17,6 @@ from pyjjasim.time_evolution import TimeEvolutionResult
 
 __all__ = ["CircuitPlot", "ConfigPlot", "CircuitMovie", "TimeEvolutionMovie"]
 
-# TODO:
-
 
 class CircuitPlot:
 
@@ -77,8 +75,13 @@ class CircuitPlot:
     show_legend=True : bool
         Show legend which includes colormaps, explanation of vortex sybols and
         an arrow scale.
+    legend_width_fraction=0.2 : float
+        Fraction of the width of the axes (as specified by axis_position)
+        dedicated to the legend; if it is shown.
     show_axes=True : bool
         If True, shows axes with the coordinates of the circuit.
+    axis_position=(0.1, 0.1, 0.85, 0.85) : array_like
+        Position of axis in figure (x0, y0, dx, dy, between 0 and 1)
     arrow_width=0.005 : float
         Width of arrows.
     arrow_scale=1 : float
@@ -137,6 +140,8 @@ class CircuitPlot:
         Size of figure in inches.
     title="" : str
         Title given to figure.
+    fig=None : matlplotlib figure or None
+        figure where the axis is embedded. If None, a new figure is created.
     """
 
     def __init__(self, circuit: Circuit, node_data=None,
@@ -144,7 +149,8 @@ class CircuitPlot:
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, vortex_label="",
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
-                 show_colorbar=True, show_legend=True, show_axes=True,
+                 show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
+                 axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
@@ -181,7 +187,9 @@ class CircuitPlot:
         self.grid_alpha = grid_alpha
         self.show_colorbar = show_colorbar
         self.show_legend = show_legend
+        self.legend_width_fraction=legend_width_fraction
         self.show_axes = show_axes
+        self.axis_position = axis_position
 
         self.show_arrows = self.arrow_data is not None
         self.arrow_width = arrow_width
@@ -267,17 +275,19 @@ class CircuitPlot:
             self.fig = plt.figure(figsize=self.figsize)
         else:
             self.fig.clear()
-        left, width, l_width = 0.1, 0.68, 0.17
-        bottom, height = 0.1, 0.85
+
+        tot_width = self.axis_position[2]
+        l_width = self.legend_width_fraction * tot_width
+        width = tot_width - l_width
+        left = self.axis_position[0]
+        bottom, height = self.axis_position[1], self.axis_position[3]
         spacing = 0.005
 
         if self.show_legend:
             self.ax = self.fig.add_axes([left, bottom, width, height])
-        else:
-            self.ax = self.fig.add_axes([left, bottom, width + l_width - 0.02, height])
-
-        if self.show_legend:
             self._prepare_legend(left + width + spacing, bottom, l_width, height)
+        else:
+            self.ax = self.fig.add_axes(self.axis_position)
 
         self.ax.set_title(self.title)
         self._set_axes()
@@ -775,8 +785,13 @@ class CircuitMovie(CircuitPlot):
     show_legend=True : bool
         Show legend which includes colormaps, explanation of vortex sybols and
         an arrow scale.
+    legend_width_fraction=0.2 : float
+        Fraction of the width of the axes (as specified by axis_position)
+        dedicated to the legend; if it is shown.
     show_axes=True : bool
         If True, shows axes with the coordinates of the circuit.
+    axis_position=(0.1, 0.1, 0.85, 0.85) : array_like
+        Position of axis in figure (x0, y0, dx, dy, between 0 and 1)
     arrow_width=0.005 : float
         Width of arrows.
     arrow_scale=1 : float
@@ -842,7 +857,8 @@ class CircuitMovie(CircuitPlot):
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, vortex_label="", _vortex_range=None,
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
-                 show_colorbar=True, show_legend=True, show_axes=True,
+                 show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
+                 axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
@@ -893,7 +909,8 @@ class CircuitMovie(CircuitPlot):
                          vortex_alpha=vortex_alpha,
                          show_grid=show_grid, grid_width=grid_width, grid_color=grid_color,
                          grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
-                         show_axes=show_axes, arrow_width=arrow_width, arrow_scale=arrow_scale,
+                         legend_width_fraction=legend_width_fraction, show_axes=show_axes,
+                         axis_position=axis_position, arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft, arrow_minlength=arrow_minlength,
                          arrow_color=arrow_color, arrow_alpha=arrow_alpha, show_nodes=show_nodes,
@@ -1027,8 +1044,13 @@ class ConfigPlot(CircuitPlot):
     show_legend=True : bool
         Show legend which includes colormaps, explanation of vortex sybols and
         an arrow scale.
+    legend_width_fraction=0.2 : float
+        Fraction of the width of the axes (as specified by axis_position)
+        dedicated to the legend; if it is shown.
     show_axes=True : bool
         If True, shows axes with the coordinates of the circuit.
+    axis_position=(0.1, 0.1, 0.85, 0.85) : array_like
+        Position of axis in figure (x0, y0, dx, dy, between 0 and 1)
     arrow_width=0.005 : float
         Width of arrows.
     arrow_scale=1 : float
@@ -1089,7 +1111,8 @@ class ConfigPlot(CircuitPlot):
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, _vortex_range=None,
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
-                 show_colorbar=True, show_legend=True, show_axes=True,
+                 show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
+                 axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
@@ -1131,7 +1154,8 @@ class ConfigPlot(CircuitPlot):
                          anti_vortex_color=anti_vortex_color,
                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width, grid_color=grid_color,
                          grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
-                         show_axes=show_axes, arrow_width=arrow_width, arrow_scale=arrow_scale,
+                         legend_width_fraction=legend_width_fraction, show_axes=show_axes,
+                         axis_position=axis_position, arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft, arrow_minlength=arrow_minlength,
                          arrow_color=arrow_color, arrow_alpha=arrow_alpha, show_nodes=show_nodes,
@@ -1330,8 +1354,13 @@ class TimeEvolutionMovie(CircuitMovie):
     show_legend=True : bool
         Show legend which includes colormaps, explanation of vortex sybols and
         an arrow scale.
+    legend_width_fraction=0.2 : float
+        Fraction of the width of the axes (as specified by axis_position)
+        dedicated to the legend; if it is shown.
     show_axes=True : bool
         If True, shows axes with the coordinates of the circuit.
+    axis_position=(0.1, 0.1, 0.85, 0.85) : array_like
+        Position of axis in figure (x0, y0, dx, dy, between 0 and 1)
     arrow_width=0.005 : float
         Width of arrows.
     arrow_scale=1 : float
@@ -1392,7 +1421,8 @@ class TimeEvolutionMovie(CircuitMovie):
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
                  vortex_alpha=1, _vortex_range=None,
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
-                 show_colorbar=True, show_legend=True, show_axes=True,
+                 show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
+                 axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
@@ -1455,7 +1485,7 @@ class TimeEvolutionMovie(CircuitMovie):
                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
                          grid_color=grid_color,
                          grid_alpha=grid_alpha, show_colorbar=show_colorbar, show_legend=show_legend,
-                         show_axes=show_axes,
+                         legend_width_fraction=legend_width_fraction, show_axes=show_axes, axis_position=axis_position,
                          arrow_width=arrow_width, arrow_scale=arrow_scale,
                          arrow_headwidth=arrow_headwidth, arrow_headlength=arrow_headlength,
                          arrow_headaxislength=arrow_headaxislength, arrow_minshaft=arrow_minshaft,

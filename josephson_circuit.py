@@ -680,7 +680,7 @@ class Circuit:
 
     def plot(self, show_node_ids=True, show_junction_ids=False, show_faces=True,
              show_face_ids=True, markersize=5, linewidth=1, face_shrink_factor=0.9,
-             figsize=None):
+             figsize=None, fig=None, ax=None, ax_position=None, title=""):
         """Visualize array.
 
         Can show nodes, junctions and faces; and their respective indices.
@@ -690,7 +690,8 @@ class Circuit:
         cr = self.graph.plot(show_cycles=show_faces, figsize=figsize, cycles="face_cycles",
                              show_node_ids=show_node_ids, show_edge_ids=show_junction_ids,
                              show_face_ids=show_face_ids, markersize=markersize,
-                             linewidth=linewidth, face_shrink_factor=face_shrink_factor)
+                             linewidth=linewidth, face_shrink_factor=face_shrink_factor,
+                             fig=fig, ax=ax, ax_position=ax_position, title=title)
         return cr
 
     def save(self, filename):

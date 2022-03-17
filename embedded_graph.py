@@ -696,7 +696,49 @@ class EmbeddedGraph:
 
     def plot(self, fig=None, ax=None, show_cycles=True, cycles="face_cycles", figsize=[5, 5],
              show_node_ids=False, show_edge_ids=False, show_face_ids=False,
-             face_shrink_factor=0.9, markersize=5, linewidth=1):
+             face_shrink_factor=0.9, markersize=5, linewidth=1, ax_position=None, title=""):
+
+        """
+        Visualize embedded graph. Can optionally show indices of nodes, edges and faces.
+
+
+        Attributes
+        ----------
+        fig=None: None or matplotlib figure :
+            Figure to embed the axis in. If None, new figure is created.
+        ax=None: None or matplotlib axes :
+            Axes to plot the graph in. If None, a new axis is created.
+        show_cycles=True : bool
+            If true, the cycles are displayed.
+        cycles="face_cycles" : str
+            What cycles to show. Options are "face_cycles" or "l_cycles".
+        figsize=[5, 5] : array-like
+            Size of figure.
+        show_node_ids=False : bool
+            If True, node ids are shown.
+        show_edge_ids=False : bool
+            If True, edge ids are shown.
+        show_face_ids=False : bool
+            If True, face ids are shown.
+        face_shrink_factor=0.9 : float
+            Shrinks faces around their centroid. This ensures they do not overlap with edges and are
+            easier to make out.
+        markersize=5 : int
+            Size of nodes.
+        linewidth=1 : int
+            Width of lines representing edges and faces.
+        ax_position=None : None or array-like
+            Manual position of axis.
+        title="" : str
+            Title of figure.
+
+        Returns
+        -------
+        fig : matplotlib figure handle
+            Returns figure handle
+        ax : matplotlib axis handle
+            Returns axis handle
+        """
 
         def _face_line(x, y, n, xcn, ycn, f_shrink):
             xp = f_shrink * x[np.append(n, n[0])] + (1 - f_shrink) * xcn
@@ -705,10 +747,15 @@ class EmbeddedGraph:
 
         if fig is None and ax is None:
             fig, ax = plt.subplots(figsize=figsize)
-        if ax is None:
-            ax = fig.add_axes()
         if fig is None:
-            fig = ax.get_figure()
+            fig = plt.figure()
+        if ax is None:
+            if ax_position is not None:
+                ax = fig.add_axes(ax_position)
+            else:
+                ax = fig.add_axes([0.125,0.11,0.775,0.77], label=str(np.random.randi(0, 10**5, 1)))
+        if ax_position is not None:
+            ax.set_position(ax_position)
         self.fig, self.ax = fig, ax
 
         x, y = self.coo()
@@ -753,6 +800,7 @@ class EmbeddedGraph:
 
             lc1 = LineCollection(lines, colors=[1, 0.5, 0.2], linewidths=linewidth)
             self.ax.add_collection(lc1)
+        self.ax.set_title(title)
         return self.fig, self.ax
 
     def shortest_path(self, node1, node2, to_list=True):
