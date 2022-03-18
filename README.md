@@ -34,9 +34,9 @@ hierarchical structure is supported.
 - visualization and animation of simulation results
 
 # Documentation
-[api documentation](docs/_build/html/pyjjasim.html)\
+[api documentation](https://htmlpreview.github.io/?docs/_build/html/pyjjasim.html)\
 [whitepaper](PyJJASim_Whitepaper.pdf)\
-[tutoral](https://github.com/martijnLankhorst/pyJJAsim/tutorial_pyjjasim.html)
+[tutorial](https://htmlpreview.github.io/?tutorial_pyjjasim.html)
 
 # Example Usage
 
