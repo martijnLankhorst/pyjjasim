@@ -273,8 +273,6 @@ class CircuitPlot:
         """
         if self.fig is None:
             self.fig = plt.figure(figsize=self.figsize)
-        else:
-            self.fig.clear()
 
         tot_width = self.axis_position[2]
         l_width = self.legend_width_fraction * tot_width
@@ -1031,6 +1029,8 @@ class ConfigPlot(CircuitPlot):
         Color of anti-vortex symbols, whose data is negative.
     vortex_alpha=1 : float
         Transparency of vortex symbols.
+    manual_vortex_label=None : str or None
+        Label given to vortices in the legend.
     show_grid=True : bool
         Display a grid at the edges of the graph.
     grid_width=1 : float
@@ -1069,6 +1069,8 @@ class ConfigPlot(CircuitPlot):
         Color of arrows.
     arrow_alpha=1 : float
         Transparency of arrows.
+    manual_arrow_label=None : str or None
+        Label given to arrows in the legend.
     show_nodes=True : bool
         If True, nodes are displayed as circles.
     node_diameter=0.25 : float
@@ -1091,6 +1093,8 @@ class ConfigPlot(CircuitPlot):
         Transparency of colors used to represent node_data.
     node_quantity_logarithmic_colors=False : bool
         If True, node_data color-scale is logarithmic.
+    manual_node_label=None : str or None
+        Label given to node data in the legend.
     face_quantity_cmap=None : colormap or None
         Colormap for face_data.
     face_quantity_clim=None : (float, float) or None
@@ -1099,30 +1103,31 @@ class ConfigPlot(CircuitPlot):
         Transparency of colors used to represent face_data.
     face_quantity_logarithmic_colors=False : bool
         If True, face_data color-scale is logarithmic.
+    manual_face_label=None : str or None
+        Label given to face data in the legend.
     figsize=None : (float, float) or None
         Size of figure in inches.
     title="" : str
         Title given to figure.
-
     """
 
     def __init__(self, config: StaticConfiguration, node_quantity=None,
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
-                 vortex_alpha=1, _vortex_range=None,
+                 vortex_alpha=1, _vortex_range=None, manual_vortex_label=None,
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, manual_arrow_label=None,
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0), nodes_as_voronoi=False, node_alpha=1,
-                 node_quantity_cmap=None,
+                 node_quantity_cmap=None, manual_node_label=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
                  node_quantity_logarithmic_colors=False,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
-                 face_quantity_logarithmic_colors=False,
+                 face_quantity_logarithmic_colors=False, manual_face_label=None,
                  figsize=None, title="", fig=None):
 
         self.config = config
@@ -1132,10 +1137,17 @@ class ConfigPlot(CircuitPlot):
         self.vortex_quantity = vortex_quantity if vortex_quantity is not None else ""
 
         node_data, node_label = self._get_node_quantity()
+        if manual_node_label is not None:
+            node_label = manual_node_label
         arrow_data, arrow_label = self._get_junction_quantity()
+        if manual_arrow_label is not None:
+            arrow_label = manual_arrow_label
         face_data, face_label = self._get_face_quantity()
+        if manual_face_label is not None:
+            face_label = manual_face_label
         vortex_data, vortex_label = self._get_vortex_quantity()
-
+        if manual_vortex_label is not None:
+            vortex_label = manual_vortex_label
 
         if node_label == "phi":
             if node_quantity_clim is None:
@@ -1341,6 +1353,8 @@ class TimeEvolutionMovie(CircuitMovie):
         Color of anti-vortex symbols, whose data is negative.
     vortex_alpha=1 : float
         Transparancy of vortex symbols.
+    manual_vortex_label=None : str or None
+        Label given to vortices in the legend.
     show_grid=True : bool
         Display a grid at the edges of the graph.
     grid_width=1 : float
@@ -1379,6 +1393,8 @@ class TimeEvolutionMovie(CircuitMovie):
         Color of arrows.
     arrow_alpha=1 : float
         Transparency of arrows.
+    manual_arrow_label=None : str or None
+        Label given to arrows in the legend.
     show_nodes=True : bool
         If True, nodes are displayed as circles
     node_diameter=0.25 : float
@@ -1393,6 +1409,8 @@ class TimeEvolutionMovie(CircuitMovie):
         of circles at node coordinates.
     node_alpha=1 : float
         Transparency of nodes.
+    manual_node_label=None : str or None
+        Label given to node data in the legend.
     node_quantity_cmap=None : colormap or None
         Colormap for node_data.
     node_quantity_clim=None : (float, float) or None
@@ -1409,6 +1427,8 @@ class TimeEvolutionMovie(CircuitMovie):
         Transparency of colors used to represent face_data.
     face_quantity_logarithmic_colors=False : bool
         If True, face_data color-scale is logarithmic.
+    manual_face_label=None : str or None
+        Label given to face data in the legend.
     figsize=None : (float, float) or None
         Size of figure in inches.
     title="" : str
@@ -1419,20 +1439,20 @@ class TimeEvolutionMovie(CircuitMovie):
     def __init__(self, config: TimeEvolutionResult, problem_nr=0, time_points=None, node_quantity=None,
                  junction_quantity="I", face_quantity=None, vortex_quantity="n",
                  vortex_diameter=0.25, vortex_color=(0, 0, 0), anti_vortex_color=(0.8, 0.1, 0.2),
-                 vortex_alpha=1, _vortex_range=None,
+                 vortex_alpha=1, _vortex_range=None, manual_vortex_label=None,
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
                  arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
                  arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
-                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1,
+                 arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, manual_arrow_label=None,
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0),  nodes_as_voronoi=False,
                  node_alpha=1, node_quantity_cmap=None,
                  node_quantity_clim=None, node_quantity_alpha=1,
-                 node_quantity_logarithmic_colors=False,
+                 node_quantity_logarithmic_colors=False, manual_node_label=None,
                  face_quantity_cmap=None, face_quantity_clim=None, face_quantity_alpha=1,
-                 face_quantity_logarithmic_colors=False,
+                 face_quantity_logarithmic_colors=False, manual_face_label=None,
                  figsize=None, title="", animate_interval=10, fig=None):
 
         self.config = config
@@ -1465,6 +1485,11 @@ class TimeEvolutionMovie(CircuitMovie):
         self.face_quantity, face_data = _get_quantity(face_quantity, self._get_face_quantity, problem_nr)
         self.vortex_quantity, vortex_data = _get_quantity(vortex_quantity, self._get_vortex_quantity, problem_nr)
 
+        node_label = manual_node_label if manual_node_label is not None else self.node_quantity
+        arrow_label = manual_arrow_label if manual_arrow_label is not None else self.arrow_quantity
+        face_label = manual_face_label if manual_face_label is not None else self.face_quantity
+        vortex_label = manual_vortex_label if manual_vortex_label is not None else self.vortex_quantity
+
         if self.node_quantity == "phi":
             if node_quantity_clim is None:
                 node_quantity_clim = (-np.pi, np.pi)
@@ -1478,8 +1503,8 @@ class TimeEvolutionMovie(CircuitMovie):
 
         super().__init__(config.get_circuit(),  node_data=node_data, arrow_data=arrow_data,
                          face_data=face_data, vortex_data=vortex_data,
-                         vortex_label=self.vortex_quantity, node_label=self.node_quantity,
-                         arrow_label=self.arrow_quantity, face_label=self.face_quantity,
+                         vortex_label=vortex_label, node_label=node_label,
+                         arrow_label=arrow_label, face_label=face_label,
                          vortex_diameter=vortex_diameter, vortex_color=vortex_color,
                          anti_vortex_color=anti_vortex_color,
                          vortex_alpha=vortex_alpha, show_grid=show_grid, grid_width=grid_width,
