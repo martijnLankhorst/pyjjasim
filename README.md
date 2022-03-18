@@ -35,10 +35,9 @@ hierarchical structure is supported.
 
 # Documentation
 
-[api documentation](https://htmlpreview.github.io/?https://github.com//martijnLankhorst//pyjjasim//docs//_build//html//pyjjasim.html)\
 [whitepaper](PyJJASim_Whitepaper.pdf)\
-[tutorial](https://bbcdn.githack.com/martijnLankhorst/pyjjasim/tutorial_pyjjasim.html)
 
+[tutorial](./tutorial/tutorial_pyjjasim.md)
 # Example Usage
 
 ````python
