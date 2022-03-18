@@ -857,27 +857,59 @@ class TimeEvolutionResult:
         return self.get_EJ(select_time_points) + self.get_EM(select_time_points) + \
                self.get_EC(select_time_points)
 
-    def plot(self, problem_nr=0, time_point=0, fig=None,
-                node_quantity=None, junction_quantity="I", face_quantity=None,
-                vortex_quantity="n", show_grid=True, show_nodes=True, **kwargs):
+    def plot(self, problem_nr=0, time_point=0, fig=None, node_quantity=None,
+             junction_quantity="I", face_quantity=None, vortex_quantity="n",
+             show_grid=True, show_nodes=True, return_plot_handle=False, **kwargs):
         """
         Visualize a problem at a specified timestep.
 
         See :py:attr:`circuit_visualize.CircuitPlot` for documentation.
+
+        Attributes
+        ----------
+        return_plot_handle=False : bool
+            If True this method returns the ConfigPlot object used to create the plot.
+
+        Returns
+        -------
+        fig : matplotlib figure handle
+            Returns figure handle
+        ax : matplotlib axis handle
+            Returns axis handle
+        plot_handle : ConfigPlot (optional)
+            Object used to create the plot
+
         """
         return self.animate(problem_nr=problem_nr, time_points=np.array([time_point]),
                             node_quantity=node_quantity, junction_quantity=junction_quantity,
                             face_quantity=face_quantity, vortex_quantity=vortex_quantity,
-                            show_grid=show_grid, show_nodes=show_nodes, fig=fig, **kwargs)
+                            show_grid=show_grid, show_nodes=show_nodes, fig=fig,
+                            return_plot_handle=return_plot_handle, **kwargs)
 
     def animate(self, problem_nr=0, time_points=None, fig=None,
                 node_quantity=None, junction_quantity="I", face_quantity=None,
-                vortex_quantity="n", show_grid=True, show_nodes=True, **kwargs):
+                vortex_quantity="n", show_grid=True, show_nodes=True,
+                return_plot_handle=False, **kwargs):
 
         """
         Animate time evolution of a problem as a movie.
 
         See :py:attr:`circuit_visualize.TimeEvolutionMovie` for documentation.
+
+        Attributes
+        ----------
+        return_plot_handle=False : bool
+            If True this method returns the TimeEvolutionMovie object used to create the movie.
+
+        Returns
+        -------
+        fig : matplotlib figure handle
+            Returns figure handle
+        ax : matplotlib axis handle
+            Returns axis handle
+        plot_handle : TimeEvolutionMovie (optional)
+            Object used to create the movie
+
         """
 
         from pyjjasim.circuit_visualize import TimeEvolutionMovie
@@ -886,8 +918,10 @@ class TimeEvolutionResult:
                                             vortex_quantity=vortex_quantity, show_grid=show_grid,
                                             show_nodes=show_nodes, junction_quantity=junction_quantity,
                                             node_quantity=node_quantity, face_quantity=face_quantity,
-                                            fig=fig, **kwargs).make()
-        return self.animation
+                                            fig=fig, **kwargs)
+        if return_plot_handle:
+            return *self.animation.make(), self.animation
+        return self.animation.make()
 
     def __str__(self):
         return "time evolution configuration: (" + ("th" + self.theta.shape.__str__() + ", ") * (

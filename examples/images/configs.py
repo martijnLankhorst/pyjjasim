@@ -39,5 +39,7 @@ print(info) # does not converge, no solution exists!
 problem = StaticProblem(array, vortex_configuration=n4, frustration=0.5)
 config, status, info = problem.compute()
 print(info)
-config.plot(fig=fig, axis_position=[0.35, 0.05, 0.27, 0.4], show_legend=False)
+fig, ax, handle = config.plot(fig=fig, axis_position=[0.35, 0.05, 0.27, 0.4], show_legend=False,
+                              return_plot_handle=True)
+print(handle)
 plt.show()

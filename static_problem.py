@@ -1071,20 +1071,37 @@ class StaticConfiguration:
         return self.get_error_kirchhoff_rules(), self.get_error_winding_rules()
 
     def plot(self, fig=None, node_quantity=None, junction_quantity="I", face_quantity=None,
-             vortex_quantity="n", show_grid=True, show_nodes=True, **kwargs):
+             vortex_quantity="n", show_grid=True, show_nodes=True, return_plot_handle=False,
+             **kwargs):
         """
         Visualize static configuration on circuit.
 
         See :py:attr:`circuit_visualize.CircuitPlot` for documentation.
+
+        Attributes
+        ----------
+        return_plot_handle=False : bool
+            If True this method returns the ConfigPlot object used to create the plot.
+
+        Returns
+        -------
+        fig : matplotlib figure handle
+            Returns figure handle
+        ax : matplotlib axis handle
+            Returns axis handle
+        plot_handle : ConfigPlot (optional)
+            Object used to create the plot
+
         """
         from pyjjasim.circuit_visualize import ConfigPlot
 
         self.plot_handle = ConfigPlot(self, vortex_quantity=vortex_quantity, show_grid=show_grid,
                                       junction_quantity=junction_quantity,  show_nodes=show_nodes,
                                       node_quantity=node_quantity, face_quantity=face_quantity,
-                                      fig=fig, **kwargs).make()
-
-        return self.plot_handle
+                                      fig=fig, **kwargs)
+        if return_plot_handle:
+            return *self.plot_handle.make(), self.plot_handle
+        return self.plot_handle.make()
 
     def report(self):
         print("Kirchhoff rules error:    ", self.get_error_kirchhoff_rules())
