@@ -14,7 +14,7 @@ intended to be used on large Josephson Junction Arrays (JJAs).
 
 PyJJASim is specialized in keeping track of Josephson vortices in the circuit. 
 It can also compute static configurations that have vortices at desired 
-locations in the circuit.
+locations in the circuit. $\alpha$
 
 This requires that the circuit is a planar embedding (in 2D), such that 
 one can unambiguously refer to faces of the circuit, and vortices reside
