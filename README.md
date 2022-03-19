@@ -1,5 +1,3 @@
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
 
 # PyJJASim
 Circuit Simulator including Josephson Junctions in Python
@@ -24,6 +22,8 @@ one can unambiguously refer to faces of the circuit, and vortices reside
 at faces. This imposes that nodes in the circuit must be placed 
 at 2D coordinates, and that no junctions can cross. This also means no
 hierarchical structure is supported.
+
+![\Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\Large&space;x=\frac{-b\pm\sqrt{b^2-4ac}}{2a})
 
 # Features
 - supports basic components (inductors, resistors, capacitors and current- and voltage sources)
