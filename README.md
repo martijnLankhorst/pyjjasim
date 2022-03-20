@@ -23,8 +23,6 @@ at faces. This imposes that nodes in the circuit must be placed
 at 2D coordinates, and that no junctions can cross. This also means no
 hierarchical structure is supported.
 
-![\Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\Large&space;x=\frac{-b\pm\sqrt{b^2-4ac}}{2a})
-
 # Features
 - supports basic components (inductors, resistors, capacitors and current- and voltage sources)
 - keep track of (and place) Josephson vortices in the circuit
@@ -37,10 +35,10 @@ hierarchical structure is supported.
 - visualization and animation of simulation results
 
 # Documentation
+[tutorial](./tutorial/tutorial_pyjjasim.md) \
+[API](https://readthedocs.org/projects/pyjjasim/) \
+[whitepaper](PyJJASim_Whitepaper.pdf) (in progress)
 
-[whitepaper](PyJJASim_Whitepaper.pdf)\
-
-[tutorial](./tutorial/tutorial_pyjjasim.md)
 # Example Usage
 
 ````python
