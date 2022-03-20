@@ -187,7 +187,7 @@ All quantities in pyJJAsim are dimensionless. This is done using three "free to 
 # Josephson Junctions
 A Josephson junction is an electrical component made using superconductors, acting as a non-linear inductor. Its current and voltage are as follows:
 
-![title](eq_JCL.svg)
+![title](eq_JCL.svg) \
 ![title](eq_JVL.svg)
 
 Where:
