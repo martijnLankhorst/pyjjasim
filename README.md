@@ -76,7 +76,7 @@ Snapshot of a time evolution; the vortices are drifting downward. The electric p
 
 ![alt text](./examples/images/shapiro_steps.png?raw=true)
 *figure 2*: Example of giant Shapiro steps in a square array. The external 
-current has an DC and AC component causing resonance in the form of
+current has a DC and AC component causing resonance in the form of
 voltage plateaus.
 
 
