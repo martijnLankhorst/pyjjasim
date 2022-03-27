@@ -71,17 +71,20 @@ More examples:
 
 ![alt text](./examples/images/biassed_honeycomb.png?raw=true)
 *figure 1*: Example of a frustrated honeycomb array with horizontal current bias. 
-Snapshot of a time evolution; the vortices are drifting downward. The electric potential gradually increases in the direction of the external current.
+Snapshot of a time evolution; the vortices are drifting downward. The electric potential 
+gradually increases in the direction of the external current
+(see examples/images/biassed_honeycomb.py).
 
 
 ![alt text](./examples/images/shapiro_steps.png?raw=true)
 *figure 2*: Example of giant Shapiro steps in a square array. The external 
 current has a DC and AC component causing resonance in the form of
-voltage plateaus.
+voltage plateaus (see examples/images/shapiro_steps.py).
 
 
 ![alt text](./examples/images/disordered.png?raw=true)
-*figure 3*: Example of a disordered array with different types of Josephson vortices.
+*figure 3*: Example of a disordered array with different types of Josephson vortices 
+(see examples/images/disordered.py).
 
 If you have any questions, comments, complaints, 
 bug reports, feature requests, etc.
