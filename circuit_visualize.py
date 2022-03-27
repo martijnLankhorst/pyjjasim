@@ -88,9 +88,9 @@ class CircuitPlot:
         Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
     arrow_headwidth=3 : float
         Width of head of arrows. (see matplotlib.quiver)
-    arrow_headlength=5 : float
+    arrow_headlength=3.5 : float
         Length of head of arrows. (see matplotlib.quiver)
-    arrow_headaxislength=4.5 : float
+    arrow_headaxislength=3 : float
         Arrow property. (see matplotlib.quiver)
     arrow_minshaft=1 : float
         Arrow property. (see matplotlib.quiver)
@@ -151,8 +151,8 @@ class CircuitPlot:
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
-                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                 arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
+                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=3.5,
+                 arrow_headaxislength=3, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0),
@@ -671,7 +671,8 @@ class CircuitPlot:
         hL = L/2
         ax.text(0.12, y, self.arrow_label, ha="center", va="center")
         ax.quiver([xc-hL], [y], [L], [0], edgecolor=self.arrow_color, facecolor=self.arrow_color,
-                  scale_units="xy", angles="xy", scale=1, width=0.02)
+                  scale_units="xy", angles="xy", scale=1, width=0.05, headlength=3,
+                  headaxislength=2.2)
         dy = 0.01
         Y = 0.4 * y_min + 0.6 * y_max
         ax.plot([xc-hL, xc-hL, xc-hL, xc+hL, xc+hL, xc+hL], [Y-dy, Y+dy, Y, Y, Y+dy, Y-dy], color=[0, 0, 0])
@@ -796,9 +797,9 @@ class CircuitMovie(CircuitPlot):
         Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
     arrow_headwidth=3 : float
         Width of head of arrows. (see matplotlib.quiver)
-    arrow_headlength=5 : float
+    arrow_headlength=3.5 : float
         Length of head of arrows. (see matplotlib.quiver)
-    arrow_headaxislength=4.5 : float
+    arrow_headaxislength=3 : float
         Arrow property. (see matplotlib.quiver)
     arrow_minshaft=1 : float
         Arrow property. (see matplotlib.quiver)
@@ -857,8 +858,8 @@ class CircuitMovie(CircuitPlot):
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
-                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                 arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
+                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=3.5,
+                 arrow_headaxislength=3, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, arrow_label="",
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0),
@@ -1057,9 +1058,9 @@ class ConfigPlot(CircuitPlot):
         Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
     arrow_headwidth=3 : float
         Width of head of arrows. (see matplotlib.quiver)
-    arrow_headlength=5 : float
+    arrow_headlength=3.5 : float
         Length of head of arrows. (see matplotlib.quiver)
-    arrow_headaxislength=4.5 : float
+    arrow_headaxislength=3 : float
         Arrow property. (see matplotlib.quiver)
     arrow_minshaft=1 : float
         Arrow property. (see matplotlib.quiver)
@@ -1118,8 +1119,8 @@ class ConfigPlot(CircuitPlot):
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
-                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                 arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
+                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=3.5,
+                 arrow_headaxislength=3, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, manual_arrow_label=None,
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0), nodes_as_voronoi=False, node_alpha=1,
@@ -1381,9 +1382,9 @@ class TimeEvolutionMovie(CircuitMovie):
         Scale-factor for arrows. (length of arrow = arrow_scale * arrow_data)
     arrow_headwidth=3 : float
         Width of head of arrows. (see matplotlib.quiver)
-    arrow_headlength=5 : float
+    arrow_headlength=3.5 : float
         Length of head of arrows. (see matplotlib.quiver)
-    arrow_headaxislength=4.5 : float
+    arrow_headaxislength=3 : float
         Arrow property. (see matplotlib.quiver)
     arrow_minshaft=1 : float
         Arrow property. (see matplotlib.quiver)
@@ -1443,8 +1444,8 @@ class TimeEvolutionMovie(CircuitMovie):
                  show_grid=True, grid_width=1, grid_color=(0.4, 0.5, 0.6), grid_alpha=0.5,
                  show_colorbar=True, show_legend=True, legend_width_fraction=0.2, show_axes=True,
                  axis_position=(0.1, 0.1, 0.85, 0.85),
-                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=5,
-                 arrow_headaxislength=4.5, arrow_minshaft=1, arrow_minlength=1,
+                 arrow_width=0.005, arrow_scale=1, arrow_headwidth=3, arrow_headlength=3.5,
+                 arrow_headaxislength=3, arrow_minshaft=1, arrow_minlength=1,
                  arrow_color=(0.15, 0.3, 0.8), arrow_alpha=1, manual_arrow_label=None,
                  show_nodes=True, node_diameter=0.25, node_face_color=(1,1,1),
                  node_edge_color=(0, 0, 0),  nodes_as_voronoi=False,

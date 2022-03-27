@@ -943,8 +943,8 @@ class StaticConfiguration:
         """
         Returns (Nf,) array containing path current around each face.
         """
-        A, Asq_solver = self.get_circuit().get_cycle_matrix(), self.get_problem()._Asq_factorization()
-        return Asq_solver(A @ self.get_I())
+        A = self.get_circuit().get_cycle_matrix()
+        return self.get_circuit().Asq_solve(A @ self.get_I())
 
     def get_flux(self) -> np.ndarray:
         """
