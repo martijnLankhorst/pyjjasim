@@ -71,7 +71,7 @@ More examples:
 
 ![alt text](./examples/images/biassed_honeycomb.png?raw=true)
 *figure 1*: Example of a frustrated honeycomb array with horizontal current bias. 
-Snapshot of a time evolution; the vortices are drifting downward. The electric potential gradually in the direction of the external current.
+Snapshot of a time evolution; the vortices are drifting downward. The electric potential gradually increases in the direction of the external current.
 
 
 ![alt text](./examples/images/shapiro_steps.png?raw=true)
