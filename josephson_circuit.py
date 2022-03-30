@@ -780,11 +780,12 @@ class Circuit:
 
     @staticmethod
     def _prepare_inducance_matrix(L, N):
+        eps = 2 * np.finfo(float).eps
         if not hasattr(L, "ndim"):
             L = np.array(L)
         if L.ndim <= 1:
             x = Circuit._prepare_junction_quantity(L, N, "L")
-            return scipy.sparse.diags(x, 0).tocsc(), np.all(x >= 0), np.any(x != 0.0)
+            return scipy.sparse.diags(x, 0).tocsc(), np.all(x > -eps), np.any(x != 0.0)
         if L.shape == (N, N):
             if not Circuit._is_symmetric(L):
                 raise ValueError("inductance matrix must be symmetric")
