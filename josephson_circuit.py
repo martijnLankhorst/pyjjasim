@@ -779,27 +779,29 @@ class Circuit:
         return x
 
     @staticmethod
-    def _prepare_inducance_matrix(A, N):
-        if not hasattr(A, "ndim"):
-            A = np.array(A)
-        if A.ndim <= 1:
-            x = Circuit._prepare_junction_quantity(A, N, "L")
+    def _prepare_inducance_matrix(L, N):
+        if not hasattr(L, "ndim"):
+            L = np.array(L)
+        if L.ndim <= 1:
+            x = Circuit._prepare_junction_quantity(L, N, "L")
             return scipy.sparse.diags(x, 0).tocsc(), np.all(x >= 0), np.any(x != 0.0)
-        if A.shape == (N, N):
-            if not Circuit._is_symmetric(A):
+        if L.shape == (N, N):
+            if not Circuit._is_symmetric(L):
                 raise ValueError("inductance matrix must be symmetric")
-            from pyjjasim.static_problem import is_positive_definite_superlu
-            status = is_positive_definite_superlu(A)
-            if status == 2:
-                raise ValueError("Choleski factorization failed; unable to determine positive definiteness of inductance matrix")
-            is_positive_definite = status == 0
-
-            if scipy.sparse.issparse(A):
-                A = A.tocsc()
-                is_zero = A.nnz == 0
+            if scipy.sparse.issparse(L):
+                L = L.tocsc()
+                from pyjjasim.static_problem import is_positive_definite_superlu
+                status = is_positive_definite_superlu(L)
+                if status == 2:
+                    raise ValueError(
+                        "Choleski factorization failed; unable to determine positive definiteness of inductance matrix")
+                is_positive_definite = status == 0
+                is_zero = L.nnz == 0
             else:
-                is_zero = np.all(A == 0)
-            return A, is_positive_definite, is_zero
+                (_, pd) = scipy.linalg.lapack.dpotrf(np.array(L))
+                is_positive_definite = pd == 0
+                is_zero = np.all(L == 0)
+            return L, is_positive_definite, is_zero
         else:
             raise ValueError("L must be scalar, (Nj,) array or (Nj, Nj) matrix")
 

@@ -1689,7 +1689,7 @@ def is_positive_definite_superlu(X):
     Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
     if not np.allclose((Up - f.U).data, 0):
         return 2
-    return int(np.all(f.U.diagonal() > -eps))
+    return int(~np.all(f.U.diagonal() > -eps))
 
 def stability_get_preconditioner(circuit: Circuit, cp, scheme):
     """
