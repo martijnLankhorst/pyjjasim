@@ -786,9 +786,6 @@ class Circuit:
         if A.shape == (N, N):
             if not Circuit._is_symmetric(A):
                 raise ValueError("inductance matrix must be symmetric")
-            # TODO: change positive definite criterion
-            # eigv = scipy.sparse.linalg.eigsh(-A, 1, maxiter=1000, which="LA")[0][0]
-            # is_positive_definite = eigv < 100 * np.finfo(float).eps
             from pyjjasim.static_problem import is_positive_definite_superlu
             status = is_positive_definite_superlu(A)
             if status == 2:
