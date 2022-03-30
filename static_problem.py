@@ -1663,7 +1663,7 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
         status, eigenvalue_list, residual_list = out
         return status
     if algorithm == 2:
-        status = is_positive_definite_superlu(J)
+        status = is_positive_definite_superlu(-J)
         if status == 2:
             raise ValueError("Choleski factorization failed; unable to determine positive definiteness")
         return status
@@ -1689,7 +1689,7 @@ def is_positive_definite_superlu(X):
     Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
     if not np.allclose((Up - f.U).data, 0):
         return 2
-    return int(~np.all(f.U.diagonal() < eps))
+    return int(np.all(f.U.diagonal() > -eps))
 
 def stability_get_preconditioner(circuit: Circuit, cp, scheme):
     """

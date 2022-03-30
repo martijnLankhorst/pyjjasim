@@ -96,15 +96,17 @@ class Circuit:
         self.critical_current_factors=None
         self.inductance_factors = None
         self._has_inductance_v = False
-        self.set_resistance_factors(resistance_factors)
-        self.set_critical_current_factors(critical_current_factors)
-        self.set_capacitance_factors(capacitance_factors)
-        self.set_inductance_factors(inductance_factors)
 
         self.locator = None
 
         self.cut_matrix = self.graph.cut_space_matrix()
         self.cycle_matrix = self.graph.face_cycle_matrix()
+
+        self.set_resistance_factors(resistance_factors)
+        self.set_critical_current_factors(critical_current_factors)
+        self.set_capacitance_factors(capacitance_factors)
+        self.set_inductance_factors(inductance_factors)
+
         self.cut_matrix_reduced = None
 
         self._Mnorm = None
