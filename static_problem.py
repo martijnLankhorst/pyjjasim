@@ -1663,14 +1663,33 @@ def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
         status, eigenvalue_list, residual_list = out
         return status
     if algorithm == 2:
-        eps = 2 * np.finfo(float).eps
-        f = scipy.sparse.linalg.splu(J, diag_pivot_thresh=0)
-        Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
-        if not np.allclose((Up - f.U).data, 0):
-            print("warning: choleski factorization failed")
-            return 2
-        return int(~np.all(f.U.diagonal() < eps))
+        status = is_positive_definite_superlu(J)
+        if status == 2:
+            raise ValueError("Choleski factorization failed; unable to determine positive definiteness")
+        return status
     raise ValueError("invalid algorithm. Must be 0 (eigsh) or 1 (lobpcg) or 2 (choleski)")
+
+def is_positive_definite_superlu(X):
+    """
+    Determine if matrix is positive definite using superlu package.
+
+    Parameters
+    ----------
+    X : sparse matrix
+        Sparse matrix.
+
+    Returns
+    -------
+    status : int
+        0 -> positive definite, 1 -> not positive definite, 2 -> choleski factorization failed
+
+    """
+    eps = 2 * np.finfo(float).eps
+    f = scipy.sparse.linalg.splu(X, diag_pivot_thresh=0)
+    Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
+    if not np.allclose((Up - f.U).data, 0):
+        return 2
+    return int(~np.all(f.U.diagonal() < eps))
 
 def stability_get_preconditioner(circuit: Circuit, cp, scheme):
     """

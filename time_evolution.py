@@ -128,7 +128,7 @@ class TimeEvolutionProblem:
             self.config_at_minus_1 = self.config_at_minus_1.get_theta()
         self.config_at_minus_1 = self.config_at_minus_1.reshape((Nj, W))   # always (Nj, W) shaped
 
-        self.config_at_minus_2 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_2 is None else config_at_minus_2
+        self.config_at_minus_2 = self.config_at_minus_1.copy() if config_at_minus_2 is None else config_at_minus_2
         if hasattr(self.config_at_minus_2, "get_theta"):
             self.config_at_minus_2 = self.config_at_minus_2.get_theta()
         self.config_at_minus_2 = self.config_at_minus_2.reshape((Nj, W))    # always (Nj, W) shaped
@@ -154,6 +154,10 @@ class TimeEvolutionProblem:
                              frustration=self._f(time_step)[:, problem_nr].copy(),
                              vortex_configuration=vortex_configuration,
                              current_phase_relation=self.current_phase_relation)
+
+    def write_cir(self):
+        pass
+
 
     def get_problem_count(self):
         """

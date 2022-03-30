@@ -34,7 +34,6 @@ __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID
 #   * phase build-up rounding correction
 
 
-
 """
 Josephson Circuit Module
 """
@@ -788,8 +787,14 @@ class Circuit:
             if not Circuit._is_symmetric(A):
                 raise ValueError("inductance matrix must be symmetric")
             # TODO: change positive definite criterion
-            eigv = scipy.sparse.linalg.eigsh(-A, 1, maxiter=1000, which="LA")[0][0]
-            is_positive_definite = eigv < 100 * np.finfo(float).eps
+            # eigv = scipy.sparse.linalg.eigsh(-A, 1, maxiter=1000, which="LA")[0][0]
+            # is_positive_definite = eigv < 100 * np.finfo(float).eps
+            from pyjjasim.static_problem import is_positive_definite_superlu
+            status = is_positive_definite_superlu(A)
+            if status == 2:
+                raise ValueError("Choleski factorization failed; unable to determine positive definiteness of inductance matrix")
+            is_positive_definite = status == 0
+
             if scipy.sparse.issparse(A):
                 A = A.tocsc()
                 is_zero = A.nnz == 0
