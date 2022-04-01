@@ -942,13 +942,15 @@ class StaticConfiguration:
     def get_J(self) -> np.ndarray:
         """
         Returns (Nf,) array containing path current around each face.
+        Defined as I = A.T @ J + I_source.
         """
         A = self.get_circuit().get_cycle_matrix()
-        return self.get_circuit().Asq_solve(A @ self.get_I())
+        return self.get_circuit().Asq_solve(A @ (self.get_I() - self.problem.current_sources))
 
     def get_flux(self) -> np.ndarray:
         """
         Returns (Nf,) array containing magnetic flux at each face.
+        Defined as f + (A @ L @ I) / (2 * pi).
         """
         A = self.get_circuit().get_cycle_matrix()
         L = self.get_circuit()._L()
@@ -1684,7 +1686,7 @@ def is_positive_definite_superlu(X):
         0 -> positive definite, 1 -> not positive definite, 2 -> choleski factorization failed
 
     """
-    eps = 2 * np.finfo(float).eps
+    eps = 10 * np.finfo(float).eps
     f = scipy.sparse.linalg.splu(X, diag_pivot_thresh=0)
     Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
     if not np.allclose((Up - f.U).data, 0):

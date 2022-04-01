@@ -596,7 +596,7 @@ class Circuit:
         junc_L : scalar float
             Self-inductance prefactor.
         junc_M : scalar float
-            Mutual-inductance prefactor.
+            Mutual-inductance prefactor (usually << junc_L).
         max_dist : scalar float
             Cut-off distance between junctions included in L.
 
@@ -780,7 +780,7 @@ class Circuit:
 
     @staticmethod
     def _prepare_inducance_matrix(L, N):
-        eps = 2 * np.finfo(float).eps
+        eps = 10 * np.finfo(float).eps
         if not hasattr(L, "ndim"):
             L = np.array(L)
         if L.ndim <= 1:
@@ -853,7 +853,7 @@ class Circuit:
 
     def _has_capacitance(self):
         # returns False if self.capacitance_factors is zero, True otherwise
-        np.any(self.capacitance_factors > 0)
+        return np.any(self.capacitance_factors > 0)
 
     def _has_inductance(self):
         # returns False if self.inductance_factors is zero, True otherwise

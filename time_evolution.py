@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 import scipy.sparse.linalg
 import scipy.optimize
+from numba import jit
 
 from pyjjasim.josephson_circuit import Circuit
 from pyjjasim.static_problem import DefaultCPR
@@ -93,7 +94,10 @@ class TimeEvolutionProblem:
                  voltage_sources=0.0, temperature=0.0,
                  store_time_steps=None, store_theta=True, store_voltage=True, store_current=True,
                  config_at_minus_1: np.ndarray = None,
-                 config_at_minus_2: np.ndarray = None):
+                 config_at_minus_2: np.ndarray = None,
+                 config_at_minus_3: np.ndarray = None,
+                 config_at_minus_4: np.ndarray = None,
+                 stencil_width=3):
 
         self.circuit = circuit
         self.time_step = time_step
@@ -108,30 +112,38 @@ class TimeEvolutionProblem:
                                  get_prob_cnt(current_sources), get_prob_cnt(voltage_sources),
                                  get_prob_cnt(temperature))
         Nj, Nf, W, Nt = self.circuit._Nj(), self.circuit._Nf(), self.get_problem_count(), self.get_time_step_count()
+
+        self._f_is_timedep = TimeEvolutionProblem._is_timedep(frustration)
         self.frustration = frustration if hasattr(frustration, "__call__") else \
-            self._broadcast(np.array(frustration), (Nf, W, Nt))
+            np.broadcast_to(np.array(frustration), (Nf, W, Nt))
+        self._Is_is_timedep = TimeEvolutionProblem._is_timedep(current_sources)
         self.current_sources = current_sources if hasattr(current_sources, "__call__") else \
-            self._broadcast(np.array(current_sources), (Nj, W, Nt))
+            np.broadcast_to(np.array(current_sources), (Nj, W, Nt))
+        self._Vs_is_timedep = TimeEvolutionProblem._is_timedep(voltage_sources)
         self.voltage_sources = voltage_sources if hasattr(voltage_sources, "__call__") else \
-            self._broadcast(np.array(voltage_sources), (Nj, W, Nt))
+            np.broadcast_to(np.array(voltage_sources), (Nj, W, Nt))
+        self._T_is_timedep = TimeEvolutionProblem._is_timedep(temperature)
         self.temperature = temperature if hasattr(temperature, "__call__") else \
-            self._broadcast(np.array(temperature), (Nj, W, Nt))
+            np.broadcast_to(np.array(temperature), (Nj, W, Nt))
 
         self.store_time_steps = np.ones(self._Nt(), dtype=bool)
         self.store_time_steps = self._to_time_point_mask(store_time_steps)
         self.store_theta = store_theta
         self.store_voltage = store_voltage
         self.store_current = store_current
+        if not (self.store_theta or self.store_voltage or self.store_current):
+            raise ValueError("No output is stored")
+        if np.sum(self.store_time_steps) == 0:
+            raise ValueError("No output is stored")
+        self.stencil_width = stencil_width
+        self.stencil = self._get_stencil(self.stencil_width)
 
-        self.config_at_minus_1 = np.zeros((Nj, W), dtype=np.double) if config_at_minus_1 is None else config_at_minus_1
-        if hasattr(self.config_at_minus_1, "get_theta"):
-            self.config_at_minus_1 = self.config_at_minus_1.get_theta()
-        self.config_at_minus_1 = self.config_at_minus_1.reshape((Nj, W))   # always (Nj, W) shaped
-
-        self.config_at_minus_2 = self.config_at_minus_1.copy() if config_at_minus_2 is None else config_at_minus_2
-        if hasattr(self.config_at_minus_2, "get_theta"):
-            self.config_at_minus_2 = self.config_at_minus_2.get_theta()
-        self.config_at_minus_2 = self.config_at_minus_2.reshape((Nj, W))    # always (Nj, W) shaped
+        self.config_at_minus_1 = self._get_config(config_at_minus_1, np.zeros((Nj, W), dtype=np.double), (Nj, W))
+        self.config_at_minus_2 = self._get_config(config_at_minus_2, self.config_at_minus_1, (Nj, W))
+        if self.stencil_width >= 4:
+            self.config_at_minus_3 = self._get_config(config_at_minus_3, self.config_at_minus_2, (Nj, W))
+        if self.stencil_width >= 5:
+            self.config_at_minus_4 = self._get_config(config_at_minus_4, self.config_at_minus_3, (Nj, W))
 
     def get_static_problem(self, vortex_configuration, problem_nr=0, time_step=0) -> StaticProblem:
         """
@@ -292,10 +304,7 @@ class TimeEvolutionProblem:
         """
         Compute time evolution on an Josephson Circuit.
         """
-        if self.get_circuit()._has_mixed_inductance():
-            return time_evolution_algo_1(self)
-        else:
-            return time_evolution_algo_0(self)
+        return time_evolution(self)
 
     def __str__(self):
         return "time evolution problem: " + \
@@ -314,6 +323,19 @@ class TimeEvolutionProblem:
 
     def _dt(self):
         return self.time_step
+
+    @staticmethod
+    def _get_config(config_cur, config_prev, shape):
+        config_cur = config_prev.copy() if config_cur is None else config_cur
+        if hasattr(config_cur, "get_theta"):
+            config_cur = config_cur.get_theta()
+        return config_cur.reshape(shape)  # always (Nj, W) shaped
+
+    @staticmethod
+    def _is_timedep(x):
+        if len(np.array(x).shape) == 0:
+            return False
+        return hasattr(x, "__call__") or np.array(x).shape[-1] > 1
 
     def _f(self, time_step) -> np.ndarray:  # (Nf, W), read-only
         return np.broadcast_to(self.frustration(time_step), (self.circuit._Nf(), self.get_problem_count())) \
@@ -374,122 +396,188 @@ class TimeEvolutionProblem:
                 raise ValueError("Invalid store_time_steps; must be None, mask, slice or index array")
         return time_points
 
-def time_evolution_algo_0(problem: TimeEvolutionProblem):
-    """
-    Algorithm 0 for time-evolution. Does not allow for mixed inductance, but if it
-    does it is usually faster than algorithm 1.
-    """
+    def _get_stencil(self, width : int):
+        if width == 3:
+            return (1.0, -1.0, 0.0), (1.0, -2.0, 1.0)
+        if width == 4:
+            return (1.5, -2.0, 0.5, 0.0), (2.0, -5.0, 4.0, -1.0)
+        if width == 5:
+            return (11.0/6, -3.0, 1.5, -1.0/3, 0.0), (35.0/12, -26.0/3, 9.5, -14.0/3, 11.0/12)
+        raise ValueError(f"stencil width must be 3, 4 or 5 (equals {width})")
 
-    out = TimeEvolutionResult(problem)
+
+def _apply_derivative(x, index, stencil, dt):
+    w = len(stencil)
+    if w == 3:
+        return (stencil[0] * x[:, :, index] + stencil[1] * x[:, :, index - 1]) / dt
+    if w == 4:
+        return (stencil[0] * x[:, :, index] + stencil[1] * x[:, :, index - 1] +
+                stencil[2] * x[:, :, index - 2]) / dt
+    if w == 5:
+        return (stencil[0] * x[:, :, index] + stencil[1] * x[:, :, index - 1] +
+                stencil[2] * x[:, :, index - 2] + stencil[3] * x[:, :, index - 3]) / dt
+
+def time_evolution(problem: TimeEvolutionProblem):
+    # determine what timepoints to store. Complicated by the fact that voltage needs both derivative
+    # of theta and current (if inductance is present) for which extra timepoints must be stored depending
+    # on the derivative stencil.
+    th_store_mask = problem.store_time_steps.copy() if (problem.store_theta or problem.store_voltage) else np.zeros(problem._Nt(), dtype=bool)
+    I_store_mask = problem.store_time_steps.copy() if (problem.store_current or problem.store_voltage) else np.zeros(problem._Nt(), dtype=bool)
+    V_th_store_mask = th_store_mask.copy()
+    V_I_store_mask = I_store_mask.copy()
+    t_ids = np.flatnonzero(problem.store_time_steps)
+    Nj = problem.circuit.junction_count()
+    offset = problem.stencil_width - 1 # number of initial conditions used
+    if problem.store_voltage:
+        if len(t_ids) > 0:
+            Vt_ids = (t_ids[:, None] - np.arange(offset)).ravel()
+            Vt_ids = Vt_ids[(Vt_ids >= 0) & (Vt_ids < problem._Nt())]
+            V_th_store_mask[Vt_ids] = True
+            if problem.circuit._has_inductance():
+                V_I_store_mask[Vt_ids] = True
+
+    # th_out will be of shape (Nj, W, offset + sum(V_th_store_mask)). Note that the initial
+    # conditions before time_point=0 are always stored.
+    th_out, I_out = time_evolution_core(problem, V_th_store_mask, V_I_store_mask)
+
+    if problem.store_voltage:
+        ts = np.flatnonzero((problem.store_time_steps)[V_th_store_mask])
+        V_out = _apply_derivative(th_out, index=ts + offset, stencil=problem.stencil[0], dt=problem._dt())
+        if problem.circuit._has_inductance():
+            V_ind = _apply_derivative(I_out, index=ts + offset, stencil=problem.stencil[0], dt=problem._dt())
+            V_out += (problem.circuit.get_inductance_factors() @ V_ind.reshape((Nj, -1))).reshape(V_out.shape)
+        th_out = np.delete(th_out, np.flatnonzero((V_th_store_mask & ~ th_store_mask)[V_th_store_mask]) + offset, axis=2)
+        I_out = np.delete(I_out, np.flatnonzero((V_I_store_mask & ~ I_store_mask)[V_I_store_mask]) + offset, axis=2)
+
+    th_out = th_out[:, :, offset:]  # remove initial conditions -> shape=(Nj, W, sum(th_store_mask))
+    I_out = I_out[:, :, offset:]
+    return TimeEvolutionResult(problem, th_out if problem.store_theta else None,
+                               I_out if problem.store_current else None,
+                               V_out if problem.store_voltage else None)
+
+
+def time_evolution_core(problem: TimeEvolutionProblem, th_store_mask, I_store_mask):
+    """
+    Algorithm 2 for time-evolution. Best algo?
+    """
 
     circuit = problem.get_circuit()
     Nj, W = circuit._Nj(), problem.get_problem_count()
     dt = problem._dt()
-    if circuit._has_mixed_inductance():
-        raise ValueError("Time evolution algorithm 0 does not work with mixed inductance "
-                         "(some loops have no inductance while others do. Use algorithm 1.")
-    store_th, store_I, store_V = problem.store_theta, problem.store_current, problem.store_voltage
 
     A = circuit.get_cycle_matrix()
     AT = A.T
     Rv = 1 / (dt * circuit._R()[:, None])
     Cv = circuit._C()[:, None] / (dt ** 2)
+    C1, C2 = problem.stencil
+
     Cprev, C0, Cnext = Cv, -2.0 * Cv - Rv, Cv + Rv
+    c0 = C1[0] * Rv + C2[0] * Cv
+    c1 = C1[1] * Rv + C2[1] * Cv
 
-    if circuit._has_inductance():
-        L = problem.circuit._L()
+    theta_next = problem.config_at_minus_1.copy()
 
-    circ_const_Cp = circuit._has_identical_resistance() and \
-                    (not circuit._has_capacitance() or circuit._has_identical_capacitance())
+    s_width = problem.stencil_width
 
-    if not circ_const_Cp:
-        Asq_fact = scipy.sparse.linalg.factorized(A @ scipy.sparse.diags(1.0 / Cnext[:, 0], 0) @ AT)
+    th_out = np.zeros((Nj, W, np.sum(th_store_mask) + s_width - 1), dtype=np.double)
+    I_out = np.zeros((Nj, W, np.sum(I_store_mask) + s_width - 1), dtype=np.double)
+    th_out[:, :, s_width - 2] = theta_next
+    I_out[:, :, s_width - 2] = problem._cp(theta_next)
 
-    theta_next = problem.config_at_minus_1
-    theta = problem.config_at_minus_2
-    problem._theta_s(-1)
-
-
-    for i in range(problem._Nt()):
-        Is, T, theta_s, f = problem._Is(i), problem._T(i), problem._theta_s(i), problem._f(i)
-
-        rand = np.random.randn(Nj, W) if i % 3 == 0 else rand[np.random.permutation(Nj), :]
-        fluctuations = ((2.0 * T * Rv) ** 0.5) * rand
-
-        theta_prev = theta.copy()
-        theta = theta_next.copy()
-        if circuit._has_inductance():
-            y = AT @ circuit._ALA_solve(A @ (theta + theta_s + L @ Is) + 2 * np.pi * f)
-            theta_next = -(problem._cp(theta) + fluctuations - Is + C0 * theta + Cprev * theta_prev + y) / Cnext
-            I = Is - y if store_I else None
-        else:
-            x = (problem._cp(theta) + fluctuations - Is + C0 * theta + Cprev * theta_prev) / Cnext
-            if circ_const_Cp:
-                theta_next = -x + (AT @ circuit.Asq_solve(A @ (x - theta_s) - 2 * np.pi * f))
-            else:
-                theta_next = -x + (AT @ Asq_fact(A @ (x - theta_s) - 2 * np.pi * f)) / Cnext
-            I = (x + theta_next) * Cnext + Is if store_I else None
-        V = (theta_next - theta) / dt if store_V else None
-        if problem.store_time_steps[i]:
-            out._update([theta_next if problem.store_theta else None, V, I])
-    return out
-
-def time_evolution_algo_1(problem: TimeEvolutionProblem):
-    """
-    Algorithm 1 for time-evolution. Allows for mixed inductance, but is
-    usually slower than algorithm 0.
-    """
-
-    out = TimeEvolutionResult(problem)
-
-    circuit = problem.circuit
-    Nj, Nf, W = circuit._Nj(),  circuit._Nf(), problem.get_problem_count()
-    dt = problem._dt()
-
-    store_th, store_I, store_V = problem.store_theta, problem.store_current, problem.store_voltage
-
-    A = circuit.get_cycle_matrix()
-    M = circuit._Mr()
-    Rv = 1 / (dt * circuit._R()[:, None])
-    Cv = circuit._C()[:, None] / (dt ** 2)
-    Cprev, C0, Cnext = Cv, -2.0 * Cv - Rv, Cv + Rv
+    c2 = C1[2] * Rv + C2[2] * Cv
+    theta1 = problem.config_at_minus_2.copy()
+    th_out[:, :, s_width - 3] = theta1
+    I_out[:, :, s_width - 3] = problem._cp(theta1)
+    if s_width >= 4:
+        c3 = C1[3] * Rv + C2[3] * Cv
+        theta2 = problem.config_at_minus_3.copy()
+        th_out[:, :, s_width - 4] = theta2
+        I_out[:, :, s_width - 4] = problem._cp(theta2)
+    if s_width >= 5:
+        c4 = C1[4] * Rv + C2[4] * Cv
+        theta3 = problem.config_at_minus_4.copy()
+        th_out[:, :, s_width - 5] = theta3
+        I_out[:, :, s_width - 5] = problem._cp(theta3)
 
     L = problem.circuit._L()
-    L_mask = circuit._get_mixed_inductance_mask()
-    A1 = A[~L_mask, :]
-    A2 = A[L_mask, :]
+    A_mat = A @ (L + scipy.sparse.diags(1.0 / Cnext[:, 0], 0)) @ AT
+    Asq_fact = scipy.sparse.linalg.factorized(A_mat)
+    theta_s = np.zeros((Nj, W), dtype=np.double)
 
-    Cnext_mat = scipy.sparse.diags(Cnext[:, 0], 0)
-    matrix = scipy.sparse.vstack([M @ Cnext_mat, A1 @ L @ Cnext_mat, A2]).tocsc()
-    m_fact = scipy.sparse.linalg.factorized(matrix)
+    Is, T, Vs, f = problem._Is(0), problem._T(0), problem._Vs(0), problem._f(0)
+    Is_zero, T_zero, Vs_zero, f_zero = False, False, False, False
+    fluctuations = 0.0
+    if not problem._T_is_timedep:
+        T_zero = np.allclose(T, 0)
+    if not problem._Is_is_timedep:
+        Is_zero = np.allclose(Is, 0)
+    if not problem._Vs_is_timedep:
+        Vs_zero = np.allclose(Vs, 0)
+    if not problem._f_is_timedep:
+        f_zero = np.allclose(f, 0)
 
-    theta = problem.config_at_minus_2
-    theta_next = problem.config_at_minus_1
-
+    i_th = 0
+    i_I = 0
     for i in range(problem._Nt()):
-        Is, T, theta_s, f = problem._Is(i), problem._T(i), problem._theta_s(i), problem._f(i)
+        if problem._T_is_timedep:
+            T = problem._T(i)
+        if problem._Is_is_timedep:
+            Is = problem._Is(i)
+        if problem._Vs_is_timedep:
+            Vs = problem._Vs(i)
+        if problem._f_is_timedep:
+            f = problem._f(i)
 
-        # optimization to only generate new gaussian noise every three timesteps.
-        # On the other timesteps, the last generated noise is shuffled.
-        rand = np.random.randn(Nj, W) if i % 3 == 0 else rand[np.random.permutation(Nj), :]
-        fluctuations = ((2.0 * T * Rv) ** 0.5) * rand
+        if not T_zero:
+            if circuit.junction_count() > 500:
+                rand = np.random.randn(Nj, W) if i % 3 == 0 else rand[np.random.permutation(Nj), :]
+            else:
+                rand = np.random.randn(Nj, W)
+            fluctuations = ((2.0 * T * Rv) ** 0.5) * rand
 
-        theta_prev = theta.copy()
-        theta = theta_next.copy()
-        y = problem._cp(theta) + fluctuations + C0 * theta + Cprev * theta_prev
-        F = np.concatenate([M @ (y - Is), A1 @ (theta + theta_s + L @ y) + 2 * np.pi * f[~L_mask],
-                            A2 @ theta_s + 2 * np.pi * f[L_mask]], axis=0)
-        theta_next = -m_fact(F)
+        if s_width >= 5:
+            theta4 = theta3.copy()
+        if s_width >= 4:
+            theta3 = theta2.copy()
+        theta2 = theta1.copy()
+        theta1 = theta_next.copy()
 
-        x = Cprev * theta_prev + C0 * theta + Cnext * theta_next + problem._cp(theta) + fluctuations
-        matrix = scipy.sparse.vstack([M, A @ L]).tocsc()
-        print(scipy.linalg.norm(matrix @ x + np.concatenate([-M @ Is, A @ (theta + theta_s) + 2 * np.pi * f], axis=0)))
+        if s_width == 3:
+            X = problem._cp(2 * theta1 - theta2) + c1 * theta1 + c2 * theta2
+        if s_width == 4:
+            X = problem._cp(3 * theta1 - 3 * theta2 + theta3) + c1 * theta1 + c2 * theta2 + c3 * theta3
+        if s_width == 5:
+            X = problem._cp(4 * theta1 - 6 * theta2 + 4 * theta3 - theta4) + \
+                c1 * theta1 + c2 * theta2 + c3 * theta3 + c4 * theta4
 
-        if problem.store_time_steps[i]:
-            out._update([theta_next if problem.store_theta else None,
-                         (theta_next - theta) / dt if store_V else None,
-                         y + Cnext * theta_next if store_I else None])
-    return out
+        if Is_zero:
+            x = fluctuations + X
+        else:
+            x = fluctuations - Is + X
+
+        if Vs_zero:
+            if f_zero:
+                y = AT @ Asq_fact(A @ (x / c0))
+            else:
+                y = AT @ Asq_fact(A @ (x / c0) - 2 * np.pi * f)
+        else:
+            if f_zero:
+                y = AT @ Asq_fact(A @ (x / c0 - theta_s))
+            else:
+                y = AT @ Asq_fact(A @ (x / c0 - theta_s) - 2 * np.pi * f)
+        theta_next = (y - x) / c0
+
+        if th_store_mask[i]:
+            th_out[:, :, i_th + s_width - 1] = theta_next
+            i_th += 1
+        if I_store_mask[i]:
+            I_out[:, :, i_I + s_width - 1] = y + Is
+            i_I += 1
+
+        if not Vs_zero:
+            theta_s += Vs *dt
+
+    return th_out, I_out
 
 
 class ThetaNotStored(Exception):
@@ -515,27 +603,30 @@ class TimeEvolutionResult:
     for which the required data is not stored.
     """
 
-    def __init__(self, problem: TimeEvolutionProblem):
+    def __init__(self, problem: TimeEvolutionProblem, theta, current, voltage):
         self.problem = problem
         Nj, W, Nt_s = problem.circuit._Nj(), self.get_problem_count(), problem._Nt_s()
-        self.theta = np.zeros((Nj, W, Nt_s), dtype=np.double) if problem.store_theta else None
-        self.voltage = np.zeros((Nj, W, Nt_s), dtype=np.double) if problem.store_theta else None
-        self.current = np.zeros((Nj, W, Nt_s), dtype=np.double) if problem.store_theta else None
-        self.store_point = 0
+        self.theta = theta
+        self.voltage = voltage
+        self.current = current
+        if problem.store_theta:
+            if self.theta.shape != (Nj, W, Nt_s):
+                raise ValueError(f"theta must have shape {(Nj, W, Nt_s)}; has shape {self.theta.shape}")
+        else:
+            self.theta = None
+        if problem.store_current:
+            if self.current.shape != (Nj, W, Nt_s):
+                raise ValueError(f"current must have shape {(Nj, W, Nt_s)}; has shape {self.current.shape}")
+        else:
+            self.current = None
+        if problem.store_voltage:
+            if self.voltage.shape != (Nj, W, Nt_s):
+                raise ValueError(f"voltage must have shape {(Nj, W, Nt_s)}; has shape {self.voltage.shape}")
+        else:
+            self.voltage = None
         s = self.problem.store_time_steps.astype(int)
         self.time_point_indices = np.cumsum(s) - s
         self.animation = None
-
-    def _update(self, data):
-        th, V, I = data[0], data[1], data[2]
-        if th is not None:
-            self.theta[:, :, self.store_point] = th
-        if V is not None:
-            self.voltage[:, :, self.store_point] = V
-        if I is not None:
-            self.current[:, :, self.store_point] = I
-        if (th is not None) or (th is not None) or (th is not None):
-            self.store_point += 1
 
     def _th(self, time_point) -> np.ndarray:
         if self.theta is None:
@@ -543,12 +634,12 @@ class TimeEvolutionResult:
         return self.theta[:, :, self._time_point_index(time_point)]
 
     def _V(self, time_point) -> np.ndarray:
-        if self.theta is None:
+        if self.voltage is None:
             raise VoltageNotStored("Cannot query voltage; quantity is not stored during time evolution simulation.")
         return self.voltage[:, :, self._time_point_index(time_point)]
 
     def _I(self, time_point) -> np.ndarray:
-        if self.theta is None:
+        if self.current is None:
             raise CurrentNotStored("Cannot query current; quantity is not stored during time evolution simulation.")
         return self.current[:, :, self._time_point_index(time_point)]
 
@@ -614,12 +705,11 @@ class TimeEvolutionResult:
         """
         c = self.get_circuit()
         M, Nj = c.get_cut_matrix(), c._Nj()
-        # Mrsq = M @ M.T
-        # Z = np.zeros((1, self.get_problem_count()), dtype=np.double)
-        # solver = scipy.sparse.linalg.factorized(Mrsq)
-        # func = lambda tp: np.concatenate((solver(M @ self._th(tp).reshape(Nj, -1)), Z), axis=0)
         func = lambda tp: c.Msq_solve(M @ self._th(tp).reshape(Nj, -1))
-        return self._select(select_time_points, self.get_circuit()._Nn(), func)
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nn(), func)
+        except ThetaNotStored:
+            raise ThetaNotStored("Cannot compute phi; requires theta to be stored in TimeEvolutionConfig")
 
     def get_theta(self, select_time_points=None) -> np.ndarray:
         """
@@ -657,7 +747,10 @@ class TimeEvolutionResult:
         """
         A = self.get_circuit().get_cycle_matrix()
         func = lambda tp: -A @ np.round(self._th(tp) / (2.0 * np.pi))
-        return self._select(select_time_points, self.get_circuit()._Nf(), func).astype(int)
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nf(), func).astype(int)
+        except ThetaNotStored:
+            raise ThetaNotStored("Cannot compute n; requires theta to be stored in TimeEvolutionConfig")
 
     def get_EJ(self, select_time_points=None) -> np.ndarray:
         """
@@ -676,7 +769,10 @@ class TimeEvolutionResult:
              Josephson energy.
         """
         func = lambda tp: self.problem._icp(self._th(tp))
-        return self._select(select_time_points, self.get_circuit()._Nj(), func)
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nj(), func)
+        except ThetaNotStored:
+            raise ThetaNotStored("Cannot compute Josephson energy EJ; requires theta to be stored in TimeEvolutionConfig")
 
     def get_I(self, select_time_points=None) -> np.ndarray:
         """
@@ -713,11 +809,15 @@ class TimeEvolutionResult:
              Supercurrent.
         """
         func = lambda tp: self.problem._cp(self._th(tp))
-        return self._select(select_time_points, self.get_circuit()._Nj(), func)
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nj(), func)
+        except ThetaNotStored:
+            raise ThetaNotStored("Cannot compute supercurrent Isup; requires theta to be stored in TimeEvolutionConfig")
 
     def get_J(self, select_time_points=None) -> np.ndarray:
         """
-        Return cycle-current around faces. Requires current to be stored.
+        Return cycle-current J around faces. Requires current to be stored. Defined
+        as I = A.T @ J + I_source.
 
         Parameters
         ----------
@@ -732,13 +832,16 @@ class TimeEvolutionResult:
              Cycle-current around faces.
         """
         A = self.get_circuit().get_cycle_matrix()
-        # solver = scipy.sparse.linalg.factorized(A @ A.T)
-        func = lambda tp: self.get_circuit().Asq_solve(A @ self._I(tp))
-        return self._select(select_time_points, self.get_circuit()._Nf(), func)
+        func = lambda tp: self.get_circuit().Asq_solve(A @ (self._I(tp) - self.problem._Is(tp)))
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nf(), func)
+        except CurrentNotStored:
+            raise CurrentNotStored("Cannot compute cycle-current J; requires current to be stored in TimeEvolutionConfig")
 
     def get_flux(self, select_time_points=None) -> np.ndarray:
         """
         Return magnetic flux through faces. Requires current to be stored.
+        Defined as f + (A @ L @ I) / (2 * pi).
 
         Parameters
         ----------
@@ -754,8 +857,11 @@ class TimeEvolutionResult:
         """
         Nj, Nf = self.get_circuit()._Nj(), self.get_circuit()._Nf()
         A = self.get_circuit().get_cycle_matrix()
-        func = lambda tp: A @ (self.get_circuit()._L() @ self._I(tp))
-        return self._select(select_time_points, Nf, func)
+        func = lambda tp: self.problem._f(tp) + A @ (self.get_circuit()._L() @ self._I(tp)) / (2 * np.pi)
+        try:
+            return self._select(select_time_points, Nf, func)
+        except CurrentNotStored:
+            raise CurrentNotStored("Cannot compute magnetic flux; requires current to be stored in TimeEvolutionConfig")
 
     def get_EM(self, select_time_points=None) -> np.ndarray:
         """
@@ -775,7 +881,11 @@ class TimeEvolutionResult:
         """
         Nj = self.get_circuit()._Nj()
         func = lambda tp: 0.5 * self.get_circuit()._L() @ (self._I(tp) ** 2)
-        return self._select(select_time_points, Nj, func)
+        try:
+            is_zero = not self.get_circuit()._has_inductance()
+            return self._select(select_time_points, Nj, func, is_zero=is_zero)
+        except CurrentNotStored:
+            raise CurrentNotStored("Cannot compute magnetic energy EM; requires current to be stored in TimeEvolutionConfig")
 
     def get_V(self, select_time_points=None):
         """
@@ -818,7 +928,11 @@ class TimeEvolutionResult:
         # solver = scipy.sparse.linalg.factorized(Mrsq)
         # func = lambda tp: np.concatenate((solver(M @ self._V(tp)), Z), axis=0)
         func = lambda tp: self.get_circuit().Msq_solve(M @ self._V(tp).reshape(Nj, -1))
-        return self._select(select_time_points, self.get_circuit()._Nn(), func)
+        try:
+            return self._select(select_time_points, self.get_circuit()._Nn(), func)
+        except VoltageNotStored:
+            raise VoltageNotStored(
+                "Cannot compute electric potential U; requires voltage to be stored in TimeEvolutionConfig")
 
     def get_EC(self, select_time_points=None):
         """
@@ -839,7 +953,12 @@ class TimeEvolutionResult:
         """
         C, Nj = self.get_circuit()._C(), self.get_circuit()._Nj()
         func = lambda tp: 0.5 * C[:, None] * self._V(tp) ** 2
-        return self._select(select_time_points, Nj, func)
+        try:
+            is_zero = not self.get_circuit()._has_capacitance()
+            return self._select(select_time_points, Nj, func, is_zero=is_zero)
+        except VoltageNotStored:
+            raise VoltageNotStored(
+                "Cannot compute capacitive energy EC; requires voltage to be stored in TimeEvolutionConfig")
 
     def get_Etot(self, select_time_points=None) -> np.ndarray:
         """
@@ -935,10 +1054,12 @@ class TimeEvolutionResult:
                "\nproblem: " + self.problem.__str__() + \
                "\ncircuit: " + self.get_circuit().__str__()
 
-    def _select(self, select_time_points, N, func):
+    def _select(self, select_time_points, N, func, is_zero=False):
         select_time_points = np.flatnonzero(self.problem._to_time_point_mask(select_time_points))
         W = self.get_problem_count()
         out = np.zeros((N, W, len(select_time_points)), dtype=np.double)
+        if is_zero:
+            return out
         for i, tp in enumerate(select_time_points):
             out[:, :, i] = func(tp)
         return out
