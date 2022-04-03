@@ -13,8 +13,8 @@ from pyjjasim.josephson_circuit import Circuit
 __all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem",
            "StaticConfiguration", "compute_maximal_parameter",
            "node_to_junction_current", "DEF_TOL", "DEF_NEWTON_MAXITER",
-           "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT",
-           "NewtonIterInfo", "ParameterOptimizeInfo"]
+           "DEF_STAB_MAXITER", "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT",
+           "NewtonIterInfo", "ParameterOptimizeInfo", "stability_get_preconditioner"]
 
 
 """
@@ -24,6 +24,8 @@ Static Problem Module
 DEF_TOL = 1E-10
 
 DEF_NEWTON_MAXITER = 30
+
+DEF_STAB_MAXITER = 2000
 
 DEF_MAX_PAR_TOL = 1E-4
 DEF_MAX_PAR_REDUCE_FACT = 0.42
@@ -207,21 +209,24 @@ class ParameterOptimizeInfo:
     Use print(parameter_optimize_info) to display a summary of
     the information.
     """
-    def __init__(self, problem_func, lambda_tol, require_target_n, maxiter):
+    def __init__(self, problem_func, lambda_tol, require_stability, require_target_n, maxiter):
         self.problem_func = problem_func
         self.lambda_tol = lambda_tol
         self.require_target_n = require_target_n
+        self.require_stability = require_stability
         self.maxiter = maxiter
         self.has_solution_at_zero = False
         self.lambda_history = np.zeros(self.maxiter, dtype=np.double)
         self.solutions = []
         self.stepsize_history = np.zeros(self.maxiter, dtype=np.double)
         self.solution_history = np.zeros(self.maxiter, dtype=np.bool)
+        self.stable_history = np.zeros(self.maxiter, dtype=np.int)
         self.target_n_history = np.zeros(self.maxiter, dtype=np.int)
         self.newton_iter_infos = []
         self._step = 0
         self._time = time.perf_counter()
         self.last_step_status = None
+        self.last_step_stable_status = None
 
     def get_has_solution_at_zero(self):
         """
@@ -262,6 +267,12 @@ class ParameterOptimizeInfo:
         Returns (nr_of_steps,) array if a stable target solution is found at step.
         """
         return self.solution_history[:self._step]
+
+    def get_is_stable(self):
+        """
+        Returns (nr_of_steps,) array if a stable target solution is found at step.
+        """
+        return self.stable_history[:self._step]
 
     def get_is_target_vortex_configuration(self):
         """
@@ -309,9 +320,10 @@ class ParameterOptimizeInfo:
         import matplotlib.animation as anim
         fig, ax = self.solutions[0].plot()
         lambdas = self.get_lambda()[self.get_found_solution()]
+        stable = self.get_is_stable()[self.get_found_solution()]
         def _animate(i):
             p_fig, p_ax = self.solutions[i].plot(fig=fig)
-            p_ax.set_title(f"lambda={np.round(lambdas[i], 5)}")
+            p_ax.set_title(f"lambda={np.round(lambdas[i], 5)}, is stable: {stable[i]}")
             return [p_ax]
         ani = anim.FuncAnimation(fig, _animate, frames=range(len(self.solutions)),
                                  interval=1000, blit=False)
@@ -327,7 +339,10 @@ class ParameterOptimizeInfo:
                 return np.ceil(np.log(np.max(x)) / np.log(10)).astype(int)
             n = max(5, 3 + int_digit_count(1/self.lambda_tol), int_digit_count(self.get_newton_steps()))
             out += f"Found lambda between {self.get_lambda_lower_bound()} and {self.get_lambda_upper_bound()}.\n\t"
-            if self.last_step_status == 2:
+            if self.last_step_stable_status == 2:
+                out += f"Stopped because stability could not be determined. Consider increasing stable_maxiter " \
+                       f"or changing stability algorithm.)\n\t"
+            elif self.last_step_status == 2:
                 out += f"Stopped because newton iteration was indeterminate. Consider increasing newton_maxiter.)\n\t"
             elif self._step == self.maxiter:
                 out += f"Optimization reached maxiter {self.maxiter} before reaching desired tolerance. (resid={self.get_lambda_error()[-1]})\n\t"
@@ -340,6 +355,8 @@ class ParameterOptimizeInfo:
             out += f"found solution:      {self.get_found_solution().astype(bool)}\n\t"
             if self.require_target_n:
                 out += f"if so; has target n: {self.get_is_target_vortex_configuration().astype(bool)}\n\t"
+            if self.require_stability:
+                out += f"is so; is stable:    {self.get_is_stable().astype(bool)}\n\t"
             np.set_printoptions(formatter={'int': lambda x: ("{:>" + str(n) + "}").format(x)})
             out += f"newton step count:   {self.get_newton_steps()}\n\t"
         return out
@@ -348,10 +365,11 @@ class ParameterOptimizeInfo:
         self.has_solution_at_zero = has_solution_at_zero
         return self
 
-    def _set(self, lambda_value, solution, lambda_stepsize, found_solution, newton_iter_info, is_target_n):
+    def _set(self, lambda_value, solution, lambda_stepsize, found_solution, newton_iter_info, is_target_n, is_stable=1):
         self.lambda_history[self._step] = lambda_value
         self.stepsize_history[self._step] = lambda_stepsize
         self.solution_history[self._step] = found_solution
+        self.stable_history[self._step] = is_stable
         self.newton_iter_infos += [newton_iter_info]
         if solution is not None:
             self.solutions += [solution]
@@ -360,8 +378,9 @@ class ParameterOptimizeInfo:
         self._step += 1
         return self
 
-    def _finish(self, last_step_status):
+    def _finish(self, last_step_status, last_step_stable_status):
         self.last_step_status = last_step_status
+        self.last_step_stable_status = last_step_stable_status
         self._time = time.perf_counter() - self._time
         return self
 
@@ -412,7 +431,10 @@ class StaticProblem:
         self.vortex_configuration = np.atleast_1d(vortex_configuration)
         self.current_phase_relation = current_phase_relation
         self.current_sources_norm = None
-
+        # self.Asq_factorization = None
+        # self.AIpLIcA_factorization = None
+        # self.IpLIc_factorization = None
+        # self.Msq_factorization = None
 
     def save(self, filename):
         """
@@ -531,17 +553,47 @@ class StaticProblem:
         M = self.get_circuit().get_cut_matrix()
         return M @ self.current_sources
 
-    def approximate(self):
+    def approximate(self, algorithm=1):
         """
-        Computes approximate solution (with London approximation).
-        """
+        Computes approximate solutions.
 
-        theta = london_approximation(self.circuit, self._f(), self._nt(), self._Is())
-        theta = change_phase_zone(self.get_circuit(), theta, self._nt(), 0)
+        Parameters
+        ----------
+        algorithm=1:
+            Algorithm used in approximation. Can have values:
+             * 0: Does arctan approximation. This assigns phases that "wind" 2*pi around
+               vortices in z=0 phase zone, phi(x,y) = sum_i 2 * pi * n_i *
+               atan2(y-y_n_i,x-x_n_i) where vortices are located at centres of their
+               respective faces.
+             * 1: London approximation. Find theta in cycle space (theta = A.T @ ...)
+               that obeys winding rule.
+        """
+        if algorithm == 0:
+            theta = arctan_approximation(self.circuit, self._f(), self._nt())
+        elif algorithm == 1:
+            theta = london_approximation(self.circuit, self._f(), self._nt(), self._Is())
+            theta = change_phase_zone(self.get_circuit(), theta, self._nt(), 0)
+        else:
+            raise ValueError("invalid algorithm")
+        return StaticConfiguration(self, theta)
+
+    def approximate_placed_vortices(self, n, x_n, y_n):
+        """
+        Compute arctan approximation with manual placement of vortices.
+
+        Parameters
+        ----------
+        n : (N,) int array
+            Vorticity at location (x_n, y_n).
+        x_n, y_n : (N,) float arrays
+            The x,y-coordinates of vortices.
+        """
+        theta = arctan_approximation_placed_vortices(self.circuit, self._f(), n, x_n, y_n)
         return StaticConfiguration(self, theta)
 
     def compute(self, initial_guess = None, tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
-                stop_as_residual_increases=True, stop_if_not_target_n=False):
+                stop_as_residual_increases=True, stop_if_not_target_n=False,
+                use_pyamg=False):
         """
         Compute solution to static_problem using Newton iteration.
 
@@ -572,7 +624,7 @@ class StaticProblem:
             Handle containing information about newton iteration.
         """
         if initial_guess is None:
-            initial_guess = self.approximate()
+            initial_guess = self.approximate(algorithm=1)
 
         if isinstance(initial_guess, StaticConfiguration):
             initial_guess = initial_guess._th()
@@ -580,17 +632,21 @@ class StaticProblem:
         initial_guess = np.array(initial_guess, dtype=np.double)
 
         theta, status, iter_info = static_compute(self.get_circuit(), initial_guess, Is=self._Is(),
-                                                  f=self._f(), n=self._nt(), z=0, maxiter=maxiter,
+                                                  f=self._f(), n=self._nt(), z=0,
                                                   cp=self.current_phase_relation, tol=tol,
+                                                  maxiter=maxiter,
                                                   stop_as_residual_increases=stop_as_residual_increases,
-                                                  stop_if_not_target_n=stop_if_not_target_n)
+                                                  stop_if_not_target_n=stop_if_not_target_n,
+                                                  use_pyamg=use_pyamg)
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
-    def compute_frustration_bounds(self, initial_guess = None, middle_of_range_guess=None,
-                                   lambda_tol=DEF_MAX_PAR_TOL, maxiter=DEF_MAX_PAR_MAXITER,
+
+    def compute_frustration_bounds(self, initial_guess = None,
+                                   middle_of_range_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
+                                   maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                                    require_vortex_configuration_equals_target=True,
-                                   compute_parameters=None):
+                                   compute_parameters=None, stability_parameters=None):
 
         """
 
@@ -617,6 +673,7 @@ class StaticProblem:
         """
 
         options = {"lambda_tol": lambda_tol, "maxiter": maxiter, "compute_parameters": compute_parameters,
+                   "stability_parameters": stability_parameters, "require_stability": require_stability,
                    "require_vortex_configuration_equals_target": require_vortex_configuration_equals_target}
 
         if np.allclose(self._f(), 0):
@@ -640,12 +697,12 @@ class StaticProblem:
 
         largest_factor, _, largest_f_config, largest_f_info = out
         largest_x = middle_of_range_guess + largest_factor if largest_factor is not None else None
-        print(largest_f_info)
         return (smallest_x, largest_x), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
 
     def compute_maximal_current(self, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
-                                maxiter=DEF_MAX_PAR_MAXITER, compute_parameters=None,
-                                require_vortex_configuration_equals_target=True):
+                                maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
+                                require_vortex_configuration_equals_target=True,
+                                compute_parameters=None, stability_parameters=None):
 
         """
         Computes largest source current for which a stable solution exists at the
@@ -676,6 +733,8 @@ class StaticProblem:
                                         lambda_tol=lambda_tol, maxiter=maxiter,
                                         estimated_upper_bound=current_factor_initial_stepsize,
                                         compute_parameters=compute_parameters,
+                                        stability_parameters=stability_parameters,
+                                        require_stability=require_stability,
                                         require_vortex_configuration_equals_target=
                                         require_vortex_configuration_equals_target)
         max_current_factor, upper_bound, out_config, info = out
@@ -683,8 +742,9 @@ class StaticProblem:
 
     def compute_stable_region(self, angles=np.linspace(0, 2*np.pi, 61), f_middle_of_range_guess=None,
                               start_initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
-                              maxiter=DEF_MAX_PAR_MAXITER, compute_parameters=None,
-                              require_vortex_configuration_equals_target=True):
+                              maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
+                              require_vortex_configuration_equals_target=True,
+                              compute_parameters=None, stability_parameters=None):
 
         """
         Finds edge of stable region in (f, Is) space for vortex configuration n.
@@ -716,6 +776,7 @@ class StaticProblem:
         """
         num_angles = len(angles)
         options = {"lambda_tol": lambda_tol, "maxiter": maxiter, "compute_parameters": compute_parameters,
+                   "stability_parameters": stability_parameters, "require_stability": require_stability,
                    "require_vortex_configuration_equals_target": require_vortex_configuration_equals_target}
 
         frust_bnd_prb = self.new_problem(current_sources=0)
@@ -827,10 +888,9 @@ class StaticConfiguration:
 
     def get_phi(self) -> np.ndarray:
         """
-        Returns (Nn,) array containing phases at each node.
-
-        By default the last node (node with highest index number) is grounded.
+        Returns (Nn,) array containing phases at each node
         """
+        # by default the last node (node with highest index number) is grounded.
         M = self.get_circuit().get_cut_matrix()
         return self.get_circuit().Msq_solve(M @ self._th())
 
@@ -908,6 +968,41 @@ class StaticConfiguration:
         """
         return np.all(self.get_n() == self.problem.get_vortex_configuration())
 
+    def is_stable(self, maxiter=DEF_STAB_MAXITER, scheme=0, algorithm=2,
+                  accept_ratio=10, preconditioner=None) -> int:
+        """
+        Determines if a configuration is dynamically stable.
+
+        The criterion for stability is that the Jacobian matrix of the time-evolution at the
+        stationairy point is negative definite.
+
+        Parameters
+        ----------
+        maxiter=DEF_STAB_MAXITER : int
+                maximum number of iterations to determine if solutions are stable
+        scheme=0 : int
+            Scheme for what Jaccobian to compute to determine if the system is
+            stable. 0 works for all cases; 1 does not work if there is mixed inductance,
+            meaning only some faces have any inductance associated with them.
+        algorithm=0 : int
+            Algorithm used to find eigenvalues. 0 uses eigsh to find eigenvalues, 1 uses lobpcg.
+        accept_ratio=10 : int (only if algorithm=1)
+            Parameter used by lobpcg_test_negative_definite.
+        preconditioner : {None, "auto", sparse/dense matrix or LinearOperator} (only if algorithm=1)
+            Uses preconditioner which must approximate inv(J). If None, no preconditioner is used.
+            if "auto", automatically computes preconditioner using stability_get_preconditioner().
+            Note that this is independent of theta and can be used for multiple problems.
+
+        Returns
+        -------
+        status : int
+            0: stable, 1: unstable or 2: indeterminate
+        """
+        cp = self.get_problem().get_current_phase_relation()
+        status = compute_stability(self.get_circuit(), self._th(), cp, maxiter=maxiter,
+                                   scheme=scheme, algorithm=algorithm, accept_ratio=accept_ratio,
+                                   preconditioner=preconditioner)
+        return status
 
     def is_solution(self, tol=DEF_TOL):
         """
@@ -922,6 +1017,13 @@ class StaticConfiguration:
         the one specified in problem.
         """
         return self.is_solution(tol=tol) & self.satisfies_target_vortices()
+
+    def is_stable_target_solution(self, tol=DEF_TOL, stable_maxiter=DEF_STAB_MAXITER):
+        """
+        Returns if configuration is a solution, is stable and its vortex_configuration equals
+        the one specified in problem.
+        """
+        return self.is_target_solution(tol=tol) & (self.is_stable(maxiter=stable_maxiter) == 0)
 
     def get_error_kirchhoff_rules(self) -> np.ndarray:
         """
@@ -980,6 +1082,7 @@ class StaticConfiguration:
     def report(self):
         print("Kirchhoff rules error:    ", self.get_error_kirchhoff_rules())
         print("Path rules error:         ", self.get_error_winding_rules())
+        print("is stable:                ", self.is_stable() == 0)
         print("is target vortex solution:", self.satisfies_target_vortices())
 
 
@@ -994,7 +1097,7 @@ class StaticConfiguration:
             np.save(ffile, y)
             np.save(ffile, n1)
             np.save(ffile, n2)
-            np.save(ffile, self.problem.circuit.critical_current_factors)
+            np.save(ffile, self.problem.circgiduit.critical_current_factors)
             np.save(ffile, self.problem.circuit.resistance_factors)
             np.save(ffile, self.problem.circuit.capacitance_factors)
             L_is_sparse = scipy.sparse.issparse(self.problem.circuit.inductance_factors)
@@ -1148,9 +1251,9 @@ PARAMETER MAXIMIZATION ALGORITHMS
 
 def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                               estimated_upper_bound=1.0, maxiter=DEF_MAX_PAR_MAXITER,
-                              stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT,
+                              stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT, require_stability=True,
                               require_vortex_configuration_equals_target=True,
-                              compute_parameters=None):
+                              compute_parameters=None, stability_parameters=None):
     """
     Finds the largest value of lambda for which problem_function(lambda)
     has a stable stationary state.
@@ -1183,6 +1286,9 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
         Maximum number of iterations.
     stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT : float
         Lambda is multiplied by this factor every time an upper_bound is found.
+    require_stability=True : bool
+        If True, convergence to a state that is dynamically unstable is
+        considered diverged. (see StaticConfiguration.is_stable())
     require_vortex_configuration_equals_target=True : bool
         If True, A result of .compute() is only considered a solution if its
         vortex configuration matches its set "target" vortex configuration
@@ -1191,6 +1297,9 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
         Keyword-argument parameters passed to problem_function(lambda).compute()
         defined as a dictionary or as a function with lambda as input that
         generates a dictionary.
+    stability_parameters: dict or func(lambda) -> dict
+        Keyword-argument parameters passed to config.is_stable() defined as a
+        dictionary or as a function with lambda as input that generates a dictionary.
 
     Returns
     -------
@@ -1206,16 +1315,20 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
 
     if compute_parameters is None:
         compute_parameters = {}
+    if stability_parameters is None:
+        stability_parameters = {}
+
+    stable_status = None
 
     # prepare info handle
-    info = ParameterOptimizeInfo(problem_function, lambda_tol,
+    info = ParameterOptimizeInfo(problem_function, lambda_tol, require_stability,
                                  require_vortex_configuration_equals_target, maxiter)
 
     # determine solution at lambda=0
     cur_problem = problem_function(0)
 
     if initial_guess is None:
-        initial_guess = cur_problem.approximate()
+        initial_guess = cur_problem.approximate(algorithm=1)
     if hasattr(initial_guess, "__call__"):
         theta0 = initial_guess(0)
     else:
@@ -1229,6 +1342,10 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
     if require_vortex_configuration_equals_target:
         is_target_vortex_config = config.satisfies_target_vortices()
         is_solution &= is_target_vortex_config
+    if is_solution and require_stability:
+        stab_param = stability_parameters if isinstance(stability_parameters, dict) else stability_parameters(0)
+        stable_status = config.is_stable(**stab_param)
+        is_solution &= stable_status == 0
     theta = config.theta
 
     info._preset(is_solution)
@@ -1262,14 +1379,27 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
             has_converged &= is_target_vortex_config
         else:
             is_target_vortex_config = False
+
         theta = config.theta
+
         if status == 2:
             break
-        is_solution = has_converged
+
+        if require_stability:
+            if has_converged:
+                stab_param = stability_parameters if isinstance(stability_parameters, dict) else stability_parameters(lambda_val)
+                stable_status = config.is_stable(**stab_param)
+                is_stable = stable_status == 0
+            else:
+                is_stable = False
+            is_solution = has_converged and is_stable
+        else:
+            is_stable = False
+            is_solution = has_converged
 
         # update information on current iteration in info handle
         info._set(lambda_val, config if has_converged else None, lambda_stepsize,
-                  has_converged, newton_iter_info, is_target_vortex_config)
+                  has_converged, newton_iter_info, is_target_vortex_config, is_stable)
 
         # determine new lambda value to try (and corresponding initial condition)
         if is_solution:
@@ -1283,11 +1413,13 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
             break
         if iter_nr >= (maxiter - 1):
             break
-
+        if require_stability and has_converged:
+            if stable_status == 2:
+                break
         iter_nr += 1
 
     # determine lower- and upperbound on lambda
-    info._finish(status)
+    info._finish(status, stable_status)
     lower_bound = lambda_val - lambda_stepsize
     upper_bound = lambda_val if found_upper_bound else np.inf
 
@@ -1319,6 +1451,30 @@ def london_approximation(circuit: Circuit, f, n, Is):
     Isc = np.broadcast_to(Is, (Nj,))
     return iIc @ (A.T @ circuit._AiIcpLA_solve(df - A @ (iIc + L) @ Isc) + Isc)
 
+def arctan_approximation(circuit: Circuit, f, n):
+    """
+    arctan_approximation implemented in arctan_approximation_placed_vortices()
+    """
+    centr_x, centr_y = circuit.get_face_centroids()
+    return arctan_approximation_placed_vortices(circuit, f, n[n != 0], centr_x[n != 0], centr_y[n != 0])
+
+def arctan_approximation_placed_vortices(circuit: Circuit, f, n, x_n, y_n):
+    """
+    Core algorithm computing arctan approximation.
+    """
+    n = np.atleast_1d(n)
+    x_n = np.atleast_1d(x_n)
+    y_n = np.atleast_1d(y_n)
+    MT = circuit.get_cut_matrix().T
+    # if IpLIc_solver is None:
+    #     Nj = circuit._Nj()
+    #     L, Ic = circuit._L(), circuit._Ic()
+    #     IpLIc_solver = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
+    x, y = circuit.get_node_coordinates()
+    MTphi = MT @ np.sum(np.arctan2(y - y_n[:, None], x - x_n[:, None]) * n[:, None], axis=0)
+    out = principle_value(MTphi) + get_g(circuit, f=f, z=0)
+    return circuit._IpLIc_solve(out) + 2 * np.pi * np.round(MTphi / (2 * np.pi))
+
 
 """
 STATIONAIRY STATE FINDING ALGORITHMS
@@ -1327,7 +1483,8 @@ STATIONAIRY STATE FINDING ALGORITHMS
 
 def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
                    cp=DefaultCPR(), tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
-                   stop_as_residual_increases=True, stop_if_not_target_n=False):
+                   stop_as_residual_increases=True, stop_if_not_target_n=False,
+                   use_pyamg=False):
     """
     Core algorithm computing stationary state of a Josephson Junction Circuit using Newtons method.
 
@@ -1416,10 +1573,10 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
         # iteration computations
 
         q = cp.d_eval(Ic, theta)
-        q[np.abs(q) < 0.1 * tol] = 0.1 * tol
+        # q[np.abs(q) < 0.1 * tol] = 0.1 * tol
         S = L + scipy.sparse.diags(1/q, 0)
         y = (I - Is) / q
-        j = circuit.Asq_solve_sandwich(A @ (theta - y - LIs) + df, S)
+        j = circuit.Asq_solve_sandwich(A @ (theta - y - LIs) + df, S, use_pyamg=use_pyamg)
         if np.any(np.isnan(j)) or np.any(np.isinf(j)):
             theta += 10 ** 10
         else:
@@ -1439,7 +1596,269 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
 
     return theta, info.get_status(), info
 
+"""
+STABILITY ALGORITHMS
+"""
 
+def compute_stability(circuit: Circuit, theta, cp, maxiter=DEF_STAB_MAXITER,
+                      scheme=0, algorithm=2, accept_ratio=10, preconditioner=None):
+    """
+    Core implementation to determine if a configuration on a circuit is stable in the sense that
+    the Jacobian is negative definite. Does not explicitly check if configuration is a stationairy point.
 
+    Parameters
+    ----------
+    circuit : Circuit
+        Circuit
+    theta : (Nj,) array
+        Gauge invariant phase difference of static configuration of circuit.
+    cp : CurrentPhaseRelation
+        Current-phase relation.
+    maxiter=DEF_STAB_MAXITER : int
+        Maximum number of iterations done to determine stability.
+    algorithm=2 : int
+        Algorithm used. 0 uses eigsh to find eigenvalues, 1 uses lobpcg. 2 uses choleski factorization.
+    accept_ratio :
+        Parameter used by lobpcg_test_negative_definite (if algorithm=1).
+    preconditioner : {sparse matrix, dense matrix, LinearOperator, None or "auto"}
+        Only if algorithm is 1. Uses preconditioner which must approximate inv(J).
+        If None, no preconditioner is used. if "auto", automatically computes preconditioner
+        using stability_get_preconditioner(). Note that this is independent of theta and can
+        be used for multiple problems.
+    Returns
+    -------
+    status : int
+        0: stable, 1: unstable or 2: indeterminate
+    """
+    if scheme == 0:
+        J = stability_scheme_0(circuit, theta, cp)
+    if scheme == 1:
+        J = stability_scheme_1(circuit, theta, cp)
 
+    if algorithm == 0:
+        status, largest_eigenvalue = eigsh_test_negative_definite(J, maxiter=maxiter)
+        return status
+    if algorithm == 1:
+        if preconditioner == "auto":
+            preconditioner = stability_get_preconditioner(circuit, cp, scheme)
+        out = lobpcg_test_negative_definite(J, preconditioner=preconditioner, accept_ratio=accept_ratio,
+                                            maxiter=maxiter)
+        status, eigenvalue_list, residual_list = out
+        return status
+    if algorithm == 2:
+        status = is_positive_definite_superlu(-J)
+        if status == 2:
+            raise ValueError("Choleski factorization failed; unable to determine positive definiteness")
+        return status
+    raise ValueError("invalid algorithm. Must be 0 (eigsh) or 1 (lobpcg) or 2 (choleski)")
+
+def is_positive_definite_superlu(X):
+    """
+    Determine if matrix is positive definite using superlu package.
+
+    Parameters
+    ----------
+    X : sparse matrix
+        Sparse matrix.
+
+    Returns
+    -------
+    status : int
+        0 -> positive definite, 1 -> not positive definite, 2 -> choleski factorization failed
+
+    """
+    eps = 10 * np.finfo(float).eps
+    f = scipy.sparse.linalg.splu(X, diag_pivot_thresh=0)
+    Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
+    if not np.allclose((Up - f.U).data, 0):
+        return 1
+    return int(~np.all(f.U.diagonal() > -eps))
+
+def stability_get_preconditioner(circuit: Circuit, cp, scheme):
+    """
+    Compute preconditioner to determine stability
+
+    Scheme 1 with inductance cannot be preconditioned.
+
+    Note that this preconditioner is independent of theta, so can be reused
+    for multiple problems. Generating a preconditioner is slow as it does
+    a factorization.
+    """
+    Nj, Nnr = circuit._Nj(), circuit._Nnr()
+    q = cp.d_eval(circuit._Ic(), np.zeros(Nj))
+    A, M, L = circuit.get_cycle_matrix(), circuit._Mr(), circuit._L()
+    if scheme == 0:
+        AL = (A @ L @ A.T).tocoo()
+        ALL = scipy.sparse.coo_matrix((AL.data, (AL.row + Nnr, AL.col + Nnr)), shape=(Nj, Nj)).tocsc()
+        m = scipy.sparse.vstack([M, A @ L]).tocsc()
+        X = - (m @ scipy.sparse.diags(q, 0) @ m.T + ALL)
+        select = np.diff(X.indptr) != 0
+        X = X[select, :][:, select]
+    if scheme == 1:
+        if circuit._has_inductance():
+            raise ValueError("Scheme 1 with inductance cannot be preconditioned.")
+        else:
+            X = - M @ scipy.sparse.diags(q, 0) @ M.T
+    X_solver = scipy.sparse.linalg.factorized(X)
+    return scipy.sparse.linalg.LinearOperator(X.shape, matvec=X_solver)
+
+def stability_scheme_0(circuit: Circuit, theta, cp):
+    """
+    Scheme to determine matrix for which the system is stable if it is negative definite.
+
+    Works for mixed inductance but generally slower than scheme 1.
+
+    Scheme 0: matrix is:
+     * J = m @ X @ m.T
+     * where X = -grad cp(Ic, theta) - A.T @ inv(A @ L @ A.T) @ A
+     * and m = [M ; A @ L]
+     * all-zero rows and columns are removed.
+    """
+    Nj, Nnr = circuit._Nj(), circuit._Nnr()
+    A, M, L = circuit.get_cycle_matrix(),  circuit._Mr(), circuit._L()
+    Ic = circuit._Ic()
+    q = cp.d_eval(Ic, theta)
+    AL = (A @ L @ A.T).tocoo()
+    ALL = scipy.sparse.coo_matrix((AL.data, (AL.row + Nnr, AL.col + Nnr)), shape=(Nj, Nj)).tocsc()
+    m = scipy.sparse.vstack([M, A @ L]).tocsc()
+    J = - (m @ scipy.sparse.diags(q, 0) @ m.T + ALL)
+    select = np.diff(J.indptr)!=0
+    J = J[select, :][:, select]
+    return J
+
+def stability_scheme_1(circuit: Circuit, theta, cp):
+    """
+    Scheme to determine matrix for which the system is stable if it is negative definite.
+
+    Generally faster than scheme 0 but does not work for mixed inductance (where only some
+    faces have any inductance associated with them).
+
+    Scheme 1: matrix is:
+     * if L=0: J = -M @ grad cp(Ic, theta) @ M.T
+     * if L!=0: J = -grad cp(Ic, theta) - A.T @ inv(A @ L @ A.T) @ A
+    """
+    if circuit._has_mixed_inductance():
+        raise ValueError("Scheme 1 does not allow mixed inductance.")
+    Ic = circuit._Ic()
+    q = cp.d_eval(Ic, theta)
+    if circuit._has_inductance():
+        Nj = circuit._Nj()
+        A, L = circuit.get_cycle_matrix(), circuit._L()
+        ALA_solver = scipy.sparse.linalg.factorized(A @ L @ A.T)
+        def func(x):
+            x = x.reshape(Nj, 1)
+            return -q[:, None] * x - A.T @ ALA_solver(A @ x)
+        J = scipy.sparse.linalg.LinearOperator((Nj, Nj), matvec=func)
+    else:
+        M = circuit._Mr()
+        J = -M @ scipy.sparse.diags(q, 0) @ M.T
+    return J
+
+def eigsh_test_negative_definite(A, maxiter=DEF_STAB_MAXITER):
+    """
+    Determines if symmetric matrix A is negative definite using eigsh.
+
+    Parameters
+    ----------
+    A : {sparse matrix, dense matrix, LinearOperator}
+        Matrix to determine if positive definite
+    maxiter=200 :
+        Maximum number of iterations. If exceeded; result is indeterminate.
+
+    Returns
+    -------
+    status : int
+        0: negative definite, 1: not negative definite or 2: indeterminate
+    largest_eigenvalue : float
+        Largest eigenvalue determined by eigsh algorithm.
+    """
+    try:
+        w, v = scipy.sparse.linalg.eigsh(A, 1, maxiter=maxiter, which="LA")
+        largest_eigenvalue = w[0]
+        is_stable = largest_eigenvalue < 20 * np.finfo(float).eps
+        status = int(~is_stable)
+    except ArpackNoConvergence:
+        print("warning: eigsh ran out of steps. Consider increasing maxiter or"
+              " using other algorithm.")
+        status = 2
+        largest_eigenvalue = np.nan
+    return status, largest_eigenvalue
+
+def lobpcg_test_negative_definite(A, preconditioner=None, accept_ratio=10, maxiter=DEF_STAB_MAXITER):
+
+    """
+    Determines if symmetric matrix A is negative definite using the LOBPCG method.
+
+    Does several lobpcg runs with increasing iter_count. Algorithm stops if a run
+    has outcome max_eigv and residual that obey:
+     * max_eigv + accept_ratio * residual < eps -> negative definite (status=0)
+     * max_eigv > eps -> not negative definite (status=1)
+     * total_iters > maxiter -> indeterminate (status=2)
+
+    The iter_count at the first run is 2 and increased by one every run, and every consecutive
+    run uses the previous eigenvector as starting vector.
+
+    Parameters
+    ----------
+    A : {sparse matrix, dense matrix, LinearOperator}
+        Matrix to determine if positive definite
+    preconditioner=None : {dense matrix, sparse matrix, LinearOperator, None}
+        Preconditioner to A, should approximate the iverse of A. None means identity matrix.
+    accept_ratio=10 : int
+        Considered converged if max_eigv + accept_ratio * residual < eps.
+    maxiter=200 :
+        Maximum number of iterations. If exceeded; result is indeterminate.
+
+    Returns
+    -------
+    status : int
+        0: negative definite, 1: not negative definite or 2: indeterminate
+    eigenvalue_list (steps,) array
+        Largest eigenvalue found at each iteration.
+    residual_list (steps,) array
+        Residual at each iteration.
+    """
+    eps = 2 * np.finfo(float).eps
+
+    iter_count = 2
+    total_iters = iter_count
+
+    x0 = np.random.rand(A.shape[0], 1)
+    lobpcg_out = scipy.sparse.linalg.lobpcg(A, x0, M=preconditioner, maxiter=iter_count, tol=eps,
+                                            retLambdaHistory=True, retResidualNormsHistory=True)
+    if len(lobpcg_out) <= 2:
+        max_eigenvalue = lobpcg_out[0]
+        residual = np.array([0])
+    else:
+        max_eigenvalue = np.stack(lobpcg_out[2]).ravel()[1:]
+        residual = np.stack(lobpcg_out[3]).ravel()
+    if max_eigenvalue.size == 0:
+        max_eigenvalue = np.array([-np.inf])
+    max_eigenvalue = np.array(max_eigenvalue)
+
+    while (max_eigenvalue[-1] + accept_ratio * residual[-1] > eps) and total_iters < maxiter \
+            and max_eigenvalue[-1] < eps:
+        if total_iters > maxiter - iter_count:
+            return 2, max_eigenvalue, residual
+        lobpcg_out = scipy.sparse.linalg.lobpcg(A, lobpcg_out[1], M=preconditioner,
+                                                maxiter=iter_count, tol=eps, retLambdaHistory=True,
+                                                retResidualNormsHistory=True)
+        total_iters += iter_count
+        iter_count += 1
+        if len(lobpcg_out) <= 2:
+            max_eigenvalue = np.append(max_eigenvalue, [lobpcg_out[0]])
+            residual = np.append(residual, np.array([0]))
+        else:
+            new_max_eigv = np.stack(lobpcg_out[2]).ravel()[1:]
+            if new_max_eigv.size == 0:
+                break
+            max_eigenvalue = np.append(max_eigenvalue, new_max_eigv)
+            residual = np.append(residual, lobpcg_out[3])
+
+    is_negative_definite = max_eigenvalue[-1] + accept_ratio * residual[-1] < eps
+    if isinstance(is_negative_definite, np.ndarray):
+        is_negative_definite = is_negative_definite[0]
+    status = int(~is_negative_definite)
+    eigenvalue_list, residual_list = max_eigenvalue, residual
+    return status, eigenvalue_list, residual_list
 

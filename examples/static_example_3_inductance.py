@@ -29,7 +29,7 @@ if __name__ == "__main__":
         out, _, info = prob.compute(tol=1E-12)
         out.plot(face_quantity="flux", face_quantity_logarithmic_colors=True,
                  face_quantity_clim=[1E-3, 1], title=f"beta_L={L}", arrow_color=[1, 1, 0.3])
-        print(info)
+
 
     plt.show()
 
