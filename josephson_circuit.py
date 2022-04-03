@@ -153,7 +153,8 @@ class Circuit:
         """
         if self._Asq_factorized is None:
             self._Asq_factorized = scipy.sparse.linalg.factorized(self.cycle_matrix @ self.cycle_matrix.T)
-        return self._Asq_factorized(b)
+        result = self._Asq_factorized(b)
+        return result
 
     def Msq_solve_sandwich(self, b, S):
         """
@@ -196,7 +197,7 @@ class Circuit:
         """
         Sd = S.diagonal()
         if S.nnz == np.count_nonzero(Sd):
-            if np.allclose(Sd[0], Sd):
+            if np.allclose(Sd[0], Sd, rtol=1E-14):
                 return self.Asq_solve(b) / Sd[0]
         if use_pyamg:
             import pyamg
@@ -1025,6 +1026,7 @@ class SquareArray(Circuit, Lattice):
         Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
         Lattice.__init__(self, count_x, count_y, x_scale, y_scale)
         Circuit.__init__(self, EmbeddedSquareGraph(count_x, count_y, x_scale, y_scale))
+        self._Asq_dst_K = None
 
     def _I_node_h(self):
         x, y = self.get_node_coordinates()
@@ -1034,7 +1036,7 @@ class SquareArray(Circuit, Lattice):
         x, y = self.get_node_coordinates()
         return (y == 0).astype(int) - np.isclose(y, (self.count_y - 1) * self.y_scale).astype(int)
 
-    def Asq_solve(self, b, type="fast"):
+    def Asq_solve(self, b, algorithm=0):
         """
         Solves A @ A.T @ x = b (where A is self.get_cycle_matrix()).
 
@@ -1042,32 +1044,36 @@ class SquareArray(Circuit, Lattice):
         ----------
         b : (Nf,) or (Nf, W) array
             Right-hand side of system
+        algorithm=0 : int
+            0 means solve with LU factorization, 1  means using sine transform (is faster for large arrays)
 
         Returns
         -------
         x : shape of b
             solution of system
         """
-
-        if not type == "fast":
+        if algorithm == 0:
             return super().Asq_solve(b)
-        Nx, Ny = self.count_x, self.count_y
-        squeeze = False
-        if self._Asq_factorized is None:
-            k1 = np.cos(np.pi * (np.arange(Nx-1) + 1) / Nx)
-            k2 = np.cos(np.pi * (np.arange(Ny-1) + 1) / Ny)
-            self._Asq_factorized = 4 - 2 * k1 - 2 * k2[:, None]
-        if b.ndim == 2:
-            if b.shape[1] != 1:
-                W = b.shape[1]
-                B = scipy.fftpack.dstn(b.T.reshape(W, Ny-1, Nx-1), type=1, norm="ortho", axes=[1, 2])
-                out = scipy.fftpack.idstn(B / self._Asq_factorized, type=1, norm="ortho", axes=[1, 2])
-                return out.reshape(W, -1).T
-            squeeze = True
-            b = b[:, 0]
-        if b.ndim == 1:
-            out = scipy.fftpack.idstn(scipy.fftpack.dstn(b.reshape(Ny-1, Nx-1), type=1, norm="ortho") / self._Asq_factorized, type=1, norm="ortho")
-            return out.ravel() if not squeeze else out.ravel()[:, None]
+        if algorithm == 1:
+            Nx, Ny = self.count_x, self.count_y
+            squeeze = False
+            if self._Asq_dst_K is None:
+                k1 = np.cos(np.pi * (np.arange(Nx-1) + 1) / Nx)
+                k2 = np.cos(np.pi * (np.arange(Ny-1) + 1) / Ny)
+                self._Asq_dst_K = 4 - 2 * k1 - 2 * k2[:, None]
+            if b.ndim == 2:
+                if b.shape[1] != 1:
+                    W = b.shape[1]
+                    B = scipy.fftpack.dstn(b.T.reshape(W, Ny-1, Nx-1), type=1, norm="ortho", axes=[1, 2])
+                    out = scipy.fftpack.idstn(B / self._Asq_dst_K, type=1, norm="ortho", axes=[1, 2])
+                    return out.reshape(W, -1).T
+                squeeze = True
+                b = b[:, 0]
+            if b.ndim == 1:
+                out = scipy.fftpack.idstn(scipy.fftpack.dstn(b.reshape(Ny-1, Nx-1), type=1, norm="ortho")
+                                          / self._Asq_dst_K, type=1, norm="ortho")
+                return out.ravel() if not squeeze else out.ravel()[:, None]
+        raise ValueError("Invalid algorithm for square array Asq_solve. Must be 0 or 1.")
 
 
 

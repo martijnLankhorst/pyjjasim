@@ -1174,11 +1174,13 @@ def get_winding_error(circuit: Circuit, th, I, df):
     Residual of winding rule: A @ (thp - g) = 0. Normalized; so between 0 and 1.
     (where thp = th + L @ I)
     """
+    def norm(x):
+        return scipy.linalg.norm(x) / np.sqrt(len(x))
     A = circuit.get_cycle_matrix()
     L = circuit.get_inductance_factors()
     A_norm = circuit._get_A_norm()
-    normalizer = A_norm * (scipy.linalg.norm(th) + scipy.linalg.norm(L @ I)) + scipy.linalg.norm(df)
-    return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(df + A @ (th + L @ I)) / normalizer
+    normalizer = A_norm * (norm(th) + norm(L @ I)) + norm(df)
+    return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else norm(df + A @ (th + L @ I)) / normalizer
 
 def principle_value(theta):
     """
@@ -1556,7 +1558,7 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
         # iteration computations
 
         q = cp.d_eval(Ic, theta)
-        q[np.abs(q) < 0.1 * tol] = 0.1 * tol
+        # q[np.abs(q) < 0.1 * tol] = 0.1 * tol
         S = L + scipy.sparse.diags(1/q, 0)
         y = (I - Is) / q
         j = circuit.Asq_solve_sandwich(A @ (theta - y - LIs) + df, S, use_pyamg=use_pyamg)
