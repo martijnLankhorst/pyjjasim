@@ -113,7 +113,7 @@ class Circuit:
         self._Anorm = None
         self._Msq_factorized = None
         self._Asq_factorized = None
-        self._AIpLIcA_factorized = None
+        self._AiIcpLA_factorized = None
         self._IpLIc_factorized = None
         self._ALA_factorized = None
         self._Msq_S_factorized = None
@@ -217,15 +217,20 @@ class Circuit:
             AsqF = scipy.sparse.linalg.factorized(self.cycle_matrix @ S @ self.cycle_matrix.T)
             return AsqF(b)
 
-    def _AIpLIcA_solve(self, b):
+    def _AiIcpLA_solve(self, b):
+        if self._has_identical_critical_current():
+            if np.abs(self.critical_current_factors[0]) < 1E-12:
+                return np.zeros(self.face_count(), dtype=np.double)
         if self._has_only_identical_self_inductance() and self._has_identical_critical_current():
-            const = 1 + self.inductance_factors.diagonal()[0] * self.critical_current_factors[0]
+            const = 1/self.critical_current_factors[0] + self.inductance_factors.diagonal()[0]
             return self.Asq_solve(b) / const
-        if self._AIpLIcA_factorized is None:
+        if self._AiIcpLA_factorized is None:
             Nj, A = self._Nj(), self.get_cycle_matrix()
-            L, Ic = self._L(), scipy.sparse.diags(self._Ic())
-            self._AIpLIcA_factorized = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
-        return self._AIpLIcA_factorized(b)
+            Ic = self._Ic().copy()
+            Ic[np.abs(Ic) > 1E-12] = Ic[np.abs(Ic) > 1E-12] ** -1
+            L, iIc = self._L(), scipy.sparse.diags(Ic)
+            self._AiIcpLA_factorized = scipy.sparse.linalg.factorized(A @ (iIc + L) @ A.T)
+        return self._AiIcpLA_factorized(b)
 
     def _ALA_solve(self, b):
         if self._has_only_identical_self_inductance():

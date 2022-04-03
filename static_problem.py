@@ -571,7 +571,7 @@ class StaticProblem:
         if algorithm == 0:
             theta = arctan_approximation(self.circuit, self._f(), self._nt())
         elif algorithm == 1:
-            theta = london_approximation(self.circuit, self._f(), self._nt())
+            theta = london_approximation(self.circuit, self._f(), self._nt(), self._Is())
             theta = change_phase_zone(self.get_circuit(), theta, self._nt(), 0)
         else:
             raise ValueError("invalid algorithm")
@@ -1274,6 +1274,9 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
         StaticProblem object.
     initial_guess=None : valid initial_guess input for StaticProblem.compute()
         Initial guess for problem_function(0) used as starting point for iteration.
+        At subsequent iterations the solution theta of highest valid lambda so far is used.
+        None means problem_function(0).approximate() is used.
+        Alternative input: initial_guess(lambda) -> theta. Initial guess used at every iteration.
     lambda_tol=DEF_MAX_PAR_TOL : float
         Target precision for parameter lambda. Stops iterating if
         upperbound - lowerbound < lambda_tol * lower_bound.
@@ -1323,11 +1326,15 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
 
     # determine solution at lambda=0
     cur_problem = problem_function(0)
+
     if initial_guess is None:
         initial_guess = cur_problem.approximate(algorithm=1)
-    if isinstance(initial_guess, StaticConfiguration):
-        initial_guess = initial_guess._th()
-    theta0 = initial_guess
+    if hasattr(initial_guess, "__call__"):
+        theta0 = initial_guess(0)
+    else:
+        theta0 = initial_guess
+    if isinstance(theta0, StaticConfiguration):
+        theta0 = theta0._th()
     compute_param = compute_parameters if isinstance(compute_parameters, dict) else compute_parameters(0)
     out = cur_problem.compute(initial_guess=theta0, **compute_param)
     config, status, newton_iter_info = out[0], out[1], out[2]
@@ -1359,6 +1366,10 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
 
         # determine solution at current lambda
         cur_problem = problem_function(lambda_val)
+        if hasattr(initial_guess, "__call__"):
+            theta0 = initial_guess(lambda_val)
+            if isinstance(theta0, StaticConfiguration):
+                theta0 = theta0._th()
         compute_param = compute_parameters if isinstance(compute_parameters, dict) else compute_parameters(lambda_val)
         out = cur_problem.compute(initial_guess=theta0, **compute_param)
         config, status, newton_iter_info = out[0], out[1], out[2]
@@ -1393,7 +1404,7 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
         # determine new lambda value to try (and corresponding initial condition)
         if is_solution:
             lambda_val += lambda_stepsize
-            theta0 = theta
+            theta0 = theta.copy()
         else:
             lambda_val -= lambda_stepsize * (1 - stepsize_reduction_factor)
             lambda_stepsize*=stepsize_reduction_factor
@@ -1424,17 +1435,21 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
 APPROXIMATE STATE FINDING ALGORITHMS
 """
 
-def london_approximation(circuit: Circuit, f, n):
+def london_approximation(circuit: Circuit, f, n, Is):
     """
     Core algorithm computing london approximation.
     """
-    A, Nf = circuit.get_cycle_matrix(),  circuit._Nf()
-    # if AIpLIcA_solver is None:
-    #     Nj = circuit._Nj()
-    #     L, Ic = circuit._L(), circuit._Ic()
-    #     AIpLIcA_solver = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
-    return 2 * np.pi * A.T @ circuit._AIpLIcA_solve(np.broadcast_to(n - f, (Nf,)))
-
+    Nj = circuit.junction_count()
+    if circuit._has_identical_critical_current():
+        if np.abs(circuit.critical_current_factors[0]) < 1E-12:
+            return np.zeros(Nj, dtype=np.double)
+    A, Nf = circuit.get_cycle_matrix(), circuit._Nf()
+    Ic = circuit._Ic().copy()
+    Ic[np.abs(Ic) > 1E-12] = Ic[np.abs(Ic) > 1E-12] ** -1
+    L, iIc = circuit._L(), scipy.sparse.diags(Ic)
+    df = 2 * np.pi * np.broadcast_to(n - f, (Nf,))
+    Isc = np.broadcast_to(Is, (Nj,))
+    return iIc @ (A.T @ circuit._AiIcpLA_solve(df - A @ (iIc + L) @ Isc) + Isc)
 
 def arctan_approximation(circuit: Circuit, f, n):
     """
