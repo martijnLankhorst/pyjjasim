@@ -18,7 +18,7 @@ if __name__ == "__main__":
     N = 20
 
     sq_array = SquareArray(N, N)
-    sq_array.set_inductance_factors(10)
+    sq_array.set_inductance_factors(0)
     # x = np.ones(sq_array._Nj())
     # x[np.random.rand(sq_array._Nj()) < 0.3] = 0
     # x = np.random.rand(sq_array._Nj())
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     Is = 0.9 * sq_array.current_base(angle=0)[:, None, None] * np.ones((1, W, 1))
     dt = 0.05
     Nt = 50000
-    T = 0.001 * np.ones((sq_array.junction_count(), W, 1))
+    T = 0 * np.ones((sq_array.junction_count(), W, 1))
     store_stepsize = 5
     ts = np.arange(0, Nt, store_stepsize)
 

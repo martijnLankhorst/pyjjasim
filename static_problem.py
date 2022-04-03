@@ -592,7 +592,7 @@ class StaticProblem:
         return StaticConfiguration(self, theta)
 
     def compute(self, initial_guess = None, tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
-                stop_as_residual_increases=True, stop_if_not_target_n=False, algorithm=1,
+                stop_as_residual_increases=True, stop_if_not_target_n=False,
                 use_pyamg=False):
         """
         Compute solution to static_problem using Newton iteration.
@@ -637,7 +637,7 @@ class StaticProblem:
                                                   maxiter=maxiter,
                                                   stop_as_residual_increases=stop_as_residual_increases,
                                                   stop_if_not_target_n=stop_if_not_target_n,
-                                                  algorithm=algorithm, use_pyamg=use_pyamg)
+                                                  use_pyamg=use_pyamg)
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
@@ -844,32 +844,6 @@ class StaticProblem:
             self.current_sources_norm = scipy.linalg.norm(np.broadcast_to(self.current_sources, (self.circuit._Nj(),)))
         return self.current_sources_norm
 
-    # def _Asq_factorization(self):
-    #     if self.Asq_factorization is None:
-    #         A = self.get_circuit().get_cycle_matrix()
-    #         self.Asq_factorization = scipy.sparse.linalg.factorized(A @ A.T)
-    #     return self.Asq_factorization
-    #
-    # def _AIpLIcA_factorization(self):
-    #     if self.AIpLIcA_factorization is None:
-    #         Nj, A = self.get_circuit()._Nj(), self.get_circuit().get_cycle_matrix()
-    #         L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
-    #         self.AIpLIcA_factorization = scipy.sparse.linalg.factorized(A @ (scipy.sparse.eye(Nj) + L @ Ic) @ A.T)
-    #     return self.AIpLIcA_factorization
-    #
-    # def _IpLIc_factorization(self):
-    #     if self.IpLIc_factorization is None:
-    #         Nj = self.get_circuit()._Nj()
-    #         L, Ic = self.get_circuit()._L(), scipy.sparse.diags(self.get_circuit()._Ic())
-    #         self.IpLIc_factorization = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
-    #     return self.IpLIc_factorization
-    #
-    # def _Msq_factorization(self):
-    #     if self.Msq_factorization is None:
-    #         M = self.get_circuit()._Mr()
-    #         self.Msq_factorization = scipy.sparse.linalg.factorized(M @ M.T)
-    #     return self.Msq_factorization
-
 
 class StaticConfiguration:
     """
@@ -1064,7 +1038,7 @@ class StaticConfiguration:
         """
         circuit, problem = self.get_circuit(), self.get_problem()
         f, L = problem._f(), circuit._L()
-        return get_winding_error(circuit, self._th() + L @ self.get_I(), get_g(circuit, f, 0))
+        return get_winding_error(circuit, self._th() , self.get_I(), 2 * np.pi * f)
 
     def get_error(self):
         """
@@ -1195,15 +1169,16 @@ def get_kirchhoff_error(circuit: Circuit, I, Is, precomputed_Is_norm=None):
     normalizer = M_norm * (precomputed_Is_norm + scipy.linalg.norm(I))
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(b) / normalizer
 
-def get_winding_error(circuit: Circuit, th_p, g):
+def get_winding_error(circuit: Circuit, th, I, df):
     """
     Residual of winding rule: A @ (thp - g) = 0. Normalized; so between 0 and 1.
     (where thp = th + L @ I)
     """
     A = circuit.get_cycle_matrix()
+    L = circuit.get_inductance_factors()
     A_norm = circuit._get_A_norm()
-    normalizer = A_norm * (scipy.linalg.norm(th_p) + scipy.linalg.norm(g))
-    return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(A @ (th_p - g)) / normalizer
+    normalizer = A_norm * (scipy.linalg.norm(th) + scipy.linalg.norm(L @ I)) + scipy.linalg.norm(df)
+    return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else scipy.linalg.norm(df + A @ (th + L @ I)) / normalizer
 
 def principle_value(theta):
     """
@@ -1492,7 +1467,7 @@ STATIONAIRY STATE FINDING ALGORITHMS
 def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
                    cp=DefaultCPR(), tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
                    stop_as_residual_increases=True, stop_if_not_target_n=False,
-                   algorithm=1, use_pyamg=False):
+                   use_pyamg=False):
     """
     Core algorithm computing stationary state of a Josephson Junction Circuit using Newtons method.
 
@@ -1559,16 +1534,15 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
     n = np.ones((Nf,), dtype=int) * n if np.array(n).size == 1 else n
 
     # iteration-0 computations
-    g = get_g(circuit, f=f, z=z)
-
+    df = 2 * np.pi * (f - z)
     theta = theta0.copy()
     I = cp.eval(Ic, theta)
+    LIs = L @ Is
     Is_norm = scipy.linalg.norm(Is)
 
     # iteration-0 compute errors
     error1 = get_kirchhoff_error(circuit, I, Is,  precomputed_Is_norm=Is_norm)
-    error2 = get_winding_error(circuit, theta + L @ I, g)
-
+    error2 = get_winding_error(circuit, theta, I, df)
     error = max(error1, error2)
     is_target_n = np.all(A @ (np.round(theta / (2 * np.pi))).astype(int) == z - n)
     info._set(error, is_target_n)
@@ -1582,29 +1556,19 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
         # iteration computations
 
         q = cp.d_eval(Ic, theta)
-        if algorithm == 0:
-            J = scipy.sparse.vstack([Mr @ scipy.sparse.diags(q, 0), A @ (scipy.sparse.eye(Nj) + L @ scipy.sparse.diags(q, 0))])
-
-            J_solver = scipy.sparse.linalg.factorized(J.tocsc())
-            F = np.concatenate([Mr @ (I - Is), A @ (theta - g + L @ I)])
-            theta -= J_solver(F)
-        if algorithm == 1:
-            q[np.abs(q) < 0.1 * tol] = 0.1 * tol
-            S = L + scipy.sparse.diags(1/q, 0)
-            b1 = M @ (Is - I)
-            yb = M.T @ circuit.Msq_solve(b1)
-            b2 = A @ (g - theta - L @ I)
-            s = circuit.Asq_solve_sandwich(b2 - A @ S @ yb, S, use_pyamg=use_pyamg)
-            if np.any(np.isnan(s)) or np.any(np.isinf(s)):
-                theta += 10 ** 10
-            else:
-                theta += (yb + A.T @ s) / q
-
+        q[np.abs(q) < 0.1 * tol] = 0.1 * tol
+        S = L + scipy.sparse.diags(1/q, 0)
+        y = (I - Is) / q
+        j = circuit.Asq_solve_sandwich(A @ (theta - y - LIs) + df, S, use_pyamg=use_pyamg)
+        if np.any(np.isnan(j)) or np.any(np.isinf(j)):
+            theta += 10 ** 10
+        else:
+            theta -= y + (A.T @ j) / q
         I = cp.eval(Ic, theta)
 
         # iteration error computations
         error1 = get_kirchhoff_error(circuit, I, Is, precomputed_Is_norm=Is_norm)
-        error2 = get_winding_error(circuit, theta + L @ I, g)
+        error2 = get_winding_error(circuit, theta, I, df)
         error = max(error1, error2)
         is_target_n = np.all(A @ (np.round(theta / (2 * np.pi))).astype(int) == z - n)
         info._set(error, is_target_n)
