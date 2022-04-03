@@ -1,5 +1,3 @@
-import dataclasses
-
 import numpy as np
 import scipy.sparse
 import matplotlib.pyplot as plt
@@ -437,7 +435,6 @@ class EmbeddedGraph:
         return self.areas
 
     def get_l_cycle_centroids(self):
-        # TODO
         """
         Returns centroids of l_cycles in graph
 
@@ -541,21 +538,6 @@ class EmbeddedGraph:
         nb_face_lengths = self.face_lengths[self._non_boundary_mask()]
         return self._cycle_matrix(nb_face_edges, nb_face_lengths, self.edge_permute, self.edge_flip)
 
-    # def cut_space_matrix_old(self):
-    #     """
-    #     Returns cut-space matrix.
-    #
-    #     Cut-space matrix is an (N, E) sparse matrix where the i-th row corresponds to the
-    #     i-th node. The entry is +1 or -1 if the node is an endpoint of that edge. It is +1
-    #     if the node is the endpoint with highest idx, -1 otherwise.
-    #     """
-    #     E, N = self.edge_count(), self.node_count()
-    #     row = np.concatenate((self.node1, self.node2))
-    #     col = self.edge_permute[np.concatenate((np.arange(E), np.arange(E)))]
-    #     data = np.concatenate((-np.ones(E), np.ones(E)))
-    #     data = np.where(self.edge_flip[col], -data, data)
-    #     return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
-
     def cut_space_matrix(self):
         """
         Returns cut-space matrix.
@@ -570,7 +552,6 @@ class EmbeddedGraph:
         col = np.concatenate((np.arange(E), np.arange(E)))
         data = np.concatenate((-np.ones(E), np.ones(E)))
         return scipy.sparse.coo_matrix((data, (row, col)), shape=(N, E)).tocsc()
-
 
     def adjacency_matrix(self):
         """
@@ -1029,8 +1010,8 @@ class EmbeddedGraph:
             edge_ids = map[edge_ids]
             is_terminated = edge_ids == cycles[0, :]
             if np.any(is_terminated):
-                out_cycle_lengths, out_cycles = self._store_terminated_cycles(cycles[:current_cycle_length, is_terminated].T,
-                                                                            out_cycle_lengths, out_cycles)
+                terminated_cycles = cycles[:current_cycle_length, is_terminated].T
+                out_cycle_lengths, out_cycles = self._store_terminated_cycles(terminated_cycles, out_cycle_lengths, out_cycles)
                 cycles, cycle_lengths = cycles[:, ~is_terminated], cycle_lengths[~is_terminated]
                 edge_ids = edge_ids[~is_terminated]
             cycles[current_cycle_length, :] = edge_ids
@@ -1047,9 +1028,6 @@ class EmbeddedGraph:
 
         _, idx = np.unique(cycles[:, 0], return_index=True)
         cycles = cycles[idx, :]
-        #
-        # cycles = np.unique(cycles, axis=0)
-
         out_cycle_lengths = np.append(out_cycle_lengths, cycle_len * np.ones(cycles.shape[0], dtype=int))
         out_cycles = np.append(out_cycles, cycles.flatten())
         return out_cycle_lengths, out_cycles

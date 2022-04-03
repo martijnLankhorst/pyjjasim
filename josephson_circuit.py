@@ -10,30 +10,6 @@ import scipy.fftpack
 
 __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID"]
 
-# TODO:
-# - work out if area and frustration definition
-# - give error if criterion all-or-nothing inductance is not met.
-# - give warning if timestep too small in low-inductance-case
-# - give error for mixed-inductance problems
-# - only show combined error?
-# - handle time evolution proper errors if required quantities are not computed.
-# - time evolution config_at_minus1 list of configs
-# - put references in documentation
-# - fix whitepaper mistakes
-# - A_solve algo use guassian elimination
-
-
-# nice to haves
-# - lattices
-# - periodic lattices
-# - 3D
-# - Multigrid
-# - Nonlinear resistors
-# - GPU
-#   * single/double precision
-#   * phase build-up rounding correction
-
-
 """
 Josephson Circuit Module
 """
@@ -114,8 +90,6 @@ class Circuit:
         self._Msq_factorized = None
         self._Asq_factorized = None
         self._AiIcpLA_factorized = None
-        self._IpLIc_factorized = None
-        self._ALA_factorized = None
         self._Msq_S_factorized = None
         self._Asq_S_factorized = None
 
@@ -179,7 +153,7 @@ class Circuit:
         MsqF = scipy.sparse.linalg.factorized(self._Mr() @ S @ self._Mr().T)
         return np.append(MsqF(b[:-1, ...]), np.zeros(b[-1:, ...].shape), axis=0)
 
-    def Asq_solve_sandwich(self, b, S, use_pyamg=False):
+    def Asq_solve_sandwich(self, b, S):
         """
         Solves A @ S @ A.T @ x = b (where A is self.get_cycle_matrix()).
 
@@ -199,23 +173,8 @@ class Circuit:
         if S.nnz == np.count_nonzero(Sd):
             if np.allclose(Sd[0], Sd, rtol=1E-14):
                 return self.Asq_solve(b) / Sd[0]
-        if use_pyamg:
-            import pyamg
-            import pyamg.util.linalg
-            A = self.cycle_matrix @ S @ self.cycle_matrix.T
-            pyamg_cb = PyamgCallback(A, b)
-            ml = pyamg.ruge_stuben_solver(A, strength=('classical', {'theta': 0.2}))
-            try:
-                mg_out = ml.solve(b, tol=1e-8, maxiter=3, callback=pyamg_cb.cb)
-            except DivergenceError:
-                mg_out = pyamg_cb.x
-            if not pyamg_cb.has_diverged:
-                return mg_out
-            else:
-                return self.Asq_solve_sandwich(b, S, use_pyamg=False)
-        else:
-            AsqF = scipy.sparse.linalg.factorized(self.cycle_matrix @ S @ self.cycle_matrix.T)
-            return AsqF(b)
+        AsqF = scipy.sparse.linalg.factorized(self.cycle_matrix @ S @ self.cycle_matrix.T)
+        return AsqF(b)
 
     def _AiIcpLA_solve(self, b):
         if self._has_identical_critical_current():
@@ -231,24 +190,6 @@ class Circuit:
             L, iIc = self._L(), scipy.sparse.diags(Ic)
             self._AiIcpLA_factorized = scipy.sparse.linalg.factorized(A @ (iIc + L) @ A.T)
         return self._AiIcpLA_factorized(b)
-
-    def _ALA_solve(self, b):
-        if self._has_only_identical_self_inductance():
-            const = self.inductance_factors.diagonal()[0]
-            return self.Asq_solve(b) / const
-        if self._ALA_factorized is None:
-            A, L = self.get_cycle_matrix(), self._L()
-            self._ALA_factorized = scipy.sparse.linalg.factorized(A @ L @ A.T)
-        return self._ALA_factorized(b)
-
-    def _IpLIc_solve(self, b):
-        if self._has_only_identical_self_inductance() and self._has_identical_critical_current():
-            const = 1 + self.inductance_factors.diagonal()[0] * self.critical_current_factors[0]
-            return b / const
-        if self._IpLIc_factorized is None:
-            L, Ic, Nj = self._L(), scipy.sparse.diags(self._Ic()), self._Nj()
-            self._IpLIc_factorized = scipy.sparse.linalg.factorized(scipy.sparse.eye(Nj) + L @ Ic)
-        return self._IpLIc_factorized(b)
 
     def get_junction_nodes(self):
         """Get indices of nodes at endpoints of all junctions.
@@ -797,7 +738,6 @@ class Circuit:
                 raise ValueError("inductance matrix must be symmetric")
             if scipy.sparse.issparse(L):
                 L = L.tocsc()
-                from pyjjasim.static_problem import is_positive_definite_superlu
                 status = is_positive_definite_superlu(L)
                 if status == 2:
                     raise ValueError(
@@ -855,7 +795,6 @@ class Circuit:
               Then A @ g = 2 * pi * (z - areas * f)
         """
         return self.graph._cycle_space_solve_for_integral_x(b)
-
 
     def _has_capacitance(self):
         # returns False if self.capacitance_factors is zero, True otherwise
@@ -946,25 +885,6 @@ class Circuit:
         junc_remove_mask = (np.isin(nodes1, remove_nodes) | np.isin(nodes2, remove_nodes))
         return junc_remove_mask, new_node_id
 
-    @staticmethod
-    def _lobpcg_matrix_norm(A, preconditioner=None, maxiter=1000, tol=1E-5):
-        """
-        Computes ||A||_2
-        """
-        x0 = np.random.rand(A.shape[0], 1)
-        lobpcg_out = scipy.sparse.linalg.lobpcg(A, x0, B=None, M=preconditioner, maxiter=maxiter, tol=tol)
-        return np.sqrt(lobpcg_out[0])
-
-    # def get_junctions_at_angle(self, angle):
-    #     x1, y1, x2, y2 = self.get_juncion_coordinates()
-    #     return np.isclose(np.arctan2(y2 - y1, x2 - x1), angle)
-    #
-    # def horizontal_junctions(self):
-    #     return self.get_junctions_at_angle(0) | self.get_junctions_at_angle(np.pi) | \
-    #            self.get_junctions_at_angle(-np.pi)
-    #
-    # def vertical_junctions(self):
-    #     return self.get_junctions_at_angle(np.pi/2) | self.get_junctions_at_angle(-np.pi/2)
 
 class Lattice:
 
@@ -1041,47 +961,6 @@ class SquareArray(Circuit, Lattice):
         x, y = self.get_node_coordinates()
         return (y == 0).astype(int) - np.isclose(y, (self.count_y - 1) * self.y_scale).astype(int)
 
-    def Asq_solve(self, b, algorithm=0):
-        """
-        Solves A @ A.T @ x = b (where A is self.get_cycle_matrix()).
-
-        Parameters
-        ----------
-        b : (Nf,) or (Nf, W) array
-            Right-hand side of system
-        algorithm=0 : int
-            0 means solve with LU factorization, 1  means using sine transform (is faster for large arrays)
-
-        Returns
-        -------
-        x : shape of b
-            solution of system
-        """
-        if algorithm == 0:
-            return super().Asq_solve(b)
-        if algorithm == 1:
-            Nx, Ny = self.count_x, self.count_y
-            squeeze = False
-            if self._Asq_dst_K is None:
-                k1 = np.cos(np.pi * (np.arange(Nx-1) + 1) / Nx)
-                k2 = np.cos(np.pi * (np.arange(Ny-1) + 1) / Ny)
-                self._Asq_dst_K = 4 - 2 * k1 - 2 * k2[:, None]
-            if b.ndim == 2:
-                if b.shape[1] != 1:
-                    W = b.shape[1]
-                    B = scipy.fftpack.dstn(b.T.reshape(W, Ny-1, Nx-1), type=1, norm="ortho", axes=[1, 2])
-                    out = scipy.fftpack.idstn(B / self._Asq_dst_K, type=1, norm="ortho", axes=[1, 2])
-                    return out.reshape(W, -1).T
-                squeeze = True
-                b = b[:, 0]
-            if b.ndim == 1:
-                out = scipy.fftpack.idstn(scipy.fftpack.dstn(b.reshape(Ny-1, Nx-1), type=1, norm="ortho")
-                                          / self._Asq_dst_K, type=1, norm="ortho")
-                return out.ravel() if not squeeze else out.ravel()[:, None]
-        raise ValueError("Invalid algorithm for square array Asq_solve. Must be 0 or 1.")
-
-
-
 class HoneycombArray(Circuit, Lattice):
 
     def __init__(self, count_x, count_y, x_scale=1.0, y_scale=1.0):
@@ -1136,32 +1015,26 @@ class SQUID(Circuit):
         return  np.array([0, 1, 0, 1])
 
 
+def is_positive_definite_superlu(X):
+    """
+    Determine if matrix is positive definite using superlu package.
 
-class DivergenceError(Exception):
-    pass
+    Parameters
+    ----------
+    X : sparse matrix
+        Sparse matrix.
 
-class PyamgCallback:
+    Returns
+    -------
+    status : int
+        0 -> positive definite, 1 -> not positive definite, 2 -> choleski factorization failed
 
-    def __init__(self, A, b):
-        self.A = A
-        self.b = b
-        self.iter = 0
-        self.resid = np.zeros((0,))
-        self.x = None
-        self.has_diverged = False
+    """
+    eps = 10 * np.finfo(float).eps
+    f = scipy.sparse.linalg.splu(X, diag_pivot_thresh=0)
+    Up = (f.L @ scipy.sparse.diags(f.U.diagonal())).T
+    if not np.allclose((Up - f.U).data, 0):
+        return 2
+    return int(~np.all(f.U.diagonal() > -eps))
 
-    def cb(self, x):
-        self.x = x
-        dx = np.ravel(self.b) - self.A * np.ravel(x)
-        r = np.sqrt(np.inner(dx.conj(), dx).real)
-        self.resid = np.append(self.resid, [np.abs(r)])
-        self.iter += 1
-        if np.any(np.isnan(x)) or np.any(np.isinf(x)):
-            self._diverge()
-        if self.iter > 1:
-            if self.resid[-1] > self.resid[-2]:
-                self._diverge()
 
-    def _diverge(self):
-        self.has_diverged = True
-        raise DivergenceError("diverged")
