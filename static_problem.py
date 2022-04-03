@@ -640,6 +640,7 @@ class StaticProblem:
 
         largest_factor, _, largest_f_config, largest_f_info = out
         largest_x = middle_of_range_guess + largest_factor if largest_factor is not None else None
+        print(largest_f_info)
         return (smallest_x, largest_x), (smallest_f_config, largest_f_config), (smallest_f_info, largest_f_info)
 
     def compute_maximal_current(self, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
