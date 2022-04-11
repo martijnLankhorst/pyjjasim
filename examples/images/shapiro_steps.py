@@ -17,7 +17,7 @@ font = {'family' : 'normal',
 matplotlib.rc('font', **font)
 
 """
-Dynamic example 5: Giant shapiro steps
+Giant shapiro steps
 
 With a biassed AC current, the DC voltage has plateaus. This effect is called shapiro steps for single junctions,
 and giant shapiro steps for arrays as the step height is proportional to the array size. 

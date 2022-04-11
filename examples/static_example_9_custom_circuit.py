@@ -35,10 +35,10 @@ if __name__ == "__main__":
     Ic = np.array([0.2, 0.5, 1])
 
     G = EmbeddedGraph(x, y, n1, n2)
-    array = Circuit(G, critical_current_factors=Ic[nr])
+    array = Circuit(G, critical_current=Ic[nr])
     array.plot()
 
     prob = StaticProblem(array, current_sources=Is[nr])
-    factor, _, conf, _ = prob.compute_maximal_current()
+    factor, conf, _ = prob.compute_maximal_current()
     conf.plot(title=f"current factor={factor}")
     plt.show()

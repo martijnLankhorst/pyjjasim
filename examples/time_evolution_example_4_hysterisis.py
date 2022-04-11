@@ -1,9 +1,10 @@
 
 from pyjjasim import *
 
-import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use("TkAgg")
+
+# import matplotlib
+# matplotlib.use("TkAgg")
 
 """
 Time evolution example 4: Hysteresis
@@ -21,14 +22,14 @@ if __name__ == "__main__":
     sq_array_no_scr_no_cap = SquareArray(N, N)
 
     sq_array_scr_no_cap = SquareArray(N, N)
-    sq_array_scr_no_cap.set_inductance_factors(2)
+    sq_array_scr_no_cap.set_inductance(2)
 
     sq_array_no_scr_cap = SquareArray(N, N)
-    sq_array_no_scr_cap.set_capacitance_factors(3)
+    sq_array_no_scr_cap.set_capacitance(3)
 
     sq_array_scr_cap = SquareArray(N, N)
-    sq_array_scr_cap.set_inductance_factors(2)
-    sq_array_scr_cap.set_capacitance_factors(3)
+    sq_array_scr_cap.set_inductance(2)
+    sq_array_scr_cap.set_capacitance(3)
 
 
     # define problem

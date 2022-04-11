@@ -1065,25 +1065,24 @@ out.animate(figsize=(8, 8), title="Move vortex with current pulse ")
 
 
 ## IV curves
-To compute IV curves, one can either ramp the current as a function of time, or compute multiple problems with constant current. Both are shown: 
-
+To compute IV curves, one can either ramp the current as a function of time, or compute multiple problems with constant current. Both are shown:
 
 ```python
 # Example of sweeping current
 sq_array = SquareArray(10, 10)
 Nt = 10000
 I_base = sq_array.current_base(angle=0)[:, None, None]
-I_amp = np.append(np.linspace(0, 2, Nt//2), np.linspace(2, 0, Nt//2))
+I_amp = np.append(np.linspace(0, 2, Nt // 2), np.linspace(2, 0, Nt // 2))
 I = I_base * I_amp
-problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt, 
+problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt,
                                temperature=0.02, current_sources=I)
 config = problem.compute()
-V = config.get_V()
+V = config.get_voltage()
 Vmean = 2 * np.mean(V * I_base, axis=0).ravel()
 print(Vmean.shape)
 plt.subplots()
-plt.plot(I_amp[:Nt//2], Vmean[:Nt//2], color="blue", label="trace")
-plt.plot(I_amp[Nt//2:], Vmean[Nt//2:], color="red", label="retrace")
+plt.plot(I_amp[:Nt // 2], Vmean[:Nt // 2], color="blue", label="trace")
+plt.plot(I_amp[Nt // 2:], Vmean[Nt // 2:], color="red", label="retrace")
 plt.xlabel("I")
 plt.ylabel("V")
 plt.title("IV sweep")
@@ -1093,8 +1092,8 @@ plt.legend()
 plt.subplots()
 I_amp_av = np.mean(np.reshape(I_amp, (-1, 100)), axis=1)
 Vmean_av = np.mean(np.reshape(Vmean, (-1, 100)), axis=1)
-plt.plot(I_amp_av[:Nt//200], Vmean_av[:Nt//200], color="blue", label="trace")
-plt.plot(I_amp_av[Nt//200:], Vmean_av[Nt//200:], color="red", label="retrace")
+plt.plot(I_amp_av[:Nt // 200], Vmean_av[:Nt // 200], color="blue", label="trace")
+plt.plot(I_amp_av[Nt // 200:], Vmean_av[Nt // 200:], color="red", label="retrace")
 plt.xlabel("I")
 plt.ylabel("V")
 plt.title("IV sweep averaged over 100 steps")
@@ -1125,23 +1124,20 @@ plt.legend()
 
     <matplotlib.legend.Legend at 0x150898e4c70>
 
-
-
-
 ```python
 # Example of IV curve
 sq_array = SquareArray(10, 10)
 Nt = 3000
 T = 0.02
 f = 0
-W = 101 # problem count
+W = 101  # problem count
 I_base = sq_array.current_base(angle=0)[:, None, None]
 I_amp = np.linspace(0, 2, W)[:, None]
 I = I_base * I_amp
-problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt, 
+problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt,
                                temperature=T, current_sources=I, frustration=f)
 config = problem.compute()
-V = config.get_V()
+V = config.get_voltage()
 Vmean = 2 * np.mean(V * I_base, axis=(0, 2)).ravel()
 plt.subplots()
 plt.plot(I_amp[:, 0], Vmean)
@@ -1169,7 +1165,6 @@ The start conditions can also be specified with `config_at_minus_1` (and `config
 
 Under some circumstances the voltage of an array can be metastable between zero and some value. In this case the initial conditions determine in which state one ends up. This is illustrated below by starting with a very random initial condition, far out-of-equilibrium.
 
-
 ```python
 # Example of IV curve with out-of-equilibrium start conditions
 sq_array = SquareArray(30, 30)
@@ -1177,28 +1172,28 @@ Nt = 2000
 dt = 0.1
 T = 0.02
 f = 0
-W = 11 # problem count
+W = 11  # problem count
 I_base = sq_array.current_base(angle=0)[:, None, None]
 I_amp = np.linspace(0.8, 1.1, W)[:, None]
 I = I_base * I_amp
 
 # equilibrium start
-problem_eq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt, 
-                               temperature=T, current_sources=I, frustration=f)
+problem_eq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
+                                  temperature=T, current_sources=I, frustration=f)
 config_eq = problem_eq.compute()
-V_eq = config_eq.get_V()
+V_eq = config_eq.get_voltage()
 # take mean over second half of time evolution
-Vmean_eq = 2 * np.mean(V_eq[:, :, Nt//2:] * I_base, axis=(0, 2)).ravel()
+Vmean_eq = 2 * np.mean(V_eq[:, :, Nt // 2:] * I_base, axis=(0, 2)).ravel()
 
 # non-equilibrium start
 th0 = 100 * np.random.rand(sq_array.junction_count(), W)
-problem_neq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt, 
-                               temperature=T, current_sources=I, frustration=f, 
-                               config_at_minus_1=th0)
+problem_neq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
+                                   temperature=T, current_sources=I, frustration=f,
+                                   config_at_minus_1=th0)
 config_neq = problem_neq.compute()
-V_neq = config_neq.get_V()
+V_neq = config_neq.get_voltage()
 # take mean over second half of time evolution 
-Vmean_neq = 2 * np.mean(V_neq[:, :, Nt//2:] * I_base, axis=(0, 2)).ravel()
+Vmean_neq = 2 * np.mean(V_neq[:, :, Nt // 2:] * I_base, axis=(0, 2)).ravel()
 
 plt.subplots()
 plt.plot(I_amp[:, 0], Vmean_eq, label="equilibrium start")
@@ -1294,7 +1289,6 @@ The vortex mobility is measured over an interval of `interval_steps` timesteps. 
 
 One can compute multiple identical problems with `problem_count`. Typically one selects the result with the lowest energy as shown in the example.
 
-
 ```python
 # Example of annealing
 sq_array = SquareArray(20, 20)
@@ -1314,7 +1308,7 @@ problem = AnnealingProblem(sq_array, time_step=time_step, interval_steps=interva
 out = problem.compute()
 status, vortex_configurations, temperature_profiles = out
 
-energies = [np.mean(v.get_Etot()) for v in vortex_configurations]
+energies = [np.mean(v.get_energy()) for v in vortex_configurations]
 lowest_state = np.argmin(energies)
 
 fig = plt.figure(figsize=[9, 5])

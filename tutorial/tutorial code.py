@@ -345,7 +345,7 @@ I = I_base * I_amp
 problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt,
                                temperature=0.02, current_sources=I)
 config = problem.compute()
-V = config.get_V()
+V = config.get_voltage()
 Vmean = 2 * np.mean(V * I_base, axis=0).ravel()
 print(Vmean.shape)
 plt.subplots()
@@ -378,7 +378,7 @@ I = I_base * I_amp
 problem = TimeEvolutionProblem(sq_array, time_step=0.05, time_step_count=Nt,
                                temperature=T, current_sources=I, frustration=f)
 config = problem.compute()
-V = config.get_V()
+V = config.get_voltage()
 Vmean = 2 * np.mean(V * I_base, axis=(0, 2)).ravel()
 plt.subplots()
 plt.plot(I_amp[:, 0], Vmean)
@@ -401,7 +401,7 @@ I = I_base * I_amp
 problem_eq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
                                temperature=T, current_sources=I, frustration=f)
 config_eq = problem_eq.compute()
-V_eq = config_eq.get_V()
+V_eq = config_eq.get_voltage()
 # take mean over second half of time evolution
 Vmean_eq = 2 * np.mean(V_eq[:, :, Nt//2:] * I_base, axis=(0, 2)).ravel()
 
@@ -411,7 +411,7 @@ problem_neq = TimeEvolutionProblem(sq_array, time_step=dt, time_step_count=Nt,
                                temperature=T, current_sources=I, frustration=f,
                                config_at_minus_1=th0)
 config_neq = problem_neq.compute()
-V_neq = config_neq.get_V()
+V_neq = config_neq.get_voltage()
 # take mean over second half of time evolution
 Vmean_neq = 2 * np.mean(V_neq[:, :, Nt//2:] * I_base, axis=(0, 2)).ravel()
 
@@ -469,7 +469,7 @@ problem = AnnealingProblem(sq_array, time_step=time_step, interval_steps=interva
 out = problem.compute()
 status, vortex_configurations, temperature_profiles = out
 
-energies = [np.mean(v.get_Etot()) for v in vortex_configurations]
+energies = [np.mean(v.get_energy()) for v in vortex_configurations]
 lowest_state = np.argmin(energies)
 
 fig = plt.figure(figsize=[9, 5])

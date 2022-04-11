@@ -13,7 +13,7 @@ Compute a single vortex at the centre of a small square array.
 if __name__ == "__main__":
 
     sq_array = SquareArray(10, 10)
-    problem = StaticProblem(sq_array, frustration=0.1)
+    problem = StaticProblem(sq_array, external_flux=0.1)
     config, status, info = problem.compute()
     config.plot(node_quantity="phi")
 

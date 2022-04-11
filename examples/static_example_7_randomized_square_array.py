@@ -32,19 +32,19 @@ if __name__ == "__main__":
     plt.xlabel("critical current")
     plt.ylabel("count")
 
-    array.set_critical_current_factors(Ic)
+    array.set_critical_current(Ic)
 
     # define problem parameters
     problem_no_scr = StaticProblem(array, current_sources=array.current_base(angle=0))
-    I_factor, net_I, config, _ = problem_no_scr.compute_maximal_current()
+    I_factor, config, _ = problem_no_scr.compute_maximal_current()
 
-    print(f"max net current: {net_I}. For uniform Ic, it would be 12.")
+    print(f"max current factor: {I_factor}.")
     config.plot(title="maximum current with random Ic")
 
 
     # EXAMPLE B: Arrays with holes
     remove_node_count = 20
-    array.set_critical_current_factors(1)
+    array.set_critical_current(1)
     array = array.remove_nodes(np.random.permutation(array.node_count())[:remove_node_count])
 
     # create junction-current sources such that uniform current is injected
@@ -54,13 +54,14 @@ if __name__ == "__main__":
     Is_node = np.zeros(array.node_count(), dtype=float)
     Is_node[left_nodes] = np.sum(right_nodes)
     Is_node[right_nodes] = -np.sum(left_nodes)
+
     # assert sum is zero (current conservation):
     print(f"this sum must be zero: {np.sum(Is_node)}")
     Is = node_to_junction_current(array, Is_node)
 
     problem_no_scr = StaticProblem(array, current_sources=Is)
-    I_factor, net_I, config, _ = problem_no_scr.compute_maximal_current()
+    I_factor, config, _ = problem_no_scr.compute_maximal_current()
 
-    print(f"max net current: {net_I}. Without holes, it would be 12.")
+    print(f"max current factor: {I_factor}.")
     config.plot(title="maximum current with holes")
     plt.show()

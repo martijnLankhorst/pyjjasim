@@ -1243,7 +1243,7 @@ class ConfigPlot(CircuitPlot):
         if quantity == -1:   # none
             return None, None
         if quantity == 0:  # phi
-            out = self.config.get_phi()
+            out = self.config.get_phase()
             out = out.copy()
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
             return out, "phi"
@@ -1262,15 +1262,15 @@ class ConfigPlot(CircuitPlot):
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
             return out, "th"
         if quantity == 1:  # I
-            return self.config.get_I(), "I"
+            return self.config.get_current(), "I"
         if quantity == 2:  # Is
             return self.config.problem._Is(), "Is"
         if quantity == 3:  # EJ
-            return self.config.get_EJ(), "EJ"
+            return self.config.get_josephson_energy(), "EJ"
         if quantity == 4:  # EM
-            return self.config.get_EM(), "EM"
+            return self.config.get_magnetic_energy(), "EM"
         if quantity == 5:  # Etot
-            return self.config.get_Etot(), "Etot"
+            return self.config.get_energy(), "Etot"
 
     def _get_face_quantity(self):
         if isinstance(self.face_quantity, np.ndarray):
@@ -1281,9 +1281,9 @@ class ConfigPlot(CircuitPlot):
         if quantity == 0:  # Phi
             return self.config.get_flux(), "flux"
         if quantity == 1:  # n
-            return self.config.get_n(), "n"
+            return self.config.get_vortex_configuration(), "n"
         if quantity == 2:  # J
-            return self.config.get_J(), "J"
+            return self.config.get_cycle_current(), "J"
 
     def _get_vortex_quantity(self):
         if isinstance(self.vortex_quantity, np.ndarray):
@@ -1292,7 +1292,7 @@ class ConfigPlot(CircuitPlot):
         if quantity == -1:   # none
             return None, None
         if quantity == 0:  # n
-            return self.config.get_n(), "n"
+            return self.config.get_vortex_configuration(), "n"
 
     @staticmethod
     def _assert_single_configuration(data):
@@ -1550,7 +1550,7 @@ class TimeEvolutionMovie(CircuitMovie):
     _face_quantities = {
         "Phi": 0, "flux": 0, "magnetic_flux": 0,
         "n": 1, "vortices": 1, "vortex_configuration": 1,
-        "face_current": 2, "J": 2,
+        "face_current": 2, "J": 2, "cycle_current": 2,
     }
 
     _vortex_quantities = {
@@ -1589,14 +1589,14 @@ class TimeEvolutionMovie(CircuitMovie):
         """
         quantity = self._node_quantities[node_quantity]
         if quantity == 0:  # phi
-            out = self.config.get_phi(self.time_points)
+            out = self.config.get_phase(self.time_points)
             out = out.copy()
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
             return out, "phi"
         if quantity == 1:   # Is
             return self.config.problem.get_node_current_sources(self.time_points), "Is_node"
         if quantity == 2:   # U
-            return self.config.get_U(self.time_points), "U"
+            return self.config.get_potential(self.time_points), "U"
 
     def _get_junction_quantity(self, junction_quantity):
         quantity = self._junction_quantities[junction_quantity]
@@ -1606,33 +1606,33 @@ class TimeEvolutionMovie(CircuitMovie):
             out -= np.round(out / (np.pi * 2.0)).astype(out.dtype) * np.pi * 2.0
             return out, "th"
         if quantity == 1:  # I
-            return self.config.get_I(self.time_points), "I"
+            return self.config.get_current(self.time_points), "I"
         if quantity == 2:  # V
-            return self.config.get_V(self.time_points), "V"
+            return self.config.get_voltage(self.time_points), "V"
         if quantity == 3:  # supercurrent
-            return self.config.get_Isup(self.time_points), "Isup"
+            return self.config.get_supercurrent(self.time_points), "Isup"
         if quantity == 4:  # Is
             return self.config.problem._Is(self.time_points), "Is"
         if quantity == 5:  # EJ
-            return self.config.get_EJ(self.time_points), "EJ"
+            return self.config.get_josephson_energy(self.time_points), "EJ"
         if quantity == 6:  # EM
-            return self.config.get_EM(self.time_points), "EM"
+            return self.config.get_magnetic_energy(self.time_points), "EM"
         if quantity == 7:  # EC
-            return self.config.get_EC(self.time_points), "EC"
+            return self.config.get_capacitive_energy(self.time_points), "EC"
         if quantity == 8:  # Etot
-            return self.config.get_Etot(self.time_points), "Etot"
+            return self.config.get_energy(self.time_points), "Etot"
 
     def _get_face_quantity(self, face_quantity):
         quantity = self._face_quantities[face_quantity]
         if quantity == 0:  # Phi
             return self.config.get_flux(self.time_points), "flux"
         if quantity == 1:  # n
-            return self.config.get_n(self.time_points), "n"
+            return self.config.get_vortex_configuration(self.time_points), "n"
         if quantity == 2:  # J
-            return self.config.get_J(self.time_points), "J"
+            return self.config.get_cycle_current(self.time_points), "J"
 
     def _get_vortex_quantity(self, vortex_quantity):
         quantity = self._vortex_quantities[vortex_quantity]
         if quantity == 0:  # n
-            return self.config.get_n(self.time_points), "n"
+            return self.config.get_vortex_configuration(self.time_points), "n"
 

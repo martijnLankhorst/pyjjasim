@@ -3,6 +3,8 @@ from pyjjasim import *
 
 import matplotlib.pyplot as plt
 
+import matplotlib
+matplotlib.use("TkAgg")
 
 """
 Static Example 1: Single vortex
@@ -20,13 +22,13 @@ if __name__ == "__main__":
     sq_array = SquareArray(N, N)
 
     # define problem parameters
-    f = 0.01                                                          # frustration
+    f = 0.01                                                          # external_flux
     n = np.zeros(sq_array.face_count(), dtype=int)                    # target vortex configuration
     centre_face_idx = sq_array.locate_faces((N - 1) / 2, (N - 1) / 2) # locating face idx at coordinate x=(N-1)/2, y=(N-1)/2
     n[centre_face_idx] = 1
 
     # define static problems
-    problem = StaticProblem(sq_array, frustration=f, vortex_configuration=n)
+    problem = StaticProblem(sq_array, external_flux=f, vortex_configuration=n)
 
     # approximations:
     approximation = problem.approximate()
@@ -50,7 +52,7 @@ if __name__ == "__main__":
 
     # In practice one does not need to manually specify initial conditions.
     # By default an approximation is used as initial condition. One would just do:
-    # problem = StaticProblem(sq_array, frustration=f, vortex_configuration=n)
+    # problem = StaticProblem(sq_array, external_flux=f, vortex_configuration=n)
     # config, status, info = problem.compute()
 
 

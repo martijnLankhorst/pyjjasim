@@ -1,11 +1,12 @@
+from __future__ import annotations
 
 import time
+from typing import List
 
 import numpy as np
 import scipy
 import scipy.sparse.linalg
 import scipy.optimize
-from scipy.sparse.linalg import ArpackNoConvergence
 
 from pyjjasim.embedded_graph import EmbeddedGraph
 from pyjjasim.josephson_circuit import Circuit
@@ -13,8 +14,8 @@ from pyjjasim.josephson_circuit import Circuit
 __all__ = ["CurrentPhaseRelation", "DefaultCPR", "StaticProblem",
            "StaticConfiguration", "compute_maximal_parameter",
            "node_to_junction_current", "DEF_TOL", "DEF_NEWTON_MAXITER",
-           "DEF_STAB_MAXITER", "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT",
-           "NewtonIterInfo", "ParameterOptimizeInfo", "stability_get_preconditioner"]
+           "DEF_MAX_PAR_TOL", "DEF_MAX_PAR_REDUCE_FACT",
+           "NewtonIterInfo", "ParameterOptimizeInfo"]
 
 
 """
@@ -397,8 +398,8 @@ class StaticProblem:
          Current sources at each junction in circuit (abbreviated Is). If scalar the same
          value is used for all junctions.
 
-    frustration=0.0 : (Nf,) ndarray or scalar
-         frustration, or normalized external magnetic flux, through each face in circuit
+    external_flux=0.0 : (Nf,) ndarray or scalar
+         external_flux, or normalized external magnetic flux, through each face in circuit
          (abbreviated f). If scalar the same value is used for all faces.
     vortex_configuration=0 : (Nf,) ndarray or scalar
          Target vorticity at each face in circuit (abbreviated n).  If scalar the same value is
@@ -420,18 +421,14 @@ class StaticProblem:
 
     """
 
-    def __init__(self, circuit: Circuit, current_sources=0.0, frustration=0.0,
+    def __init__(self, circuit: Circuit, current_sources=0.0, external_flux=0.0,
                  vortex_configuration=0, current_phase_relation=DefaultCPR()):
         self.circuit = circuit
         self.current_sources = np.atleast_1d(current_sources)
-        self.frustration = np.atleast_1d(frustration)
+        self.external_flux = np.atleast_1d(external_flux)
         self.vortex_configuration = np.atleast_1d(vortex_configuration)
         self.current_phase_relation = current_phase_relation
         self.current_sources_norm = None
-        # self.Asq_factorization = None
-        # self.AIpLIcA_factorization = None
-        # self.IpLIc_factorization = None
-        # self.Msq_factorization = None
 
     def save(self, filename):
         """
@@ -444,23 +441,23 @@ class StaticProblem:
             np.save(ffile, y)
             np.save(ffile, n1)
             np.save(ffile, n2)
-            np.save(ffile, self.circuit.critical_current_factors)
-            np.save(ffile, self.circuit.resistance_factors)
-            np.save(ffile, self.circuit.capacitance_factors)
-            L_is_sparse = scipy.sparse.issparse(self.circuit.inductance_factors)
+            np.save(ffile, self.circuit.critical_current)
+            np.save(ffile, self.circuit.resistance)
+            np.save(ffile, self.circuit.capacitance)
+            L_is_sparse = scipy.sparse.issparse(self.circuit.inductance)
             np.save(ffile, L_is_sparse)
             if L_is_sparse:
-                np.save(ffile, self.circuit.inductance_factors.indptr)
-                np.save(ffile, self.circuit.inductance_factors.indices)
-                np.save(ffile, self.circuit.inductance_factors.data)
+                np.save(ffile, self.circuit.inductance.indptr)
+                np.save(ffile, self.circuit.inductance.indices)
+                np.save(ffile, self.circuit.inductance.data)
             else:
-                np.save(ffile, self.circuit.inductance_factors)
+                np.save(ffile, self.circuit.inductance)
             np.save(ffile, self.current_sources)
-            np.save(ffile, self.frustration)
+            np.save(ffile, self.external_flux)
             np.save(ffile, self.vortex_configuration)
 
     @staticmethod
-    def load(filename):
+    def load(filename) -> StaticProblem:
         """
         Load problems created with the .save(filename) method. Returns StaticProblem.
         Note that the loaded problem will always have the default current-phase-relation.
@@ -483,12 +480,12 @@ class StaticProblem:
                 L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
             else:
                 L = np.load(ffile)
-            circuit = Circuit(g, critical_current_factors=Ic, resistance_factors=R,
-                              capacitance_factors=C, inductance_factors=L)
+            circuit = Circuit(g, critical_current=Ic, resistance=R,
+                              capacitance=C, inductance=L)
             Is = np.load(ffile)
             f = np.load(ffile)
             n = np.load(ffile)
-            return StaticProblem(circuit, current_sources=Is, frustration=f, vortex_configuration=n)
+            return StaticProblem(circuit, current_sources=Is, external_flux=f, vortex_configuration=n)
 
     def get_circuit(self) -> Circuit:
         """
@@ -502,11 +499,11 @@ class StaticProblem:
         """
         return self.current_sources
 
-    def get_frustration(self):
+    def get_external_flux(self):
         """
-        Returns the frustration (abbreviated f).
+        Returns the external_flux (abbreviated f).
         """
-        return self.frustration
+        return self.external_flux
 
     def get_vortex_configuration(self):
         """
@@ -520,13 +517,13 @@ class StaticProblem:
         """
         return self.current_phase_relation
 
-    def new_problem(self, current_sources=None, frustration=None,
-                    vortex_configuration=None, current_phase_relation=None):
+    def new_problem(self, current_sources=None, external_flux=None,
+                    vortex_configuration=None, current_phase_relation=None) -> StaticProblem:
         """
         Makes copy of self with specified modifications.
         """
         return StaticProblem(self.circuit, current_sources=self.current_sources if current_sources is None else current_sources,
-                             frustration=self.frustration if frustration is None else frustration,
+                             external_flux=self.external_flux if external_flux is None else external_flux,
                              vortex_configuration=self.vortex_configuration if vortex_configuration is None else vortex_configuration,
                              current_phase_relation=self.current_phase_relation if current_phase_relation is None else current_phase_relation)
 
@@ -550,7 +547,7 @@ class StaticProblem:
         M = self.get_circuit().get_cut_matrix()
         return M @ self.current_sources
 
-    def approximate(self):
+    def approximate(self) -> StaticConfiguration:
         """
         Computes approximate solution.
         """
@@ -560,7 +557,9 @@ class StaticProblem:
         return StaticConfiguration(self, theta)
 
     def compute(self, initial_guess = None, tol=DEF_TOL, maxiter=DEF_NEWTON_MAXITER,
-                stop_as_residual_increases=True, stop_if_not_target_n=False):
+                stop_as_residual_increases=True, stop_if_not_target_n=False) -> tuple[StaticConfiguration,
+                                                                                 int, NewtonIterInfo]:
+
         """
         Compute solution to static_problem using Newton iteration.
 
@@ -607,16 +606,16 @@ class StaticProblem:
         config = StaticConfiguration(self, theta)
         return config, status, iter_info
 
-
-    def compute_frustration_bounds(self, initial_guess = None,
+    def compute_external_flux_bounds(self, initial_guess = None,
                                    middle_of_range_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                                    maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                                    require_vortex_configuration_equals_target=True,
-                                   compute_parameters=None):
+                                   compute_parameters=None) -> tuple[tuple[float, float],
+             tuple[StaticConfiguration, StaticConfiguration], tuple[ParameterOptimizeInfo, ParameterOptimizeInfo]]:
 
         """
 
-        Finds extremum values of x such that this problem with f = x * self.frustration
+        Finds extremum values of x such that this problem with f = x * self.external_flux
         has a valid solution.
 
         Parameters
@@ -626,12 +625,12 @@ class StaticProblem:
             estimated based on vortex configuration.
         initial_guess=None : valid initial_guess input for StaticProblem.compute()
             Initial guess for the algorithm to start at
-            frustration=middle_of_range_guess * self.frustration.
+            external_flux=middle_of_range_guess * self.external_flux.
 
         Returns
         -------
         (smallest_x, largest_x) : (float, float)
-            Resulting frustration range.
+            Resulting external_flux range.
         (smallest_f_config, largest_f_config) : (StaticConfiguration, StaticConfiguration)
             StaticConfigurations at bounds of range.
         (smallest_f_info, largest_f_info) : (ParameterOptimizeInfo, ParameterOptimizeInfo)
@@ -641,9 +640,8 @@ class StaticProblem:
         options = {"lambda_tol": lambda_tol, "maxiter": maxiter, "compute_parameters": compute_parameters,
                    "require_stability": require_stability,
                    "require_vortex_configuration_equals_target": require_vortex_configuration_equals_target}
-
         if np.allclose(self._f(), 0):
-            raise ValueError("Problem must contain nonzero frustration.")
+            raise ValueError("Problem must contain nonzero external_flux.")
         if middle_of_range_guess is None:
             if np.all(self._nt() == 0):
                 middle_of_range_guess = 0
@@ -651,15 +649,15 @@ class StaticProblem:
                 a = self._f() / self.circuit.get_face_areas() ** 0.5
                 b = self._nt().astype(np.double) / self.circuit.get_face_areas() ** 0.5
                 middle_of_range_guess = np.sum(a * b) / np.sum(a ** 2)
-        frustration_initial_stepsize = 1.0
-        problem_small_func = lambda x: self.new_problem(frustration=(middle_of_range_guess - x) * self._f())
-        problem_large_func = lambda x: self.new_problem(frustration=(middle_of_range_guess + x) * self._f())
+        external_flux_initial_stepsize = 1.0
+        problem_small_func = lambda x: self.new_problem(external_flux=(middle_of_range_guess - x) * self._f())
+        problem_large_func = lambda x: self.new_problem(external_flux=(middle_of_range_guess + x) * self._f())
         out = compute_maximal_parameter(problem_small_func, initial_guess=initial_guess,
-                                        estimated_upper_bound=frustration_initial_stepsize, **options)
+                                        estimated_upper_bound=external_flux_initial_stepsize, **options)
         smallest_factor, _, smallest_f_config, smallest_f_info = out
         smallest_x = middle_of_range_guess - smallest_factor if smallest_factor is not None else None
         out = compute_maximal_parameter(problem_large_func, initial_guess=initial_guess,
-                                        estimated_upper_bound=frustration_initial_stepsize, **options)
+                                        estimated_upper_bound=external_flux_initial_stepsize, **options)
 
         largest_factor, _, largest_f_config, largest_f_info = out
         largest_x = middle_of_range_guess + largest_factor if largest_factor is not None else None
@@ -668,11 +666,13 @@ class StaticProblem:
     def compute_maximal_current(self, initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                                 maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                                 require_vortex_configuration_equals_target=True,
-                                compute_parameters=None):
+                                compute_parameters=None)-> tuple[float,
+             StaticConfiguration, ParameterOptimizeInfo]:
+
 
         """
         Computes largest source current for which a stable solution exists at the
-        specified target vortex configuration and frustration, where the  source
+        specified target vortex configuration and external_flux, where the  source
         current is assumed to be max_current_factor * self.get_current_sources().
 
         For parameters see documentation of compute_maximal_parameter()
@@ -709,7 +709,9 @@ class StaticProblem:
                               start_initial_guess=None, lambda_tol=DEF_MAX_PAR_TOL,
                               maxiter=DEF_MAX_PAR_MAXITER, require_stability=True,
                               require_vortex_configuration_equals_target=True,
-                              compute_parameters=None):
+                              compute_parameters=None) -> tuple[np.ndarray, np.ndarray,
+                                                                List[StaticConfiguration],
+                                                                List[ParameterOptimizeInfo]]:
 
         """
         Finds edge of stable region in (f, Is) space for vortex configuration n.
@@ -729,9 +731,9 @@ class StaticProblem:
 
         Returns
         -------
-        frustration_factors : (num_angles,) array
-            Extermum frustration factor at each angle.
-        current_factors : (num_angles,) array
+        external_flux : (num_angles,) array
+            Extermum external_flux factor at each angle.
+        current : (num_angles,) array
             Extremum sourced current factor at each angle.
         all_configs : list containing StaticConfiguration
             Configurations at extreme value for each angle.
@@ -745,7 +747,7 @@ class StaticProblem:
                    "require_vortex_configuration_equals_target": require_vortex_configuration_equals_target}
 
         frust_bnd_prb = self.new_problem(current_sources=0)
-        out = frust_bnd_prb.compute_frustration_bounds(initial_guess=start_initial_guess,
+        out = frust_bnd_prb.compute_external_flux_bounds(initial_guess=start_initial_guess,
                                                        middle_of_range_guess=f_middle_of_range_guess,
                                                        **options)
 
@@ -754,34 +756,34 @@ class StaticProblem:
             return None, None, None, None
         dome_center_x = 0.5 * (smallest_x + largest_x)
         dome_center_f = dome_center_x * self._f()
-        dome_center_problem = self.new_problem(frustration=dome_center_f)
+        dome_center_problem = self.new_problem(external_flux=dome_center_f)
         out = dome_center_problem.compute_maximal_current(initial_guess=start_initial_guess, **options)
         max_current_factor, _, info = out
         if max_current_factor is None:
             return None, None, None, None
 
-        frustration_factors = np.zeros(num_angles, dtype=np.double)
-        current_factors = np.zeros(num_angles, dtype=np.double)
+        external_flux = np.zeros(num_angles, dtype=np.double)
+        current = np.zeros(num_angles, dtype=np.double)
         all_configs, all_infos = [], []
         for angle_nr in range(num_angles):
             angle = angles[angle_nr]
             Is_func = lambda x: x * self._Is() * np.sin(angle) * max_current_factor
             x_func = lambda x: (dome_center_x + x * np.cos(angle) * (0.5 * (largest_x - smallest_x)))
             f_func = lambda x: x_func(x) * self._f()
-            problem_func = lambda x: self.new_problem(frustration=f_func(x), current_sources=Is_func(x))
+            problem_func = lambda x: self.new_problem(external_flux=f_func(x), current_sources=Is_func(x))
             out = compute_maximal_parameter(problem_func, initial_guess=start_initial_guess, **options)
             lower_bound, upper_bound, out_config, info = out
-            current_factors[angle_nr] = lower_bound * np.sin(angle) * max_current_factor if lower_bound is not None else np.nan
-            frustration_factors[angle_nr] = x_func(lower_bound) if lower_bound is not None else np.nan
+            current[angle_nr] = lower_bound * np.sin(angle) * max_current_factor if lower_bound is not None else np.nan
+            external_flux[angle_nr] = x_func(lower_bound) if lower_bound is not None else np.nan
             all_configs += [out_config]
             all_infos += [info]
 
-        return frustration_factors, current_factors, all_configs, all_infos
+        return external_flux, current, all_configs, all_infos
 
     def __str__(self):
         return "static problem: " + \
                "\n\tcurrent sources: " + self.get_current_sources().__str__() + \
-               "\n\tfrustration: " + self.get_frustration().__str__() + \
+               "\n\texternal_flux: " + self.get_external_flux().__str__() + \
                "\n\tvortex configuration: " + self.get_vortex_configuration().__str__() + \
                "\n\tphase zone: " + self.get_phase_zone().__str__() + \
                "\n\tcurrent-phase relation: " + self.current_phase_relation.__str__()
@@ -790,7 +792,7 @@ class StaticProblem:
         return self.current_sources
 
     def _f(self):
-        return self.frustration
+        return self.external_flux
 
     def _nt(self):
         return self.vortex_configuration
@@ -851,7 +853,7 @@ class StaticConfiguration:
         """
         return self.problem
 
-    def get_phi(self) -> np.ndarray:
+    def get_phase(self) -> np.ndarray:
         """
         Returns (Nn,) array containing phases at each node
         """
@@ -865,26 +867,26 @@ class StaticConfiguration:
         """
         return self.theta
 
-    def get_n(self) -> np.ndarray:
+    def get_vortex_configuration(self) -> np.ndarray:
         """
         Returns (Nf,) int array containing vorticity at each face.
         """
         A, tpr = self.get_circuit().get_cycle_matrix(), 1.0 / (2.0 * np.pi)
         return - (A @ np.round(self._th() / (2.0 * np.pi))).astype(int)
 
-    def get_I(self) -> np.ndarray:
+    def get_current(self) -> np.ndarray:
         """
         Returns (Nj,) array containing current through each junction.
         """
         return self.problem._cp(self.get_circuit()._Ic(), self._th())
 
-    def get_J(self) -> np.ndarray:
+    def get_cycle_current(self) -> np.ndarray:
         """
         Returns (Nf,) array containing path current around each face.
         Defined as I = A.T @ J + I_source.
         """
         A = self.get_circuit().get_cycle_matrix()
-        return self.get_circuit().Asq_solve(A @ (self.get_I() - self.problem.current_sources))
+        return self.get_circuit().Asq_solve(A @ (self.get_current() - self.problem.current_sources))
 
     def get_flux(self) -> np.ndarray:
         """
@@ -893,25 +895,25 @@ class StaticConfiguration:
         """
         A = self.get_circuit().get_cycle_matrix()
         L = self.get_circuit()._L()
-        return self.problem.frustration + A @ L @ self.get_I() / (2 * np.pi)
+        return self.problem.external_flux + A @ L @ self.get_current() / (2 * np.pi)
 
-    def get_EM(self) -> np.ndarray:
+    def get_magnetic_energy(self) -> np.ndarray:
         """
         Returns (Nj,) array containing magnetic energy at each junction.
         """
-        return 0.5 * self.get_circuit()._L() @ (self.get_I() ** 2)
+        return 0.5 * self.get_circuit()._L() @ (self.get_current() ** 2)
 
-    def get_EJ(self) -> np.ndarray:
+    def get_josephson_energy(self) -> np.ndarray:
         """
         Returns (Nj,) array containing Josephson energy at each junction.
         """
         return self.problem._icp(self.get_circuit()._Ic(), self._th())
 
-    def get_Etot(self) -> np.ndarray:
+    def get_energy(self) -> np.ndarray:
         """
         Returns get_EM() + get_EJ().
         """
-        return self.get_EJ() + self.get_EM()
+        return self.get_josephson_energy() + self.get_magnetic_energy()
 
     def satisfies_kirchhoff_rules(self, tol=DEF_TOL):
         """
@@ -931,7 +933,7 @@ class StaticConfiguration:
         """
         Returns if vortex configuration equals that of problem.
         """
-        return np.all(self.get_n() == self.problem.get_vortex_configuration())
+        return np.all(self.get_vortex_configuration() == self.problem.get_vortex_configuration())
 
     def is_stable(self) -> int:
         """
@@ -963,18 +965,18 @@ class StaticConfiguration:
         """
         return self.is_solution(tol=tol) & self.satisfies_target_vortices()
 
-    def is_stable_target_solution(self, tol=DEF_TOL, stable_maxiter=DEF_STAB_MAXITER):
+    def is_stable_target_solution(self, tol=DEF_TOL):
         """
         Returns if configuration is a solution, is stable and its vortex_configuration equals
         the one specified in problem.
         """
-        return self.is_target_solution(tol=tol) & (self.is_stable(maxiter=stable_maxiter) == 0)
+        return self.is_target_solution(tol=tol) & (self.is_stable() == 0)
 
     def get_error_kirchhoff_rules(self) -> np.ndarray:
         """
         Returns normalized residual of kirchhoff's rules (normalized so cannot exceed 1).
         """
-        return get_kirchhoff_error(self.get_circuit(), self.get_I(), self.get_problem()._Is(),
+        return get_kirchhoff_error(self.get_circuit(), self.get_current(), self.get_problem()._Is(),
                                    precomputed_Is_norm=self.problem._Is_norm())
 
     def get_error_winding_rules(self) -> np.ndarray:
@@ -983,7 +985,7 @@ class StaticConfiguration:
         """
         circuit, problem = self.get_circuit(), self.get_problem()
         f, L = problem._f(), circuit._L()
-        return get_winding_error(circuit, self._th() , self.get_I(), 2 * np.pi * f)
+        return get_winding_error(circuit, self._th(), self.get_current(), 2 * np.pi * f)
 
     def get_error(self):
         """
@@ -1042,24 +1044,24 @@ class StaticConfiguration:
             np.save(ffile, y)
             np.save(ffile, n1)
             np.save(ffile, n2)
-            np.save(ffile, self.problem.circgiduit.critical_current_factors)
-            np.save(ffile, self.problem.circuit.resistance_factors)
-            np.save(ffile, self.problem.circuit.capacitance_factors)
-            L_is_sparse = scipy.sparse.issparse(self.problem.circuit.inductance_factors)
+            np.save(ffile, self.problem.circgiduit.critical_current)
+            np.save(ffile, self.problem.circuit.resistance)
+            np.save(ffile, self.problem.circuit.capacitance)
+            L_is_sparse = scipy.sparse.issparse(self.problem.circuit.inductance)
             np.save(ffile, L_is_sparse)
             if L_is_sparse:
-                np.save(ffile, self.problem.circuit.inductance_factors.indptr)
-                np.save(ffile, self.problem.circuit.inductance_factors.indices)
-                np.save(ffile, self.problem.circuit.inductance_factors.data)
+                np.save(ffile, self.problem.circuit.inductance.indptr)
+                np.save(ffile, self.problem.circuit.inductance.indices)
+                np.save(ffile, self.problem.circuit.inductance.data)
             else:
-                np.save(ffile, self.problem.circuit.inductance_factors)
+                np.save(ffile, self.problem.circuit.inductance)
             np.save(ffile, self.problem.current_sources)
-            np.save(ffile, self.problem.frustration)
+            np.save(ffile, self.problem.external_flux)
             np.save(ffile, self.problem.vortex_configuration)
             np.save(ffile, self.theta)
 
     @staticmethod
-    def load(filename):
+    def load(filename) -> StaticConfiguration:
         """
         Load configuration created with the .save(filename) method. Returns StaticConfiguration.
         Note that the loaded problem will always have the default current-phase-relation.
@@ -1083,12 +1085,12 @@ class StaticConfiguration:
                 L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
             else:
                 L = np.load(ffile)
-            circuit = Circuit(g, critical_current_factors=Ic, resistance_factors=R,
-                              capacitance_factors=C, inductance_factors=L)
+            circuit = Circuit(g, critical_current=Ic, resistance=R,
+                              capacitance=C, inductance=L)
             Is = np.load(ffile)
             f = np.load(ffile)
             n = np.load(ffile)
-            prob = StaticProblem(circuit, current_sources=Is, frustration=f, vortex_configuration=n)
+            prob = StaticProblem(circuit, current_sources=Is, external_flux=f, vortex_configuration=n)
             th = np.load(ffile)
             return StaticConfiguration(problem=prob, theta=th)
 
@@ -1122,7 +1124,7 @@ def get_winding_error(circuit: Circuit, th, I, df):
     def norm(x):
         return scipy.linalg.norm(x) / np.sqrt(len(x))
     A = circuit.get_cycle_matrix()
-    L = circuit.get_inductance_factors()
+    L = circuit.get_inductance()
     A_norm = circuit._get_A_norm()
     normalizer = A_norm * (norm(th) + norm(L @ I)) + norm(df)
     return np.finfo(float).eps if np.abs(normalizer) < 1E-20 else norm(df + A @ (th + L @ I)) / normalizer
@@ -1198,7 +1200,7 @@ def compute_maximal_parameter(problem_function, initial_guess=None, lambda_tol=D
                               estimated_upper_bound=1.0, maxiter=DEF_MAX_PAR_MAXITER,
                               stepsize_reduction_factor=DEF_MAX_PAR_REDUCE_FACT, require_stability=True,
                               require_vortex_configuration_equals_target=True,
-                              compute_parameters=None):
+                              compute_parameters=None) -> tuple[float, float, StaticConfiguration, ParameterOptimizeInfo]:
     """
     Finds the largest value of lambda for which problem_function(lambda)
     has a stable stationary state.
@@ -1379,7 +1381,7 @@ def london_approximation(circuit: Circuit, f, n, Is):
     """
     Nj = circuit.junction_count()
     if circuit._has_identical_critical_current():
-        if np.abs(circuit.critical_current_factors[0]) < 1E-12:
+        if np.abs(circuit.critical_current[0]) < 1E-12:
             return np.zeros(Nj, dtype=np.double)
     A, Nf = circuit.get_cycle_matrix(), circuit._Nf()
     Ic = circuit._Ic().copy()
@@ -1457,7 +1459,7 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
     Nj, Nf = circuit._Nj(), circuit._Nf()
     Mr, M, A = circuit._Mr(), circuit.get_cut_matrix(), circuit.get_cycle_matrix()
     L = circuit._L()
-    Ic = np.broadcast_to(circuit.get_critical_current_factors(), (Nj,))
+    Ic = np.broadcast_to(circuit.get_critical_current(), (Nj,))
 
     Is = np.ones((Nj,), dtype=np.double) * Is if np.array(Is).size == 1 else Is
     f = np.ones((Nf,), dtype=np.double) * f if np.array(f).size == 1 else f
@@ -1486,7 +1488,7 @@ def static_compute(circuit: Circuit, theta0, Is, f, n, z=0,
         # iteration computations
 
         q = cp.d_eval(Ic, theta)
-        # q[np.abs(q) < 0.1 * tol] = 0.1 * tol
+        q[np.abs(q) < 0.1 * tol] = 0.1 * tol
         S = L + scipy.sparse.diags(1/q, 0)
         y = (I - Is) / q
         j = circuit.Asq_solve_sandwich(A @ (theta - y - LIs) + df, S)

@@ -1,8 +1,11 @@
+from __future__ import annotations
+
+from typing import List
+
 import numpy as np
 import scipy
 import scipy.sparse.linalg
 import scipy.optimize
-from numba import jit
 
 from pyjjasim.josephson_circuit import Circuit
 from pyjjasim.static_problem import DefaultCPR
@@ -37,10 +40,10 @@ class TimeEvolutionProblem:
         Total number of time steps in evolution (abbreviated Nt).
     current_phase_relation= DefaultCPR()
         Current-phase relation (abbreviated cp).
-    frustration=0.0 : array broadcastable to (Nf, W, Nt).
-        Normalized external flux per site, called frustration (abbreviated f)
-    frustration (alternative) : f(i) -> array broadcastable to (Nf, W) for i in range(Nt)
-        Alternative input type for frustration using a function.
+    external_flux=0.0 : array broadcastable to (Nf, W, Nt).
+        Normalized external flux per site, called external_flux (abbreviated f)
+    external_flux (alternative) : f(i) -> array broadcastable to (Nf, W) for i in range(Nt)
+        Alternative input type for external_flux using a function.
     current_sources : array broadcastable to (Nj, W, Nt)
         Current source strength at each junction in circuit (abbreviated Is).
     current_sources (alternative) : Is(i) -> array broadcastable to (Nj, W) for i in range(Nt)
@@ -90,7 +93,7 @@ class TimeEvolutionProblem:
 
     def __init__(self, circuit: Circuit, time_step=0.05, time_step_count=1000,
                  current_phase_relation=DefaultCPR(),
-                 frustration=0.0, current_sources=0.0,
+                 external_flux=0.0, current_sources=0.0,
                  voltage_sources=0.0, temperature=0.0,
                  store_time_steps=None, store_theta=True, store_voltage=True, store_current=True,
                  config_at_minus_1: np.ndarray = None,
@@ -108,14 +111,14 @@ class TimeEvolutionProblem:
             s = np.array(x(0) if hasattr(x, "__call__") else x).shape
             return s[1] if len(s) > 1 else 1
 
-        self.problem_count = max(get_prob_cnt(frustration),
+        self.problem_count = max(get_prob_cnt(external_flux),
                                  get_prob_cnt(current_sources), get_prob_cnt(voltage_sources),
                                  get_prob_cnt(temperature))
         Nj, Nf, W, Nt = self.circuit._Nj(), self.circuit._Nf(), self.get_problem_count(), self.get_time_step_count()
 
-        self._f_is_timedep = TimeEvolutionProblem._is_timedep(frustration)
-        self.frustration = frustration if hasattr(frustration, "__call__") else \
-            np.broadcast_to(np.array(frustration), (Nf, W, Nt))
+        self._f_is_timedep = TimeEvolutionProblem._is_timedep(external_flux)
+        self.external_flux = external_flux if hasattr(external_flux, "__call__") else \
+            np.broadcast_to(np.array(external_flux), (Nf, W, Nt))
         self._Is_is_timedep = TimeEvolutionProblem._is_timedep(current_sources)
         self.current_sources = current_sources if hasattr(current_sources, "__call__") else \
             np.broadcast_to(np.array(current_sources), (Nj, W, Nt))
@@ -163,12 +166,9 @@ class TimeEvolutionProblem:
             Static problem where the parameters are copied from this time evolution.
         """
         return StaticProblem(self.circuit, current_sources=self._Is(time_step)[:, problem_nr].copy(),
-                             frustration=self._f(time_step)[:, problem_nr].copy(),
+                             external_flux=self._f(time_step)[:, problem_nr].copy(),
                              vortex_configuration=vortex_configuration,
                              current_phase_relation=self.current_phase_relation)
-
-    def write_cir(self):
-        pass
 
 
     def get_problem_count(self):
@@ -207,11 +207,11 @@ class TimeEvolutionProblem:
         """
         return 0
 
-    def get_frustration(self):
+    def get_external_flux(self):
         """
-        Returns the frustration (abbreviated f).
+        Returns the external_flux (abbreviated f).
         """
-        return self.frustration
+        return self.external_flux
 
     def get_current_sources(self):
         """
@@ -300,7 +300,7 @@ class TimeEvolutionProblem:
         """
         return np.arange(self._Nt(), dtype=np.double) * self._dt()
 
-    def compute(self):
+    def compute(self) -> TimeEvolutionResult:
         """
         Compute time evolution on an Josephson Circuit.
         """
@@ -311,7 +311,7 @@ class TimeEvolutionProblem:
                "\n\ttime: " + self.time_step_count.__str__() + " steps of " + self.time_step.__str__() + \
                "\n\tcurrent sources: " + self.current_sources.__str__() + \
                "\n\tvoltage sources: " + self.voltage_sources.__str__() + \
-               "\n\tfrustration: " + self.frustration.__str__() + \
+               "\n\texternal_flux: " + self.external_flux.__str__() + \
                "\n\ttemperature: " + self.temperature.__str__() + \
                "\n\tcurrent-phase relation: " + self.current_phase_relation.__str__()
 
@@ -333,13 +333,15 @@ class TimeEvolutionProblem:
 
     @staticmethod
     def _is_timedep(x):
+        if hasattr(x, "__call__"):
+            return True
         if len(np.array(x).shape) == 0:
             return False
-        return hasattr(x, "__call__") or np.array(x).shape[-1] > 1
+        return np.array(x).shape[-1] > 1
 
     def _f(self, time_step) -> np.ndarray:  # (Nf, W), read-only
-        return np.broadcast_to(self.frustration(time_step), (self.circuit._Nf(), self.get_problem_count())) \
-            if hasattr(self.frustration, "__call__") else self.frustration[:, :, time_step]
+        return np.broadcast_to(self.external_flux(time_step), (self.circuit._Nf(), self.get_problem_count())) \
+            if hasattr(self.external_flux, "__call__") else self.external_flux[:, :, time_step]
 
     def _Is(self, time_step) -> np.ndarray: # (Nj, W), read-only
         return np.broadcast_to(self.current_sources(time_step), (self.circuit._Nj(), self.get_problem_count()))\
@@ -445,7 +447,7 @@ def time_evolution(problem: TimeEvolutionProblem):
         V_out = _apply_derivative(th_out, index=ts + offset, stencil=problem.stencil[0], dt=problem._dt())
         if problem.circuit._has_inductance():
             V_ind = _apply_derivative(I_out, index=ts + offset, stencil=problem.stencil[0], dt=problem._dt())
-            V_out += (problem.circuit.get_inductance_factors() @ V_ind.reshape((Nj, -1))).reshape(V_out.shape)
+            V_out += (problem.circuit.get_inductance() @ V_ind.reshape((Nj, -1))).reshape(V_out.shape)
         th_out = np.delete(th_out, np.flatnonzero((V_th_store_mask & ~ th_store_mask)[V_th_store_mask]) + offset, axis=2)
         I_out = np.delete(I_out, np.flatnonzero((V_I_store_mask & ~ I_store_mask)[V_I_store_mask]) + offset, axis=2)
 
@@ -682,12 +684,12 @@ class TimeEvolutionResult:
         if self.theta is None:
             raise ValueError("Theta not stored; cannot select static configuration.")
         problem = StaticProblem(self.get_circuit(), current_sources=self.problem._Is(time_step)[:, prob_nr],
-                                frustration=self.problem._f(time_step)[:, prob_nr],
-                                vortex_configuration=self.get_n(time_step)[:, prob_nr],
+                                external_flux=self.problem._f(time_step)[:, prob_nr],
+                                vortex_configuration=self.get_vortex_configuration(time_step)[:, prob_nr],
                                 current_phase_relation=self.problem.current_phase_relation)
         return StaticConfiguration(problem, self.theta[:, prob_nr, time_step])
 
-    def get_phi(self, select_time_points=None) -> np.ndarray:
+    def get_phase(self, select_time_points=None) -> np.ndarray:
         """
         Return node phases. Last node is grounded. Requires theta to be stored.
 
@@ -729,7 +731,7 @@ class TimeEvolutionResult:
         """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._th)
 
-    def get_n(self, select_time_points=None) -> np.ndarray:
+    def get_vortex_configuration(self, select_time_points=None) -> np.ndarray:
         """
         Return vorticity at faces. Requires theta to be stored.
 
@@ -752,7 +754,7 @@ class TimeEvolutionResult:
         except ThetaNotStored:
             raise ThetaNotStored("Cannot compute n; requires theta to be stored in TimeEvolutionConfig")
 
-    def get_EJ(self, select_time_points=None) -> np.ndarray:
+    def get_josephson_energy(self, select_time_points=None) -> np.ndarray:
         """
         Return Josephson energy of junctions. Requires theta to be stored.
 
@@ -774,7 +776,7 @@ class TimeEvolutionResult:
         except ThetaNotStored:
             raise ThetaNotStored("Cannot compute Josephson energy EJ; requires theta to be stored in TimeEvolutionConfig")
 
-    def get_I(self, select_time_points=None) -> np.ndarray:
+    def get_current(self, select_time_points=None) -> np.ndarray:
         """
         Return current through junctions.
 
@@ -792,7 +794,7 @@ class TimeEvolutionResult:
         """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._I)
 
-    def get_Isup(self, select_time_points=None) -> np.ndarray:
+    def get_supercurrent(self, select_time_points=None) -> np.ndarray:
         """
         Return supercurrent through junctions. Requires theta to be stored.
 
@@ -814,7 +816,7 @@ class TimeEvolutionResult:
         except ThetaNotStored:
             raise ThetaNotStored("Cannot compute supercurrent Isup; requires theta to be stored in TimeEvolutionConfig")
 
-    def get_J(self, select_time_points=None) -> np.ndarray:
+    def get_cycle_current(self, select_time_points=None) -> np.ndarray:
         """
         Return cycle-current J around faces. Requires current to be stored. Defined
         as I = A.T @ J + I_source.
@@ -863,7 +865,7 @@ class TimeEvolutionResult:
         except CurrentNotStored:
             raise CurrentNotStored("Cannot compute magnetic flux; requires current to be stored in TimeEvolutionConfig")
 
-    def get_EM(self, select_time_points=None) -> np.ndarray:
+    def get_magnetic_energy(self, select_time_points=None) -> np.ndarray:
         """
         Return magnetic energy associated with wires. Requires current to be stored.
 
@@ -887,7 +889,7 @@ class TimeEvolutionResult:
         except CurrentNotStored:
             raise CurrentNotStored("Cannot compute magnetic energy EM; requires current to be stored in TimeEvolutionConfig")
 
-    def get_V(self, select_time_points=None):
+    def get_voltage(self, select_time_points=None):
         """
         Return voltage over junctions.
 
@@ -905,7 +907,7 @@ class TimeEvolutionResult:
         """
         return self._select(select_time_points, self.get_circuit()._Nj(), self._V)
 
-    def get_U(self, select_time_points=None):
+    def get_potential(self, select_time_points=None):
         """
         Return voltage potential at nodes. Last node is groudend.Requires
         voltage to be stored.
@@ -934,7 +936,7 @@ class TimeEvolutionResult:
             raise VoltageNotStored(
                 "Cannot compute electric potential U; requires voltage to be stored in TimeEvolutionConfig")
 
-    def get_EC(self, select_time_points=None):
+    def get_capacitive_energy(self, select_time_points=None):
         """
         Return energy stored in capacitors at each junction. Requires voltage
         to be stored.
@@ -960,7 +962,7 @@ class TimeEvolutionResult:
             raise VoltageNotStored(
                 "Cannot compute capacitive energy EC; requires voltage to be stored in TimeEvolutionConfig")
 
-    def get_Etot(self, select_time_points=None) -> np.ndarray:
+    def get_energy(self, select_time_points=None) -> np.ndarray:
         """
         Return total energy associated with each junction. Requires theta,
         current and voltage to be stored.
@@ -977,8 +979,8 @@ class TimeEvolutionResult:
         Etot : (Nj, W, nr_of_selected_timepoints) array
             Total energy associated with each junction.
         """
-        return self.get_EJ(select_time_points) + self.get_EM(select_time_points) + \
-               self.get_EC(select_time_points)
+        return self.get_josephson_energy(select_time_points) + self.get_magnetic_energy(select_time_points) + \
+               self.get_capacitive_energy(select_time_points)
 
     def plot(self, problem_nr=0, time_point=0, fig=None, node_quantity=None,
              junction_quantity="I", face_quantity=None, vortex_quantity="n",
@@ -1087,8 +1089,8 @@ class AnnealingProblem:
     time_step=0.5 : float
         time step used in time evolution. Can be set quite large as the simulation does not
         need to be accurate.
-    frustration=0.0 : float or (Nf,) array
-        Frustration at each face. If scalar; same frustration is assumed for each face.
+    external_flux=0.0 : float or (Nf,) array
+        Frustration at each face. If scalar; same external_flux is assumed for each face.
     current_sources=0 : float or (Nj,) array
         Current sources. Note that if this is set too high, a static configuration
         may not exist, so likely the temperature will go to zero.
@@ -1109,7 +1111,7 @@ class AnnealingProblem:
         Factor with which temperature is multiplied or divided by every iteration.
     """
     def __init__(self, circuit: Circuit, time_step=0.5, interval_steps=10,
-                 frustration=0.0, current_sources=0, problem_count=1,
+                 external_flux=0.0, current_sources=0, problem_count=1,
                  interval_count=1000, vortex_mobility=0.001,
                  start_T=1.0, T_factor=1.03):
         self.circuit = circuit
@@ -1118,7 +1120,7 @@ class AnnealingProblem:
         self.interval_count = interval_count
         self.vortex_mobility = vortex_mobility
         self.current_sources = current_sources
-        self.frustration = frustration
+        self.external_flux = external_flux
         self.problem_count = problem_count
         self.T =start_T * np.ones((1, self.problem_count, 1))
         self.T_factor = T_factor
@@ -1134,10 +1136,10 @@ class AnnealingProblem:
         v = self.vortex_mobility
         upper = v[iteration] if (np.array(v)).size == self.interval_count else \
             v * ((self.interval_count - iteration) / self.interval_count) ** 1.5
-        factor = (vortex_mobility > upper) * (1/self.T_factor) +  (vortex_mobility <= upper) * self.T_factor
+        factor = (vortex_mobility > upper) * (1/self.T_factor) + (vortex_mobility <= upper) * self.T_factor
         self.T *= factor[..., None]
 
-    def compute(self):
+    def compute(self) -> tuple[np.ndarray, List[StaticConfiguration], np.ndarray]:
         """
         Executes the annealing procedure.
 
@@ -1152,19 +1154,20 @@ class AnnealingProblem:
         """
 
         # prepare runs
-        f = np.atleast_1d(self.frustration)[:, None, None]
+        f = np.atleast_1d(self.external_flux)[:, None, None]
         th = np.zeros((self.circuit.junction_count(), self.problem_count))
         prob = TimeEvolutionProblem(self.circuit, time_step_count=self.interval_steps, time_step=self.time_step,
-                                    frustration=f, current_sources=self.current_sources, temperature=self.T,
-                                    store_current=False, store_voltage=False)
+                                    external_flux=f, current_sources=self.current_sources, temperature=self.T,
+                                    store_current=False, store_voltage=False, stencil_width=3)
         temperature_profiles = np.zeros((self.interval_count, self.problem_count))
 
         # Do interval_count runs of interval_steps steps. After each step update temperature.
         for i in range(self.interval_count):
             prob.temperature = self.T * np.ones((1, 1, self.interval_steps))
             prob.config_at_minus_1 = th
+            prob.config_at_minus_2 = th.copy()
             out = prob.compute()
-            vortex_configurations = out.get_n()
+            vortex_configurations = out.get_vortex_configuration()
             vortex_mobility = self.get_vortex_mobility(vortex_configurations)
             self._temperature_adjustment(vortex_mobility, i)
             th = out.get_theta()[..., -1]
@@ -1175,11 +1178,12 @@ class AnnealingProblem:
         prob.time_step /=2
         for i in range(5):
             prob.config_at_minus_1 = th
+            prob.config_at_minus_2 = th.copy()
             out = prob.compute()
             th = out.get_theta()[..., -1]
 
         # extract result
-        vortex_configurations = out.get_n()[:, :, -1]
+        vortex_configurations = out.get_vortex_configuration()[:, :, -1]
         data = [prob.get_static_problem(vortex_configurations[:, p], problem_nr=0, time_step=0).compute()
                 for p in range(self.problem_count)]
         configurations = [d[0] for d in data]

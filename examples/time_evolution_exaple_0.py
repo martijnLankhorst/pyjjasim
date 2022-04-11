@@ -21,11 +21,11 @@ if __name__ == "__main__":
     dt = 0.05
     Nt = 1000
     f = 0.2
-    Is = 0.5 * sq_array.current_base(angle=0)
+    Is = 0.5 * sq_array.current_base(angle=0)[:, None, None]
     T = 0.02
     problem = TimeEvolutionProblem(sq_array, time_step=dt,
                                    time_step_count=Nt, current_sources=Is,
-                                   frustration=f, temperature=T)
+                                   external_flux=f, temperature=T)
     config = problem.compute()
     config.animate(junction_quantity="supercurrent")
     plt.show()

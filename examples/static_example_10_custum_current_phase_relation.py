@@ -1,8 +1,8 @@
 from pyjjasim import *
 
-import matplotlib
 import matplotlib.pyplot as plt
 
+import matplotlib
 matplotlib.use("TkAgg")
 
 """
@@ -22,11 +22,11 @@ if __name__ == "__main__":
     f = 0.01
     n = np.zeros(array.face_count())
     n[array.locate_faces(4.5, 4.5)] = 1
-    prob = StaticProblem(array, current_phase_relation=cp, vortex_configuration=n, frustration=f)
+    prob = StaticProblem(array, current_phase_relation=cp, vortex_configuration=n, external_flux=f)
     config, status, info = prob.compute()
     print(f"status: {status}")
     print(info)
-    print(f"total energy: {np.sum(config.get_Etot())}")
+    print(f"total energy: {np.sum(config.get_energy())}")
     config.plot()
     plt.show()
 

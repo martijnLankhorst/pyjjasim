@@ -1,12 +1,13 @@
-from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
-
-
+from __future__ import annotations
 import numpy as np
 import scipy
 import scipy.sparse
 import scipy.sparse.linalg
 import scipy.spatial
 import scipy.fftpack
+
+from pyjjasim.embedded_graph import EmbeddedGraph, EmbeddedTriangularGraph, EmbeddedHoneycombGraph, EmbeddedSquareGraph
+
 
 __all__ = ["Circuit", "SquareArray", "HoneycombArray", "TriangularArray", "SQUID"]
 
@@ -35,15 +36,15 @@ class Circuit:
     ----------
     graph : :py:attr:`embedded_graph.EmbeddedGraph`
         EmbeddedGraph instance with Nn nodes, Nj edges and Nf faces.
-    critical_current_factors=1.0 : (Nj,) array or scalar
+    critical_current=1.0 : (Nj,) array or scalar
         Critical current factors of junctions. Same value for all junctions if scalar.
-    resistance_factors=1.0 : (Nj,) array or scalar
+    resistance=1.0 : (Nj,) array or scalar
         Resistance factors of junctions. Same value for all junctions if scalar.
-    capacitance_factors=0.0 : (Nj,) array or scalar
+    capacitance=0.0 : (Nj,) array or scalar
         Capacitance factors of junctions. Same value for all junctions if scalar.
-    inductance_factors=0.0 : (Nj,) array or scalar
+    inductance=0.0 : (Nj,) array or scalar
         Self-inductance factors of junctions. Same value for all junctions if scalar.
-    or inductance_factors=0.0 : (Nj, Nj) matrix (dense or sparse)
+    or inductance=0.0 : (Nj, Nj) matrix (dense or sparse)
         L_ij coupling between junction i and j. L_ii self inductance. Must be symmetric
         positive definite.
 
@@ -51,33 +52,33 @@ class Circuit:
     -----
     * All physical quantities are normalized in pyjjasim, see the user manual for details.
       For example the critical current of each junction in Ampere is
-      :math:`\mathtt{critical\_current\_factors} * I_0`, where :math:`I_0` is the
+      :math:`\mathtt{critical\_current\} * I_0`, where :math:`I_0` is the
       normalizing scalar for all current values.
     * Sources are specified at problems, not explicitly as part of the circuit.
     """
 
-    def __init__(self, graph: EmbeddedGraph, critical_current_factors=1.0, resistance_factors=1.0,
-                 capacitance_factors=0.0, inductance_factors=0.0):
+    def __init__(self, graph: EmbeddedGraph, critical_current=1.0, resistance=1.0,
+                 capacitance=0.0, inductance=0.0, negative_Ic_allowed=False):
 
         self.graph = graph
         self.graph._assert_planar_embedding()
         self.graph._assert_single_component()
 
-        self.resistance_factors = None
-        self.capacitance_factors = None
-        self.critical_current_factors=None
-        self.inductance_factors = None
+        self.resistance = None
+        self.capacitance = None
+        self.critical_current=None
+        self.inductance = None
         self._has_inductance_v = False
-
+        self.negative_Ic_allowed = negative_Ic_allowed
         self.locator = None
 
         self.cut_matrix = self.graph.cut_space_matrix()
         self.cycle_matrix = self.graph.face_cycle_matrix()
 
-        self.set_resistance_factors(resistance_factors)
-        self.set_critical_current_factors(critical_current_factors)
-        self.set_capacitance_factors(capacitance_factors)
-        self.set_inductance_factors(inductance_factors)
+        self.set_resistance(resistance)
+        self.set_critical_current(critical_current)
+        self.set_capacitance(capacitance)
+        self.set_inductance(inductance)
 
         self.cut_matrix_reduced = None
 
@@ -174,10 +175,10 @@ class Circuit:
 
     def _AiIcpLA_solve(self, b):
         if self._has_identical_critical_current():
-            if np.abs(self.critical_current_factors[0]) < 1E-12:
+            if np.abs(self.critical_current[0]) < 1E-12:
                 return np.zeros(self.face_count(), dtype=np.double)
         if self._has_only_identical_self_inductance() and self._has_identical_critical_current():
-            const = 1/self.critical_current_factors[0] + self.inductance_factors.diagonal()[0]
+            const = 1/self.critical_current[0] + self.inductance.diagonal()[0]
             return self.Asq_solve(b) / const
         if self._AiIcpLA_factorized is None:
             Nj, A = self._Nj(), self.get_cycle_matrix()
@@ -224,15 +225,15 @@ class Circuit:
         """
         n1, n2 = self.get_junction_nodes()
         return Circuit(EmbeddedGraph(self.graph.x, self.graph.y, n1, n2),
-                       critical_current_factors=self.get_critical_current_factors(),
-                       resistance_factors=self.get_resistance_factors(),
-                       capacitance_factors=self.get_capacitance_factors(),
-                       inductance_factors=self.get_inductance_factors())
+                       critical_current=self.get_critical_current(),
+                       resistance=self.get_resistance(),
+                       capacitance=self.get_capacitance(),
+                       inductance=self.get_inductance())
 
     # noinspection PyArgumentList
     def add_nodes_and_junctions(self, x, y, node1, node2,
-                                critical_current_factors=1.0, resistance_factors=1.0,
-                                capacitance_factors=1.0, inductance_factors=1.0):
+                                critical_current=1.0, resistance=1.0,
+                                capacitance=1.0, inductance=1.0) -> Circuit:
         """ Add nodes to array and junctions to array.
 
             Attributes
@@ -241,21 +242,21 @@ class Circuit:
                 Coordinates of added nodes.
             node1, node2 : (Nj_new,) int arrays
                 Nodes at endpoints of added junctions.
-            critical_current_factors : scalar or (Nj_new,) array
+            critical_current : scalar or (Nj_new,) array
                 Critical current factors of added junctions. Same value for
                 all new junctions if scalar.
-            resistance_factors : scalar or (Nj_new,) array
+            resistance : scalar or (Nj_new,) array
                 Resistance factors of added junctions. Same value for
                 all new junctions if scalar.
-            capacitance_factors : scalar or (Nj_new,) array
+            capacitance : scalar or (Nj_new,) array
                 Capacitance factors of added junctions. Same value for
                 all new junctions if scalar.
-            inductance_factors : scalar or (Nj_new,) array
+            inductance : scalar or (Nj_new,) array
                 Self-inductance factors of added junctions. Same value for
                 all new junctions if scalar.
-            or inductance_factors : (Nj_new, Nj_new) array
+            or inductance : (Nj_new, Nj_new) array
                 Mutual inductance factors between new junctions.
-            or inductance_factors : (Nj_new, Nj) array
+            or inductance : (Nj_new, Nj) array
                 Mutual inductance factors between new junctions and all junctions.
 
             Returns
@@ -270,31 +271,31 @@ class Circuit:
         new_node1 = np.append(n1, np.array(node1, dtype=int).flatten())
         new_node2 = np.append(n2, np.array(node2, dtype=int).flatten())
         Nj, Nj_new = self.junction_count(), len(node1)
-        new_Ic = np.append(self.critical_current_factors,
-                           self._prepare_junction_quantity(critical_current_factors, Nj_new, x_name="Ic"))
-        new_R = np.append(self.resistance_factors,
-                          self._prepare_junction_quantity(resistance_factors, Nj_new, x_name="R"))
-        new_C = np.append(self.capacitance_factors,
-                          self._prepare_junction_quantity(capacitance_factors, Nj_new, x_name="C"))
+        new_Ic = np.append(self.critical_current,
+                           self._prepare_junction_quantity(critical_current, Nj_new, x_name="Ic"))
+        new_R = np.append(self.resistance,
+                          self._prepare_junction_quantity(resistance, Nj_new, x_name="R"))
+        new_C = np.append(self.capacitance,
+                          self._prepare_junction_quantity(capacitance, Nj_new, x_name="C"))
         new_L = None
-        if hasattr(inductance_factors, 'shape'):
-            if inductance_factors.shape == (Nj_new, Nj+Nj_new):
-                if scipy.sparse.issparse(inductance_factors):
-                    inductance_factors = inductance_factors.tocsc()
-                A_block = self.inductance_factors
-                C_block = inductance_factors[:, :self.junction_count()]
-                D_block = inductance_factors[:, self.junction_count():]
+        if hasattr(inductance, 'shape'):
+            if inductance.shape == (Nj_new, Nj+Nj_new):
+                if scipy.sparse.issparse(inductance):
+                    inductance = inductance.tocsc()
+                A_block = self.inductance
+                C_block = inductance[:, :self.junction_count()]
+                D_block = inductance[:, self.junction_count():]
                 new_L = scipy.sparse.bmat([[A_block, C_block.T], [C_block, D_block]])
         if new_L is None:
-            D_block, _, _ = Circuit._prepare_inducance_matrix(inductance_factors, Nj_new)
-            new_L = scipy.sparse.block_diag([self.inductance_factors, D_block])
+            D_block, _, _ = Circuit._prepare_inducance_matrix(inductance, Nj_new)
+            new_L = scipy.sparse.block_diag([self.inductance, D_block])
         new_circuit = Circuit(EmbeddedGraph(new_x, new_y, new_node1, new_node2),
-                       critical_current_factors=new_Ic, resistance_factors=new_R,
-                       capacitance_factors=new_C, inductance_factors=new_L)
+                       critical_current=new_Ic, resistance=new_R,
+                       capacitance=new_C, inductance=new_L)
         return new_circuit
 
     # noinspection PyArgumentList
-    def remove_nodes(self, nodes_to_remove):
+    def remove_nodes(self, nodes_to_remove) -> Circuit:
         """
         Remove nodes from circuit.
 
@@ -333,16 +334,16 @@ class Circuit:
         junc_remove_mask, new_node_id = self._junction_remove_mask(n1, n2, node_remove_mask)
         new_node1 = new_node_id[n1][~junc_remove_mask]
         new_node2 = new_node_id[n2][~junc_remove_mask]
-        new_Ic = self.critical_current_factors[~junc_remove_mask]
-        new_R = self.resistance_factors[~junc_remove_mask]
-        new_C = self.capacitance_factors[~junc_remove_mask]
-        new_L = self.inductance_factors[~junc_remove_mask, :][:, ~junc_remove_mask]
+        new_Ic = self.critical_current[~junc_remove_mask]
+        new_R = self.resistance[~junc_remove_mask]
+        new_C = self.capacitance[~junc_remove_mask]
+        new_L = self.inductance[~junc_remove_mask, :][:, ~junc_remove_mask]
         return Circuit(EmbeddedGraph(new_x, new_y, new_node1, new_node2),
-                       critical_current_factors=new_Ic, resistance_factors=new_R,
-                       capacitance_factors=new_C, inductance_factors=new_L)
+                       critical_current=new_Ic, resistance=new_R,
+                       capacitance=new_C, inductance=new_L)
 
     # noinspection PyArgumentList
-    def remove_junctions(self, junctions_to_remove):
+    def remove_junctions(self, junctions_to_remove) -> Circuit:
         """
         Remove junctions from circuit.
 
@@ -371,13 +372,13 @@ class Circuit:
             junction_mask = junctions_to_remove
         n1, n2 = self.get_junction_nodes()
         new_node1, new_node2 = n1[~junction_mask], n2[~junction_mask]
-        new_Ic = self.critical_current_factors[~junction_mask]
-        new_R = self.resistance_factors[~junction_mask]
-        new_C = self.capacitance_factors[~junction_mask]
-        new_L = self.inductance_factors[~junction_mask, :][:, ~junction_mask]
+        new_Ic = self.critical_current[~junction_mask]
+        new_R = self.resistance[~junction_mask]
+        new_C = self.capacitance[~junction_mask]
+        new_L = self.inductance[~junction_mask, :][:, ~junction_mask]
         return Circuit(EmbeddedGraph(self.graph.x, self.graph.y, new_node1, new_node2),
-                       critical_current_factors=new_Ic, resistance_factors=new_R,
-                       capacitance_factors=new_C, inductance_factors=new_L)
+                       critical_current=new_Ic, resistance=new_R,
+                       capacitance=new_C, inductance=new_L)
 
     def get_node_coordinates(self):
         """
@@ -396,13 +397,13 @@ class Circuit:
         """
         return self._Nn()
 
-    def get_critical_current_factors(self):
+    def get_critical_current(self):
         """
         Returns critical current factors of each junction in the circuit.
         """
-        return self.critical_current_factors
+        return self.critical_current
 
-    def set_critical_current_factors(self, Ic):
+    def set_critical_current(self, Ic) -> Circuit:
         """
         Modify critical current factors of all junctions in the circuit.
 
@@ -411,17 +412,21 @@ class Circuit:
         Ic : (Nj,) array or scalar
             New critical current factors. Same for all junctions if scalar.
         """
-        self.critical_current_factors = self._prepare_junction_quantity(Ic, self._Nj(), x_name="Ic")
+        self.critical_current = self._prepare_junction_quantity(Ic, self._Nj(), x_name="Ic")
+        if not self.negative_Ic_allowed:
+            if np.any(self.critical_current < 0):
+                raise ValueError("Defined negative critical current. If intentional;"
+                                 "set negative_Ic_allowed field of circuit to True.")
         self._AiIcpLA_factorized = None
         return self
 
-    def get_resistance_factors(self):
+    def get_resistance(self):
         """
         Returns resistance factors assigned to each junction in the circuit.
         """
-        return self.resistance_factors
+        return self.resistance
 
-    def set_resistance_factors(self, R):
+    def set_resistance(self, R) -> Circuit:
         """
         Modify resistance factors of all junctions in the circuit.
 
@@ -430,18 +435,18 @@ class Circuit:
         R : (Nj,) array or scalar
             New resistance factors. Same for all junctions if scalar.
         """
-        self.resistance_factors = self._prepare_junction_quantity(R, self._Nj(), x_name="R")
-        if np.any(self.resistance_factors <= 0.0):
+        self.resistance = self._prepare_junction_quantity(R, self._Nj(), x_name="R")
+        if np.any(self.resistance <= 0.0):
             raise ValueError("All junctions must have a positive resistor")
         return self
 
-    def get_capacitance_factors(self):
+    def get_capacitance(self):
         """
         Returns capacitance factors assigned to each junction in the circuit.
         """
-        return self.capacitance_factors
+        return self.capacitance
 
-    def set_capacitance_factors(self, C):
+    def set_capacitance(self, C) -> Circuit:
         """
         Modify capacitance factors of all junctions in the circuit.
 
@@ -450,8 +455,8 @@ class Circuit:
         C : (Nj,) array or scalar
             New capacitance factors. Same for all junctions if scalar.
         """
-        self.capacitance_factors = self._prepare_junction_quantity(C, self._Nj(), x_name="C")
-        if np.any(self.capacitance_factors < 0.0):
+        self.capacitance = self._prepare_junction_quantity(C, self._Nj(), x_name="C")
+        if np.any(self.capacitance < 0.0):
             raise ValueError("Capacitance cannot be negative.")
         return self
 
@@ -522,12 +527,12 @@ class Circuit:
             _, faces = self.locator.query(np.stack(np.broadcast_arrays(x, y), axis=-1), k=1)
         return faces
 
-    def approximate_inductance(self, factor, junc_L=1, junc_M=0, max_dist=3):
+    def approximate_inductance(self, factor, junc_L=1, junc_M=0, max_dist=3) -> Circuit:
         """
         Approximate inductance in circuit.
 
         Computes a matrix L as an approximation for the inductance factors and
-        does self.set_inductance_factors(L).
+        does self.set_inductance(L).
 
         L is computed using a crude approximation of Neumann's formula for two wire segments.
 
@@ -558,7 +563,7 @@ class Circuit:
 
         """
 
-        self.inductance_factors = None
+        self.inductance = None
         i, j = np.arange(self._Nj(), dtype=int), np.arange(self._Nj(), dtype=int)
         data = self._junction_lengths() * junc_L
         if junc_M > 0 and max_dist > 0:
@@ -571,28 +576,28 @@ class Circuit:
             mutual = junc_M * inner / distance
             data = np.append(data, mutual)
             data = np.append(data, mutual)
-        self.set_inductance_factors(factor * scipy.sparse.coo_matrix((data, (i, j)), shape=(self._Nj(), self._Nj())).tocsr())
+        self.set_inductance(factor * scipy.sparse.coo_matrix((data, (i, j)), shape=(self._Nj(), self._Nj())).tocsr())
         return self
 
-    def get_inductance_factors(self):
+    def get_inductance(self):
         """
         Returns the inductance factors between each pair of junctions.
 
         Returns
         -------
-        inductance_factors : (Nj, Nj) array
+        inductance : (Nj, Nj) array
             Diagonal entries are self-inductance factors, off-diagonal entries are mutual.
         """
         # return matrix whose entry (r, c) is the magnetic coupling between wire r and wire c.
         # out: (junction_count, junction_count) sparse symmetric float matrix
-        return self.inductance_factors
+        return self.inductance
 
-    def set_inductance_factors(self, inductance_factors):
+    def set_inductance(self, inductance) -> Circuit:
         """
         Modify the inductances factors of all junctions in the circuit.
         """
-        self.inductance_factors, is_positive_definite, self._has_inductance_v = \
-            Circuit._prepare_inducance_matrix(inductance_factors, self._Nj())
+        self.inductance, is_positive_definite, self._has_inductance_v = \
+            Circuit._prepare_inducance_matrix(inductance, self._Nj())
         if not is_positive_definite:
             raise ValueError("Inductance matrix not positive definite")
         self._AiIcpLA_factorized = None
@@ -643,20 +648,20 @@ class Circuit:
             np.save(ffile, y)
             np.save(ffile, n1)
             np.save(ffile, n2)
-            np.save(ffile, self.critical_current_factors)
-            np.save(ffile, self.resistance_factors)
-            np.save(ffile, self.capacitance_factors)
-            L_is_sparse = scipy.sparse.issparse(self.inductance_factors)
+            np.save(ffile, self.critical_current)
+            np.save(ffile, self.resistance)
+            np.save(ffile, self.capacitance)
+            L_is_sparse = scipy.sparse.issparse(self.inductance)
             np.save(ffile, L_is_sparse)
             if L_is_sparse:
-                np.save(ffile, self.inductance_factors.indptr)
-                np.save(ffile, self.inductance_factors.indices)
-                np.save(ffile, self.inductance_factors.data)
+                np.save(ffile, self.inductance.indptr)
+                np.save(ffile, self.inductance.indices)
+                np.save(ffile, self.inductance.data)
             else:
-                np.save(ffile, self.inductance_factors)
+                np.save(ffile, self.inductance)
 
     @staticmethod
-    def load(filename):
+    def load(filename) -> Circuit:
         with open(filename, "rb") as ffile:
             x = np.load(ffile)
             y = np.load(ffile)
@@ -675,8 +680,8 @@ class Circuit:
                 L = scipy.sparse.csc_matrix((data, indices, indptr), shape=(Nj, Nj))
             else:
                 L = np.load(ffile)
-            return Circuit(g, critical_current_factors=Ic, resistance_factors=R,
-                           capacitance_factors=C, inductance_factors=L)
+            return Circuit(g, critical_current=Ic, resistance=R,
+                           capacitance=C, inductance=L)
 
 
     # abbreviations and aliases
@@ -693,17 +698,17 @@ class Circuit:
     def _Nf(self):
         return self.graph.face_count()
 
-    def _Ic(self) -> np.ndarray:     # alias for get_critical_current_factors
-        return self.critical_current_factors
+    def _Ic(self) -> np.ndarray:     # alias for get_critical_current
+        return self.critical_current
 
-    def _R(self) -> np.ndarray:      # alias for get_resistance_factors
-        return self.resistance_factors
+    def _R(self) -> np.ndarray:      # alias for get_resistance
+        return self.resistance
 
-    def _C(self) -> np.ndarray:      # alias for get_resistance_factors
-        return self.capacitance_factors
+    def _C(self) -> np.ndarray:      # alias for get_resistance
+        return self.capacitance
 
     def _L(self):
-        return self.inductance_factors
+        return self.inductance
 
     def _Mr(self):
         if self.cut_matrix_reduced is None:
@@ -713,7 +718,7 @@ class Circuit:
     @staticmethod
     def _prepare_junction_quantity(x, N, x_name="x"):
         try:
-            x = np.broadcast_to(x, (N,)).copy()
+            x = np.broadcast_to(x, (N,)).copy().astype(np.double)
         except ValueError:
             raise ValueError(x_name + " must be scalar or array of length equal to junction count")
         return x
@@ -731,17 +736,21 @@ class Circuit:
                 raise ValueError("inductance matrix must be symmetric")
             if scipy.sparse.issparse(L):
                 L = L.tocsc()
+                is_zero = L.nnz == 0
+                if is_zero:
+                    return L, True, True
                 from pyjjasim.static_problem import is_positive_definite_superlu
                 status = is_positive_definite_superlu(L)
                 if status == 2:
                     raise ValueError(
                         "Choleski factorization failed; unable to determine positive definiteness of inductance matrix")
                 is_positive_definite = status == 0
-                is_zero = L.nnz == 0
             else:
+                is_zero = np.all(L == 0)
+                if is_zero:
+                    return L, True, True
                 (_, pd) = scipy.linalg.lapack.dpotrf(np.array(L))
                 is_positive_definite = pd == 0
-                is_zero = np.all(L == 0)
             return L, is_positive_definite, is_zero
         else:
             raise ValueError("L must be scalar, (Nj,) array or (Nj, Nj) matrix")
@@ -792,15 +801,15 @@ class Circuit:
 
 
     def _has_capacitance(self):
-        # returns False if self.capacitance_factors is zero, True otherwise
-        return np.any(self.capacitance_factors > 0)
+        # returns False if self.capacitance is zero, True otherwise
+        return np.any(self.capacitance > 0)
 
     def _has_inductance(self):
-        # returns False if self.inductance_factors is zero, True otherwise
+        # returns False if self.inductance is zero, True otherwise
         return self._has_inductance_v
 
     def _has_only_self_inductance(self):
-        L = self.get_inductance_factors()
+        L = self.get_inductance()
         Ls = L.diagonal()
         if scipy.sparse.issparse(L):
             return L.nnz == np.count_nonzero(Ls)
@@ -818,20 +827,20 @@ class Circuit:
         return np.isclose(np.array(np.sum(np.abs(ALA), axis=1))[:, 0], 0)
 
     def _has_identical_critical_current(self):
-        Ic = self.get_critical_current_factors()
+        Ic = self.get_critical_current()
         return np.allclose(Ic, Ic[0])
 
     def _has_identical_resistance(self):
-        R = self.get_resistance_factors()
+        R = self.get_resistance()
         return np.allclose(R, R[0])
 
     def _has_identical_capacitance(self):
-        C = self.get_capacitance_factors()
+        C = self.get_capacitance()
         return np.allclose(C, C[0])
 
     def _has_only_identical_self_inductance(self):
         if self._has_only_self_inductance():
-            L = self.get_inductance_factors().diagonal()
+            L = self.get_inductance().diagonal()
             return np.allclose(L, L[0])
         return False
 
@@ -1002,7 +1011,7 @@ class SQUID(Circuit):
         node2 = [1, 2, 3, 3]
         graph = EmbeddedGraph(x, y, node1, node2)
         Ic = [1, 1000, 1, 1000]
-        super().__init__(graph, critical_current_factors=Ic)
+        super().__init__(graph, critical_current=Ic)
 
     def horizontal_junctions(self):
         return np.array([1, 0, -1, 0])

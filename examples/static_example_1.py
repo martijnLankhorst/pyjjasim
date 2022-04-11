@@ -16,7 +16,7 @@ if __name__ == "__main__":
     sq_array = SquareArray(N, N)
     f = 0.1
     n = [0, 0, 0, 0, 1, 0, 0, 0, 0]
-    problem = StaticProblem(sq_array, frustration=f, vortex_configuration=n)
+    problem = StaticProblem(sq_array, external_flux=f, vortex_configuration=n)
     config, _, info = problem.compute()
     print(info)
     handles = config.plot()

@@ -1,8 +1,10 @@
 from pyjjasim import *
 
+import matplotlib.pyplot as plt
+
 import matplotlib
 matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
+
 
 
 """
@@ -17,13 +19,13 @@ if __name__ == "__main__":
     honeycomb_array = HoneycombArray(8, 12)
     triangular_array = TriangularArray(12, 8)
 
-    # frustration factor
+    # external_flux factor
     f = 0.02
 
     # define physical problems
-    prob_sq = StaticProblem(square_array, frustration=f, current_sources=square_array.current_base(angle=0))
-    prob_hc = StaticProblem(honeycomb_array, frustration=f, current_sources=honeycomb_array.current_base(angle=0))
-    prob_tr = StaticProblem(triangular_array, frustration=f, current_sources=triangular_array.current_base(angle=0))
+    prob_sq = StaticProblem(square_array, external_flux=f, current_sources=square_array.current_base(angle=0))
+    prob_hc = StaticProblem(honeycomb_array, external_flux=f, current_sources=honeycomb_array.current_base(angle=0))
+    prob_tr = StaticProblem(triangular_array, external_flux=f, current_sources=triangular_array.current_base(angle=0))
 
     square_array.plot()
     honeycomb_array.plot()
@@ -31,9 +33,9 @@ if __name__ == "__main__":
     # plt.show()
 
     # compute maximal current
-    _, _, config_sq, _ = prob_sq.compute_maximal_current()
-    _, _, config_hc, _ = prob_hc.compute_maximal_current()
-    _, _, config_tr, _ = prob_tr.compute_maximal_current()
+    _, config_sq, _ = prob_sq.compute_maximal_current()
+    _, config_hc, _ = prob_hc.compute_maximal_current()
+    _, config_tr, _ = prob_tr.compute_maximal_current()
 
     # plot result
     config_sq.plot()

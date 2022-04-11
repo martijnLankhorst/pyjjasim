@@ -18,17 +18,17 @@ config, status, info = problem.compute()
 print(info)
 config.plot(fig=fig, axis_position=[0.35, 0.55, 0.27, 0.4], show_legend=False)
 
-problem = StaticProblem(array, vortex_configuration=n1, frustration=0.2)
+problem = StaticProblem(array, vortex_configuration=n1, external_flux=0.2)
 config, status, info = problem.compute()
 print(info)
 config.plot(fig=fig, axis_position=[0.68, 0.55, 0.27, 0.4], show_legend=False)
 
-problem = StaticProblem(array, vortex_configuration=n1, frustration=0.4)
+problem = StaticProblem(array, vortex_configuration=n1, external_flux=0.4)
 config, status, info = problem.compute()
 print(info)
 config.plot(fig=fig, axis_position=[0.05, 0.05, 0.27, 0.4], show_legend=False)
 
-problem = StaticProblem(array, vortex_configuration=n1, frustration=0.6)
+problem = StaticProblem(array, vortex_configuration=n1, external_flux=0.6)
 config, status, info = problem.compute()
 print(info) # does not converge, no solution exists!
 
@@ -36,7 +36,7 @@ problem = StaticProblem(array, vortex_configuration=n3)
 config, status, info = problem.compute()
 print(info) # does not converge, no solution exists!
 
-problem = StaticProblem(array, vortex_configuration=n4, frustration=0.5)
+problem = StaticProblem(array, vortex_configuration=n4, external_flux=0.5)
 config, status, info = problem.compute()
 print(info)
 fig, ax, handle = config.plot(fig=fig, axis_position=[0.35, 0.05, 0.27, 0.4], show_legend=False,

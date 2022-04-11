@@ -24,7 +24,7 @@ n[178] = 1
 # n[174] = 1
 n[79] = 1
 f = 0.045 * a.get_face_areas()
-p = StaticProblem(a, frustration=f, vortex_configuration=n)
+p = StaticProblem(a, external_flux=f, vortex_configuration=n)
 config, _, info = p.compute()
 print(info)
 fig, ax = config.plot(face_quantity="J", manual_face_label="face current vortices", legend_width_fraction=0.1,
