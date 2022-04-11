@@ -37,7 +37,7 @@ hierarchical structure is supported.
 # Documentation
 [tutorial](./tutorial/pyjjasim_tutorial.md) \
 [API](https://readthedocs.org/projects/pyjjasim/) \
-[whitepaper](PyJJASim_Whitepaper.pdf) (in progress)
+[article](pyJJAsim_A_circuit_simulator_with_Josephson_junctions.pdf) (in preparation for submission)
 
 # Example Usage
 
